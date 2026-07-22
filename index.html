@@ -91,8 +91,8 @@
     #equipmentDragGhost{position:fixed;left:0;top:0;z-index:1200;display:none;width:44px;height:44px;transform:translate(-50%,-50%);pointer-events:none}
     #equipmentDragGhost.visible{display:block}
     #equipmentDragGhost img{width:100%;height:100%;border:1px solid #9eafc5;border-radius:6px;background:#101825;object-fit:contain;box-shadow:0 3px 10px rgba(0,0,0,.38)}
-    #equipmentToast{position:fixed;left:50%;bottom:28px;z-index:1400;display:none;transform:translateX(-50%);padding:7px 12px;border:1px solid #51627a;border-radius:7px;background:rgba(12,19,30,.94);color:#e4edf8;font-size:12px;pointer-events:none}
-    #equipmentToast.show{display:block}
+    #equipmentToast{position:fixed;left:50%;top:72px;z-index:2400;transform:translate(-50%,-8px);max-width:min(520px,calc(100vw - 32px));padding:11px 18px;border:1px solid #607796;border-radius:9px;background:rgba(12,19,30,.95);box-shadow:0 8px 26px rgba(0,0,0,.35);color:#f0f5fc;font-size:16px;font-weight:700;text-align:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .38s ease,transform .38s ease,visibility 0s linear .38s}
+    #equipmentToast.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .16s ease,transform .16s ease,visibility 0s}
     .unit-equipment-section{margin-top:9px;padding-top:8px;border-top:1px solid rgba(145,170,205,.2)}
     .unit-equipment-section[hidden]{display:none}
     .unit-equipment-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#dce8f7;font-size:12px;font-weight:700}
@@ -744,8 +744,8 @@ function launchFriendlyOrbs(source,allies,element,onArrive){
   });
 }
 function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);const g=ctx.createRadialGradient(480,390,30,480,390,620);g.addColorStop(0,'#20304a');g.addColorStop(1,'#0b1019');ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.save();ctx.font='bold 12px Microsoft YaHei';ctx.textAlign='left';ctx.fillStyle='#ff9ba3';ctx.fillText('红方备战席',18,18);ctx.fillStyle='#8ac5ff';ctx.fillText('蓝方备战席',18,688);ctx.restore();
-  for(const team of ['red','blue'])for(let i=0;i<BENCH_SLOTS;i++){const p=benchPos(team,i),isHover=!started&&hoverBench&&hoverBench.team===team&&hoverBench.index===i;pathHex(p.x,p.y,34,isHover?'#66552b':team==='red'?'#351b27':'#142e49',isHover?'#f2c66d':team==='red'?'#7a3c4d':'#32658d')}
+  ctx.save();ctx.font='bold 12px Microsoft YaHei';ctx.textAlign='left';if(!window.PVE_FIRST_ACTIVE){ctx.fillStyle='#ff9ba3';ctx.fillText('红方备战席',18,18)}ctx.fillStyle='#8ac5ff';ctx.fillText('蓝方备战席',18,688);ctx.restore();
+  for(const team of ['red','blue']){if(window.PVE_FIRST_ACTIVE&&team==='red')continue;for(let i=0;i<BENCH_SLOTS;i++){const p=benchPos(team,i),isHover=!started&&hoverBench&&hoverBench.team===team&&hoverBench.index===i;pathHex(p.x,p.y,34,isHover?'#66552b':team==='red'?'#351b27':'#142e49',isHover?'#f2c66d':team==='red'?'#7a3c4d':'#32658d')}}
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const p=hexPos(r,c),blue=r>=4,isHover=!started&&hoverCell&&hoverCell.row===r&&hoverCell.col===c;pathHex(p.x,p.y,S-2,isHover?'#66552b':blue?'#173453':'#4a2028',isHover?'#f2c66d':blue?'#2d5b83':'#743640')}
   drawSuperconductZones();
   drawJeanZones();drawKazuhaZones();
@@ -801,7 +801,7 @@ document.querySelector('#weaponRoleInfo').innerHTML=Object.entries(WEAPON_INFO).
 function canvasPoint(e){const rect=canvas.getBoundingClientRect();return{x:(e.clientX-rect.left)*canvas.width/rect.width,y:(e.clientY-rect.top)*canvas.height/rect.height,rect}}
 function cellAt(x,y){let best=null,bestD=Infinity;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const p=hexPos(r,c),d=Math.hypot(p.x-x,p.y-y);if(d<bestD){bestD=d;best={row:r,col:c}}}return bestD<=S?best:null}
 function unitAt(x,y){return units.find(u=>{if(!u.alive||u.inWarehouse||u.isSummon)return false;const validBench=u.onBench===true&&Number.isInteger(u.benchIndex);const validBoard=u.onBench===false&&Number.isInteger(u.row)&&Number.isInteger(u.col);if(!validBench&&!validBoard)return false;const p=unitVisualPos(u);return Math.hypot(p.x-x,p.y-y)<30})||null}
-function benchSlotAt(x,y){for(const team of ['red','blue'])for(let index=0;index<BENCH_SLOTS;index++){const p=benchPos(team,index);if(Math.hypot(p.x-x,p.y-y)<=38)return{kind:'bench',team,index}}return null}
+function benchSlotAt(x,y){for(const team of ['red','blue']){if(window.PVE_FIRST_ACTIVE&&team==='red')continue;for(let index=0;index<BENCH_SLOTS;index++){const p=benchPos(team,index);if(Math.hypot(p.x-x,p.y-y)<=38)return{kind:'bench',team,index}}}return null}
 function warehouseSlotAt(x,y){for(let index=0;index<WAREHOUSE_SLOTS;index++){const p=warehousePos(index);if(Math.hypot(p.x-x,p.y-y)<=40)return{kind:'warehouse',index}}return null}
 function destinationAt(x,y){const warehouse=warehouseSlotAt(x,y);if(warehouse)return warehouse;const bench=benchSlotAt(x,y);if(bench)return bench;const cell=cellAt(x,y);return cell?{kind:'board',...cell}:null}
 function unitAtDestination(dest,except=null){if(!dest)return null;if(dest.kind==='warehouse')return units.find(u=>u.alive&&u!==except&&u.inWarehouse&&u.warehouseIndex===dest.index)||null;if(dest.kind==='bench')return units.find(u=>u.alive&&u!==except&&!u.inWarehouse&&u.onBench&&u.team===dest.team&&u.benchIndex===dest.index)||null;return units.find(u=>u.alive&&u!==except&&!u.onBench&&!u.inWarehouse&&u.row===dest.row&&u.col===dest.col)||null}
@@ -878,6 +878,7 @@ function beginWarehousePieceDrag(e){
 function clearUnitDragState(){
   const wh=document.querySelector('#whPanel');
   wh?.classList.remove('delete-drop-active');
+  window.PVE_FIRST?.clearShopSellFeedback?.();
   hidePieceDragGhost();
   pendingWhDrag=null;pendingUnitDrag=null;dragUnit=null;dragPoint=null;dragState=null;
   dragIsNewCopy=false;pointerDownUnit=null;hoverCell=null;hoverBench=null;
@@ -918,10 +919,12 @@ function beginExistingUnitDrag(e){
   if(!pendingUnitDrag||dragUnit)return false;
   const u=units.find(x=>x.id===pendingUnitDrag.unitId);
   if(!u||!u.alive||u.inWarehouse||u.upgradeLocked){pendingUnitDrag=null;return false}
+  if(window.PVE_FIRST_ACTIVE&&u.team==='red'){pendingUnitDrag=null;pointerDownUnit=null;return false}
   dragState={sourceType:'existingUnit',unitId:u.id,templateId:null,origin:{team:u.team,onBench:u.onBench,benchIndex:u.benchIndex,row:u.row,col:u.col}};
   dragUnit=u;dragPoint=canvasPoint(e);dragIsNewCopy=false;pointerDownUnit=u;
   suppressNextClick=true;canvas.style.cursor='grabbing';
   showPieceDragGhost(u,e.clientX,e.clientY);
+  window.PVE_FIRST?.updateShopSellFeedback?.(e.clientX,e.clientY,u);
   pendingUnitDrag=null;
   return true;
 }
@@ -932,6 +935,7 @@ canvas.onpointerdown=e=>{
   const u=unitAt(x,y);
   if(!u||u.inWarehouse||u.upgradeLocked){pendingUnitDrag=null;return}
   selectedUnit=u;renderUnitInspect(u);
+  if(window.PVE_FIRST_ACTIVE&&u.team==='red'){pendingUnitDrag=null;pointerDownUnit=null;return}
   pendingUnitDrag={unitId:u.id,pointerId:e.pointerId,startClientX:e.clientX,startClientY:e.clientY,lastClientX:e.clientX,lastClientY:e.clientY};
   pointerDownUnit=u;
   suspendDragTimer();
@@ -966,6 +970,7 @@ function handleActiveDragMove(e){
   hoverCell=dest?.kind==='board'?dest:null;
   hoverBench=dest?.kind==='bench'?dest:null;
   updateWhDropFeedback(e.clientX,e.clientY);
+  window.PVE_FIRST?.updateShopSellFeedback?.(e.clientX,e.clientY,dragUnit);
 }
 window.addEventListener('pointermove',handleActiveDragMove,{passive:false});
 
@@ -990,6 +995,10 @@ function endDrag(e){
     if(dragIsNewCopy||dragUnit.inWarehouse||String(dragUnit.id).startsWith('drag-'))units=units.filter(x=>x.id!==dragUnit.id);
     clearUnitDragState();saveFormation();updateAliveCounts();renderDamageStats();return;
   }
+  if(window.PVE_FIRST?.isShopSellDrop?.(e.clientX,e.clientY,dragUnit)){
+    window.PVE_FIRST.sellDraggedUnit(dragUnit);
+    clearUnitDragState();saveFormation();updateAliveCounts();renderDamageStats();return;
+  }
   const insideWh=isClientPointInsideWarehouse(e.clientX,e.clientY);
   if(insideWh){
     if(dragState.sourceType==='existingUnit'){returnUnitToWarehouse(dragUnit)}
@@ -1011,7 +1020,7 @@ window.addEventListener('pointercancel',e=>{endDrag(e)});
 function hideUnitInspect(){inspect.classList.remove('show','team-blue','team-red','team-neutral');document.querySelector('.tabs').hidden=false;logPane.hidden=false;hoverInspectUnitId=null}
 canvas.onclick=e=>{if(suppressNextClick){suppressNextClick=false;return}const {x,y}=canvasPoint(e),clicked=unitAt(x,y);if(clicked){selectedUnit=clicked;renderUnitInspect(clicked)}else{selectedUnit=null;hideUnitInspect()}};
 canvas.oncontextmenu=e=>{e.preventDefault();if(started||ended)return;const {x,y}=canvasPoint(e),u=unitAt(x,y);if(!u||u.inWarehouse||u.isSummon)return;returnUnitToWarehouse(u)};
-canvas.ondblclick=e=>{if(started||ended)return;e.preventDefault();const {x,y}=canvasPoint(e),u=unitAt(x,y);if(u)autoToggleBench(u)};
+canvas.ondblclick=e=>{if(started||ended)return;e.preventDefault();const {x,y}=canvasPoint(e),u=unitAt(x,y);if(u&&!(window.PVE_FIRST_ACTIVE&&u.team==='red'))autoToggleBench(u)};
 function renderUnitInspect(u){if(!u)return;hoverInspectUnitId=u.id;inspect.classList.remove('team-blue','team-red','team-neutral');inspect.classList.add('show',u.team?`team-${u.team}`:'team-neutral');document.querySelector('.tabs').hidden=true;logPane.hidden=true;inspect.dataset.unitName=u.name;inspect.dataset.dummy=u.isDummy?'1':'0';const detailed=u.isDummy?'最大生命 2000；生命归零时立即回满，不会死亡、行动、攻击或释放技能。':SKILL_INFO[u.name]||'该角色技能尚未配置。',brief=u.isDummy?'无伤害、无元素附着。':SKILL_BRIEF[u.name]||'暂无伤害或附着信息。',skill=skillDetailMode==='detail'?detailed:brief,panelAtk=effectiveAtk(u)*(u.name==='胡桃'&&has(u,'hutaoEmpower')?2:1),shield=u.eulaShield?`<div class="row"><span>护盾</span><b>${Math.ceil(u.eulaShield.value)} / ${u.eulaShield.max}</b></div>`:'',modeButtons=u.isDummy?'':`<span class="skill-mode"><button data-skill-mode="brief" class="${skillDetailMode==='brief'?'active':''}">简略</button><button data-skill-mode="detail" class="${skillDetailMode==='detail'?'active':''}">详细</button></span>`,teamName=u.team==='blue'?'蓝方':u.team==='red'?'红方':'仓库';const noelleRes=u.noelleExtraRes||0,shred=has(u,'resistDown'),geoDef=has(u,'geoResonanceDef')?10:0,panelDef=u.def+noelleRes+geoDef;inspect.innerHTML=`<h3 style="color:${ELEMENTS[u.element]}"><span>${u.name} · ${u.element}${u.isDummy?'':' · '+u.cost+'费 '+('★'.repeat(u.star))}</span><em class="team-label">${teamName}</em></h3><div class="row"><span>武器</span><b>${u.weapon}</b></div><div class="row"><span>生命</span><b>${Math.ceil(u.hp)} / ${u.maxHp}</b></div>${shield}<div class="row"><span>攻击 / 攻速</span><b>${u.isDummy?'不会攻击':panelAtk+' / '+panelAs(u)}</b></div><div class="row"><span>暴击 / 暴伤</span><b>${u.isDummy?'—':Math.round(u.critRate*100)+'% / '+Math.round(u.critDamage*100)+'%'}</b></div><div class="row"><span>抗性值</span><b>${panelDef}${noelleRes>0?' <span style="color:#e1b955;font-size:10px">(+'+noelleRes+' 被动)</span>':''}${shred?' <span style="color:#ff6673;font-size:10px">(-'+Math.round(u.def*(shred.value===u.element?0.3:0.15))+' 碎甲)</span>':''}</b></div><div class="row"><span>攻击距离</span><b>${u.isDummy?'—':u.range+' 格'}</b></div><div class="row"><span>法力</span><b>${u.isDummy?'无蓝条':Math.floor(u.mp)+' / '+u.maxMp}</b></div><div style="margin-top:8px;padding-top:7px;border-top:1px solid #34445c;color:#c7d4e6;line-height:1.5"><b style="color:#f5d38a">武器特性</b><br>${u.isDummy?'不触发武器特性。':WEAPON_INFO[u.weapon]}</div><div style="margin-top:8px;padding-top:7px;border-top:1px solid #34445c;color:#dce7f7;line-height:1.55;white-space:pre-line"><span class="skill-head"><b style="color:#9ed2ff">技能</b>${modeButtons}</span><span class="skill-copy">${skill}</span></div>`}
 
 function skillTextForStar(text,star){
@@ -1066,6 +1075,7 @@ renderWhCards();
 enterPreparation();requestAnimationFrame(loop);
 </script>
 <script src="equipment-system.js"></script>
+<script src="pve-first-release.js"></script>
 <div id="equipmentDragGhost" aria-hidden="true"><img draggable="false" alt=""></div>
 <div id="pieceDragGhost" aria-hidden="true"><img id="pieceDragGhostAvatar" draggable="false"><span id="pieceDragGhostElement" class="piece-drag-element"></span><div id="pieceDragGhostStars"></div></div>
 </body></html>
