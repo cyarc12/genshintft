@@ -82,7 +82,8 @@ function sellChallengeUnit(unit,askConfirmation=false){
   animateGoldGain(price,()=>{run.gold+=price;saveRun();renderPveHud();toast(`已出售 ${unit.name}，获得 ${price} 金币`)});return true;
 }
 function isShopSellDrop(clientX,clientY,unit){if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.isDummy||unit.isSummon)return false;const shop=$('#pveShopBar');if(!shop||shop.classList.contains('hidden'))return false;const rect=shop.getBoundingClientRect();return clientX>=rect.left&&clientX<=rect.right&&clientY>=rect.top&&clientY<=rect.bottom}
-function updateShopSellFeedback(clientX,clientY,unit){const shop=$('#pveShopBar');if(!shop)return;const eligible=mode==='challenge'&&!started&&unit?.team==='blue'&&!unit.isDummy&&!unit.isSummon;shop.classList.toggle('sell-drop-ready',eligible);shop.classList.toggle('sell-drop-active',eligible&&isShopSellDrop(clientX,clientY,unit))}
+function positionShopSellOverlay(){const shop=$('#pveShopBar'),cards=$('#pveShopCards');if(!shop||!cards)return;const shopRect=shop.getBoundingClientRect(),cardsRect=cards.getBoundingClientRect();shop.style.setProperty('--sell-trash-x',`${cardsRect.left-shopRect.left+cardsRect.width/2}px`);shop.style.setProperty('--sell-trash-y',`${cardsRect.top-shopRect.top+cardsRect.height/2}px`)}
+function updateShopSellFeedback(clientX,clientY,unit){const shop=$('#pveShopBar');if(!shop)return;const eligible=mode==='challenge'&&!started&&unit?.team==='blue'&&!unit.isDummy&&!unit.isSummon;if(eligible)positionShopSellOverlay();shop.classList.toggle('sell-drop-ready',eligible);shop.classList.toggle('sell-drop-active',eligible&&isShopSellDrop(clientX,clientY,unit))}
 function clearShopSellFeedback(){$('#pveShopBar')?.classList.remove('sell-drop-ready','sell-drop-active')}
 function returnChallengeUnitToBench(unit){if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.onBench)return false;const bench=emptyBlueBench();if(bench<0){toast('蓝方备战席已满');return false}placeUnit(unit,{kind:'bench',team:'blue',index:bench});toast(`${unit.name} 已回到备战席`);return true}
 function gainXp(amount){run.xp+=amount;while(run.level<9&&run.xp>=LEVEL_TOTAL[run.level+1]){run.level++;run.populationLimit=run.level;toast(`升级到 Lv${run.level}`)}}
@@ -136,7 +137,7 @@ function showRoundResult(win,reward,next){
   dialog.classList.toggle('victory',win);dialog.classList.toggle('defeat',!win);
   if(win){
     const equipment=reward.equipment?`<div class="pve-loot-row"><span>装备</span><b>${reward.equipment}</b></div>`:'';
-    body.innerHTML=`<div class="pve-victory-mark">胜利</div><div class="pve-loot-title">本回合战利品</div><div class="pve-loot-row"><span><img src="assets/two-coins.svg" alt="">金币</span><b>+${reward.gold}</b></div><div class="pve-loot-row"><span>经验</span><b>+${reward.xp}</b></div>${equipment}`;
+    body.innerHTML=`<div class="pve-victory-mark">胜利</div><div class="pve-loot-title">本回合战利品</div><div class="pve-loot-row"><span>金币</span><b class="pve-gold-breakdown"><span title="自然与关卡收入"><img src="assets/two-coins.svg" alt="金币">${reward.naturalGold}</span><em>+</em><span title="金币利息"><img src="assets/two-coins.svg" alt="金币">${reward.interestGold}</span></b></div><div class="pve-loot-row"><span>经验</span><b>+${reward.xp}</b></div>${equipment}`;
   }else{
     body.innerHTML=`<div class="pve-heart-break"><span class="lost-heart">♥</span><i></i></div><div class="pve-defeat-copy">失去一次失败机会</div><div class="pve-life-remain">${'♥'.repeat(Math.max(0,reward.lives))||'无剩余生命'}</div>`;
   }
@@ -145,7 +146,8 @@ function showRoundResult(win,reward,next){
 function settle(win){
   const previousFormation=clone(battlePlayerSnapshot||run.formation||[]);
   const startGold=run.gold,startStage=stageId();let gainedEquipment='',terminal='',lossCompensation=null;
-  run.gold+=Math.min(5,Math.floor(startGold/10))+5;gainXp(6);run.round++;
+  const interestGold=Math.floor(startGold/5);
+  run.gold+=5+interestGold;gainXp(6);run.round++;
   if(win){
     run.winStreak++;run.gold+=run.winStreak>=7?3:run.winStreak>=5?2:run.winStreak>=3?1:0;
     const rule=RULES[startStage];run.gold+=rule.gold||0;
@@ -160,7 +162,7 @@ function settle(win){
     lossCompensation=lossCompensationFor(run.lossCount);
     if(run.lives<=0){run.state='game_over';terminal='挑战失败'}
   }
-  const reward={gold:run.gold-startGold,xp:6,equipment:gainedEquipment,lives:run.lives};
+  const totalGold=run.gold-startGold,reward={gold:totalGold,naturalGold:totalGold-interestGold,interestGold,xp:6,equipment:gainedEquipment,lives:run.lives};
   restorePlayerFormation(previousFormation,!terminal);battlePlayerSnapshot=null;saveRun(false);renderPveHud();
   showRoundResult(win,reward,()=>{
     if(terminal){showEnd(terminal);return}
@@ -226,7 +228,7 @@ function installShopLayoutStyle(){
     .pve-shop-bar{position:relative;overflow:hidden;transition:border-color .16s ease,box-shadow .16s ease,filter .16s ease}
     .pve-shop-bar::before,.pve-shop-bar::after{position:absolute;inset:0;z-index:20;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,visibility 0s linear .16s}
     .pve-shop-bar::before{content:"";background:rgba(19,23,31,.68);backdrop-filter:blur(3px)}
-    .pve-shop-bar::after{content:"";inset:50% auto auto 50%;width:88px;height:88px;transform:translate(-50%,-50%);background:url("assets/trash-can.svg") center/contain no-repeat;filter:drop-shadow(0 0 16px rgba(255,70,78,.6))}
+    .pve-shop-bar::after{content:"";inset:var(--sell-trash-y,65%) auto auto var(--sell-trash-x,50%);width:88px;height:88px;transform:translate(-50%,-50%);background:url("assets/trash-can.svg") center/contain no-repeat;filter:drop-shadow(0 0 16px rgba(255,70,78,.6))}
     .pve-shop-bar.sell-drop-ready{border-color:rgba(255,96,105,.54);box-shadow:0 0 0 1px rgba(255,73,84,.16),0 0 15px rgba(255,48,60,.12)}
     .pve-shop-bar.sell-drop-ready::before{opacity:.22;visibility:visible;transition:opacity .16s ease}
     .pve-shop-bar.sell-drop-ready::after{opacity:.32;visibility:visible;transition:opacity .16s ease}
@@ -243,6 +245,7 @@ function installShopLayoutStyle(){
     .pve-loot-title{margin-bottom:8px;color:#aebed2;font-size:12px}
     .pve-loot-row{display:flex;align-items:center;justify-content:space-between;margin:5px auto;padding:8px 12px;max-width:280px;border:1px solid #34475f;border-radius:7px;background:#0c1522}
     .pve-loot-row span{display:flex;align-items:center;gap:6px;color:#cbd8e9}.pve-loot-row span img{width:18px;height:18px}.pve-loot-row b{color:#f3cf70}
+    .pve-loot-row .pve-gold-breakdown{display:inline-flex;align-items:center;gap:6px}.pve-gold-breakdown span{display:inline-flex;align-items:center;gap:3px;color:#f3cf70}.pve-gold-breakdown span img{width:20px;height:20px}.pve-gold-breakdown em{color:#8798ad;font-style:normal;font-weight:700}
     .pve-heart-break{position:relative;width:92px;height:92px;margin:4px auto 8px;display:grid;place-items:center}
     .lost-heart{color:#ee4658;font:76px/1 Arial,sans-serif;filter:drop-shadow(0 0 14px rgba(255,62,78,.55));animation:pveHeartBreak 1.05s ease both}
     .pve-heart-break i{position:absolute;width:5px;height:72px;background:#101a29;transform:rotate(17deg);clip-path:polygon(35% 0,100% 0,58% 42%,100% 42%,0 100%,34% 53%,0 53%);animation:pveHeartCrack .55s .18s ease both}
