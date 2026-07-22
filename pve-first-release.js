@@ -223,9 +223,12 @@ function installShopLayoutStyle(){
     .pve-gold-gain.play{animation:pveGoldCollect .72s cubic-bezier(.2,.7,.25,1) both}
     @keyframes pveGoldCollect{0%{transform:translate(-50%,-8px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.12);opacity:1}58%{transform:translate(-50%,19px) scale(1);opacity:1}100%{transform:translate(-50%,38px) scale(.62);opacity:0}}
     .pve-shop-slot-empty{min-width:0;visibility:hidden}
-    #pveSlotDialog>div{width:min(1180px,calc(100% - 34px));max-height:92vh;padding:24px}
+    #pveSlotDialog>div{width:min(1680px,calc(100% - 20px));max-height:92vh;padding:24px}
     #pveSlotDialog .pve-slot-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    #pveSlotDialog .pve-slot-list button{min-height:58px;padding:10px 12px;font-size:14px}
+    #pveSlotDialog .pve-slot-list button{grid-template-rows:62px;min-height:86px;padding:10px 12px;font-size:14px}
+    #pveSlotDialog .pve-slot-name{align-self:start;line-height:28px}
+    #pveSlotDialog .pve-slot-units{grid-template-columns:repeat(5,28px);grid-template-rows:repeat(2,28px);grid-auto-rows:28px;gap:5px;align-content:start;justify-content:center;height:61px}
+    #pveSlotDialog .pve-slot-unit{width:28px;height:28px;aspect-ratio:auto}
     .pve-shop-bar{position:relative;overflow:hidden;transition:border-color .16s ease,box-shadow .16s ease,filter .16s ease}
     .pve-shop-bar::before,.pve-shop-bar::after{position:absolute;inset:0;z-index:20;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,visibility 0s linear .16s}
     .pve-shop-bar::before{content:"";background:rgba(19,23,31,.68);backdrop-filter:blur(3px)}
