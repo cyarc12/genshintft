@@ -102,7 +102,7 @@ function renderPveHud(){
   $('#buyXpBtn').innerHTML=`<span>购买经验</span><span class="pve-button-price"><img src="assets/two-coins.svg" alt="">4</span>`;
   $('#refreshShopBtn').innerHTML=run.freeRefreshes>0?`<span>刷新</span><span class="pve-free-price">免费×${run.freeRefreshes}</span>`:`<span>刷新</span><span class="pve-button-price"><img src="assets/two-coins.svg" alt="">2</span>`;
   $('#lockShopBtn').classList.toggle('active',run.shopLocked);$('#lockShopBtn').setAttribute('aria-pressed',String(run.shopLocked));$('#lockShopBtn').title=run.shopLocked?'点击解锁商店':'点击锁定商店';$('#lockShopBtn').innerHTML=`<img src="assets/${run.shopLocked?'shop-lock':'shop-unlock'}.svg" alt=""><span>${run.shopLocked?'已锁定':'未锁定'}</span>`;
-  $('#pveShopCards').innerHTML=(run.shopOffers||[]).map((o,i)=>o?`<button class="pve-shop-card cost${o.cost}" data-buy-offer="${i}" ${started?'disabled':''}><img src="${PIECE_CONFIG[o.name].avatar}"><span>${o.name}</span><small>${PIECE_CONFIG[o.name].element} · ${PIECE_CONFIG[o.name].weapon}</small></button>`:'<div class="pve-shop-slot-empty" aria-hidden="true"></div>').join('');
+  $('#pveShopCards').innerHTML=(run.shopOffers||[]).map((o,i)=>o?`<button class="pve-shop-card cost${o.cost}" data-buy-offer="${i}" draggable="false" ${started?'disabled':''}><img src="${PIECE_CONFIG[o.name].avatar}" draggable="false"><span>${o.name}</span><small>${PIECE_CONFIG[o.name].element} · ${PIECE_CONFIG[o.name].weapon}</small></button>`:'<div class="pve-shop-slot-empty" aria-hidden="true"></div>').join('');
 }
 function renderChallengeInventory(){
   const box=$('#whEquipCards');if(!box)return;const counts={};for(const id of run.equipmentInventory)counts[id]=(counts[id]||0)+1;
@@ -191,6 +191,8 @@ function installShopLayoutStyle(){
     .pve-shop-odds b{color:#e8eff8;font-weight:800}
     .pve-shop-odds .cost1{color:#c5ccd5}.pve-shop-odds .cost2{color:#6cda8c}.pve-shop-odds .cost3{color:#70b4ff}.pve-shop-odds .cost4{color:#bd8cff}.pve-shop-odds .cost5{color:#f1cf73}
     .pve-shop-main{align-items:stretch}
+    .pve-shop-card{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+    .pve-shop-card img{pointer-events:none;-webkit-user-drag:none}
     .pve-shop-actions{display:grid;grid-template-rows:auto 1fr;gap:5px;min-width:0}
     .pve-level-line{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 3px;font-size:10px}
     .pve-shop-action-buttons{display:grid;grid-template-rows:1fr 1fr;gap:5px}
@@ -249,6 +251,7 @@ function installEvents(){
   $('#pveSlotList').onclick=e=>{const b=e.target.closest('[data-slot-key]');if(b){selectedSlot=b.dataset.slotKey;renderSlotList()}};document.addEventListener('click',e=>{if(e.target.matches('[data-close-pve-modal]'))e.target.closest('.pve-modal').classList.add('hidden')});
   $('#newPveBtn').onclick=()=>{if(!confirm('开始新挑战会覆盖旧挑战进度，是否继续？'))return;localStorage.removeItem(RUN_KEY);activateChallenge(createRun())};$('#continuePveBtn').onclick=()=>{const saved=loadRun();if(saved)activateChallenge(saved);else toast('没有挑战存档')};
   $('#buyXpBtn').onclick=buyXp;$('#refreshShopBtn').onclick=()=>refreshShop(false);$('#lockShopBtn').onclick=()=>{run.shopLocked=!run.shopLocked;saveRun();renderPveHud()};$('#pveShopCards').onclick=e=>{const b=e.target.closest('[data-buy-offer]');if(b)buyOffer(Number(b.dataset.buyOffer))};
+  $('#pveShopCards').addEventListener('contextmenu',event=>event.preventDefault());$('#pveShopCards').addEventListener('dragstart',event=>event.preventDefault());
   $('#continueRoundResultBtn').onclick=()=>{const next=roundResultNext;roundResultNext=null;$('#pveRoundResultDialog').classList.add('hidden');if(next)next()};
   $('#continueLossRewardBtn').onclick=()=>{const next=roundResultNext;roundResultNext=null;$('#pveLossRewardDialog').classList.add('hidden');if(next)next()};
   $('#pveVariantDialog').onclick=e=>{const b=e.target.closest('[data-pve-variant]');if(!b)return;run.selectedVariant=b.dataset.pveVariant;$('#pveVariantDialog').classList.add('hidden');loadCurrentEnemy();saveRun();renderPveHud()};$('#exitFinishedPveBtn').onclick=exitChallenge;
