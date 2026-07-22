@@ -744,8 +744,8 @@ function launchFriendlyOrbs(source,allies,element,onArrive){
   });
 }
 function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);const g=ctx.createRadialGradient(480,390,30,480,390,620);g.addColorStop(0,'#20304a');g.addColorStop(1,'#0b1019');ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.save();ctx.font='bold 12px Microsoft YaHei';ctx.textAlign='left';ctx.fillStyle='#ff9ba3';ctx.fillText('红方备战席',18,18);ctx.fillStyle='#8ac5ff';ctx.fillText('蓝方备战席',18,688);ctx.restore();
-  for(const team of ['red','blue'])for(let i=0;i<BENCH_SLOTS;i++){const p=benchPos(team,i),isHover=!started&&hoverBench&&hoverBench.team===team&&hoverBench.index===i;pathHex(p.x,p.y,34,isHover?'#66552b':team==='red'?'#351b27':'#142e49',isHover?'#f2c66d':team==='red'?'#7a3c4d':'#32658d')}
+  ctx.save();ctx.font='bold 12px Microsoft YaHei';ctx.textAlign='left';if(!window.PVE_FIRST_ACTIVE){ctx.fillStyle='#ff9ba3';ctx.fillText('红方备战席',18,18)}ctx.fillStyle='#8ac5ff';ctx.fillText('蓝方备战席',18,688);ctx.restore();
+  for(const team of ['red','blue']){if(window.PVE_FIRST_ACTIVE&&team==='red')continue;for(let i=0;i<BENCH_SLOTS;i++){const p=benchPos(team,i),isHover=!started&&hoverBench&&hoverBench.team===team&&hoverBench.index===i;pathHex(p.x,p.y,34,isHover?'#66552b':team==='red'?'#351b27':'#142e49',isHover?'#f2c66d':team==='red'?'#7a3c4d':'#32658d')}}
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const p=hexPos(r,c),blue=r>=4,isHover=!started&&hoverCell&&hoverCell.row===r&&hoverCell.col===c;pathHex(p.x,p.y,S-2,isHover?'#66552b':blue?'#173453':'#4a2028',isHover?'#f2c66d':blue?'#2d5b83':'#743640')}
   drawSuperconductZones();
   drawJeanZones();drawKazuhaZones();
@@ -801,7 +801,7 @@ document.querySelector('#weaponRoleInfo').innerHTML=Object.entries(WEAPON_INFO).
 function canvasPoint(e){const rect=canvas.getBoundingClientRect();return{x:(e.clientX-rect.left)*canvas.width/rect.width,y:(e.clientY-rect.top)*canvas.height/rect.height,rect}}
 function cellAt(x,y){let best=null,bestD=Infinity;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const p=hexPos(r,c),d=Math.hypot(p.x-x,p.y-y);if(d<bestD){bestD=d;best={row:r,col:c}}}return bestD<=S?best:null}
 function unitAt(x,y){return units.find(u=>{if(!u.alive||u.inWarehouse||u.isSummon)return false;const validBench=u.onBench===true&&Number.isInteger(u.benchIndex);const validBoard=u.onBench===false&&Number.isInteger(u.row)&&Number.isInteger(u.col);if(!validBench&&!validBoard)return false;const p=unitVisualPos(u);return Math.hypot(p.x-x,p.y-y)<30})||null}
-function benchSlotAt(x,y){for(const team of ['red','blue'])for(let index=0;index<BENCH_SLOTS;index++){const p=benchPos(team,index);if(Math.hypot(p.x-x,p.y-y)<=38)return{kind:'bench',team,index}}return null}
+function benchSlotAt(x,y){for(const team of ['red','blue']){if(window.PVE_FIRST_ACTIVE&&team==='red')continue;for(let index=0;index<BENCH_SLOTS;index++){const p=benchPos(team,index);if(Math.hypot(p.x-x,p.y-y)<=38)return{kind:'bench',team,index}}}return null}
 function warehouseSlotAt(x,y){for(let index=0;index<WAREHOUSE_SLOTS;index++){const p=warehousePos(index);if(Math.hypot(p.x-x,p.y-y)<=40)return{kind:'warehouse',index}}return null}
 function destinationAt(x,y){const warehouse=warehouseSlotAt(x,y);if(warehouse)return warehouse;const bench=benchSlotAt(x,y);if(bench)return bench;const cell=cellAt(x,y);return cell?{kind:'board',...cell}:null}
 function unitAtDestination(dest,except=null){if(!dest)return null;if(dest.kind==='warehouse')return units.find(u=>u.alive&&u!==except&&u.inWarehouse&&u.warehouseIndex===dest.index)||null;if(dest.kind==='bench')return units.find(u=>u.alive&&u!==except&&!u.inWarehouse&&u.onBench&&u.team===dest.team&&u.benchIndex===dest.index)||null;return units.find(u=>u.alive&&u!==except&&!u.onBench&&!u.inWarehouse&&u.row===dest.row&&u.col===dest.col)||null}
@@ -1066,7 +1066,7 @@ renderWhCards();
 enterPreparation();requestAnimationFrame(loop);
 </script>
 <script src="equipment-system.js"></script>
-<script src="pve-system.js"></script>
+<script src="pve-first-release.js"></script>
 <div id="equipmentDragGhost" aria-hidden="true"><img draggable="false" alt=""></div>
 <div id="pieceDragGhost" aria-hidden="true"><img id="pieceDragGhostAvatar" draggable="false"><span id="pieceDragGhostElement" class="piece-drag-element"></span><div id="pieceDragGhostStars"></div></div>
 </body></html>
