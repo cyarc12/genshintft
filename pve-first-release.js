@@ -58,12 +58,23 @@ function emptyBlueBench(){for(let i=0;i<BENCH_SLOTS;i++)if(!benchOccupied('blue'
 function buyOffer(index){if(started)return;const offer=run.shopOffers[index];if(!offer)return;if(run.gold<offer.cost){toast('金币不足');return}const bench=emptyBlueBench();if(bench<0){toast('蓝方备战席已满');return}const d=pieceDefByName(offer.name),u=makeUnit(d,`pve-piece-${Date.now()}-${nextPieceId++}`,1);u.team='blue';u.onBench=true;u.benchIndex=bench;u.row=null;u.col=null;u.inWarehouse=false;units.push(u);run.gold-=offer.cost;run.shopOffers[index]=null;checkSynthesisAfterDrop('blue');saveRun();renderPveHud();updateAliveCounts()}
 function buyXp(){if(started||run.level>=9)return;if(run.gold<4){toast('金币不足');return}run.gold-=4;gainXp(4);saveRun();renderPveHud()}
 function poolCopiesForStar(star){return star===3?9:star===2?3:1}
+function animateGoldGain(amount,onComplete){
+  if(amount<=0){onComplete?.();return}
+  const target=$('#pveGold'),rect=target?.getBoundingClientRect();
+  if(!rect){onComplete?.();return}
+  const effect=document.createElement('div');effect.className='pve-gold-gain';effect.innerHTML=`<img src="assets/two-coins.svg" alt=""><b>+${amount}</b>`;
+  effect.style.left=`${rect.left+rect.width/2}px`;effect.style.top=`${rect.top-38}px`;document.body.appendChild(effect);
+  requestAnimationFrame(()=>effect.classList.add('play'));
+  let completed=false;const finish=()=>{if(completed)return;completed=true;effect.remove();onComplete?.()};
+  effect.addEventListener('animationend',finish,{once:true});setTimeout(finish,900);
+}
 function sellChallengeUnit(unit,askConfirmation=false){
   if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.isDummy||unit.isSummon)return false;
   const price=SELL_PRICE[unit.cost]?.[normalizeStarValue(unit.star)]||0;
   if(askConfirmation&&!confirm(`出售 ${unit.star}★ ${unit.name}，获得 ${price} 金币？`))return false;
   ensureUnitEquipment(unit);for(const item of unit.equipment||[])if(item?.equipmentId)run.equipmentInventory.push(item.equipmentId);
-  run.cardPool[unit.templateId]=(run.cardPool[unit.templateId]||0)+poolCopiesForStar(normalizeStarValue(unit.star));run.gold+=price;units=units.filter(x=>x!==unit);if(selectedUnit===unit){selectedUnit=null;hideUnitInspect()}saveRun();renderChallengeInventory();renderPveHud();updateAliveCounts();renderDamageStats();toast(`已出售 ${unit.name}，获得 ${price} 金币`);return true;
+  run.cardPool[unit.templateId]=(run.cardPool[unit.templateId]||0)+poolCopiesForStar(normalizeStarValue(unit.star));units=units.filter(x=>x!==unit);if(selectedUnit===unit){selectedUnit=null;hideUnitInspect()}renderChallengeInventory();updateAliveCounts();renderDamageStats();
+  animateGoldGain(price,()=>{run.gold+=price;saveRun();renderPveHud();toast(`已出售 ${unit.name}，获得 ${price} 金币`)});return true;
 }
 function isShopSellDrop(clientX,clientY,unit){if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.isDummy||unit.isSummon)return false;const shop=$('#pveShopBar');if(!shop||shop.classList.contains('hidden'))return false;const rect=shop.getBoundingClientRect();return clientX>=rect.left&&clientX<=rect.right&&clientY>=rect.top&&clientY<=rect.bottom}
 function updateShopSellFeedback(clientX,clientY,unit){const shop=$('#pveShopBar');if(!shop)return;shop.classList.toggle('sell-drop-active',isShopSellDrop(clientX,clientY,unit))}
@@ -157,6 +168,13 @@ function installShopLayoutStyle(){
     .pve-button-price,.pve-free-price{display:inline-flex;align-items:center;gap:3px;color:#f2c85f;font-weight:800}
     .pve-button-price img{width:15px;height:15px}
     .pve-free-price{color:#79d69a}
+    #pveGold{gap:6px;font-size:20px;font-weight:900;text-shadow:0 0 9px rgba(242,200,95,.32)}
+    #pveGold img{width:29px;height:29px;filter:drop-shadow(0 0 6px rgba(242,200,95,.45))}
+    .pve-lives{min-width:68px;font-size:29px;letter-spacing:2px;filter:drop-shadow(0 0 5px rgba(255,77,91,.3))}
+    .pve-gold-gain{position:fixed;z-index:2600;display:flex;align-items:center;gap:7px;transform:translate(-50%,0) scale(.88);color:#ffe27f;font-size:23px;font-weight:900;opacity:0;pointer-events:none;text-shadow:0 2px 5px #000,0 0 12px rgba(255,210,74,.65)}
+    .pve-gold-gain img{width:31px;height:31px;filter:drop-shadow(0 0 8px rgba(255,205,57,.7))}
+    .pve-gold-gain.play{animation:pveGoldCollect .72s cubic-bezier(.2,.7,.25,1) both}
+    @keyframes pveGoldCollect{0%{transform:translate(-50%,-8px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.12);opacity:1}58%{transform:translate(-50%,19px) scale(1);opacity:1}100%{transform:translate(-50%,38px) scale(.62);opacity:0}}
     .pve-shop-slot-empty{min-width:0;visibility:hidden}
     #pveSlotDialog>div{width:min(1180px,calc(100% - 34px));max-height:92vh;padding:24px}
     #pveSlotDialog .pve-slot-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
