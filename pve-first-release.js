@@ -41,7 +41,7 @@ function grantPhase(phase){if(run.claimedPhases.includes(phase))return;run.claim
 function stageId(){return ORDER[run.currentStageIndex]}
 function stageKey(){const id=stageId(),r=RULES[id];return r.type==='reward'?`${id}:${run.selectedVariant||'easy'}`:id}
 function ensureStageChoice(){const r=RULES[stageId()];if(r.type!=='reward')return true;if(run.selectedVariant)return true;$('#pveVariantDialog').classList.remove('hidden');return false}
-function restorePlayerFormation(snapshot=null){const player=clone(snapshot||run.formation||[]);run.formation=clone(player);enterPreparation(player);const rebuilt=[];for(const saved of player){const definition=pieceDefByName(saved.name);if(!definition)continue;const unit=makeUnit(definition,saved.id,saved.star||1);applyFormationState(unit,saved);unit.team='blue';unit.row=saved.row;unit.col=saved.col;unit.onBench=!!saved.onBench;unit.benchIndex=saved.benchIndex;unit.inWarehouse=false;unit.motion=null;unit.target=null;unit.targetId=null;unit.moveFromHex=null;unit.moveToHex=null;unit.moveProgress=0;unit.renderX=undefined;unit.renderY=undefined;unit.alive=true;unit.hp=unit.maxHp;unit.mp=Math.min(unit.mp,unit.maxMp);rebuilt.push(unit)}units=rebuilt;loadCurrentEnemy();lastFormation=formationSnapshot();saveRun(false);updateAliveCounts();renderDamageStats()}
+function restorePlayerFormation(snapshot=null,loadEnemy=true){const player=clone(snapshot||run.formation||[]);run.formation=clone(player);enterPreparation(player);const rebuilt=[];for(const saved of player){const definition=pieceDefByName(saved.name);if(!definition)continue;const unit=makeUnit(definition,saved.id,saved.star||1);applyFormationState(unit,saved);unit.team='blue';unit.row=saved.row;unit.col=saved.col;unit.onBench=!!saved.onBench;unit.benchIndex=saved.benchIndex;unit.inWarehouse=false;unit.motion=null;unit.target=null;unit.targetId=null;unit.moveFromHex=null;unit.moveToHex=null;unit.moveProgress=0;unit.renderX=undefined;unit.renderY=undefined;unit.alive=true;unit.hp=unit.maxHp;unit.mp=Math.min(unit.mp,unit.maxMp);rebuilt.push(unit)}units=rebuilt;if(loadEnemy)loadCurrentEnemy();lastFormation=formationSnapshot();saveRun(false);updateAliveCounts();renderDamageStats()}
 function loadCurrentEnemy(){if(!ensureStageChoice())return false;const data=loadSlots()[stageKey()];if(!data?.length){toast(`关卡 ${stageKey()} 尚未保存敌人阵容`);return false}clearRedBoard();for(const saved of data){const u=unitFromSaved(saved,'pve-enemy');if(u){u.isPveEnemy=true;units.push(u)}}updateAliveCounts();renderDamageStats();return true}
 function activateChallenge(existing){
   if(mode==='test')mainSnapshot={formation:clone(formationSnapshot()),whState:clone(whState)};
@@ -143,6 +143,7 @@ function showRoundResult(win,reward,next){
   roundResultNext=next;dialog.classList.remove('hidden');
 }
 function settle(win){
+  const previousFormation=clone(battlePlayerSnapshot||run.formation||[]);
   const startGold=run.gold,startStage=stageId();let gainedEquipment='',terminal='',lossCompensation=null;
   run.gold+=Math.min(5,Math.floor(startGold/10))+5;gainXp(6);run.round++;
   if(win){
@@ -159,16 +160,17 @@ function settle(win){
     lossCompensation=lossCompensationFor(run.lossCount);
     if(run.lives<=0){run.state='game_over';terminal='挑战失败'}
   }
-  const reward={gold:run.gold-startGold,xp:6,equipment:gainedEquipment,lives:run.lives};saveRun();renderPveHud();
+  const reward={gold:run.gold-startGold,xp:6,equipment:gainedEquipment,lives:run.lives};
+  restorePlayerFormation(previousFormation,!terminal);battlePlayerSnapshot=null;saveRun(false);renderPveHud();
   showRoundResult(win,reward,()=>{
     if(terminal){showEnd(terminal);return}
-    const previousFormation=clone(battlePlayerSnapshot||run.formation||[]);saveRun();restorePlayerFormation(previousFormation);battlePlayerSnapshot=null;renderChallengeInventory();renderPveHud();
+    renderChallengeInventory();renderPveHud();
     const continueRound=()=>{if(!run.shopLocked)refreshShop(true);saveRun();renderPveHud()};
     if(!win&&lossCompensation){const compensation=applyLossCompensation(lossCompensation);showLossCompensation(compensation,continueRound)}else continueRound();
   });
 }
 function showEnd(text){$('#pveEndText').textContent=text;$('#pveEndDialog').classList.remove('hidden');renderPveHud()}
-function startPveBattle(){if(mode!=='challenge')return true;if(!ensureStageChoice())return false;const count=units.filter(u=>u.team==='blue'&&!u.onBench&&!u.inWarehouse&&u.alive).length;if(count>run.populationLimit){toast(`上阵人数超过人口上限 ${run.populationLimit}`);return false}if(!units.some(u=>u.team==='red'&&!u.onBench&&!u.inWarehouse)){if(!loadCurrentEnemy())return false}run.formation=formationSnapshot().filter(x=>x.team==='blue');battlePlayerSnapshot=clone(run.formation);saveRun();return true}
+function startPveBattle(){if(mode!=='challenge')return true;if(!ensureStageChoice())return false;const count=units.filter(u=>u.team==='blue'&&!u.onBench&&!u.inWarehouse&&u.alive).length;if(count>run.populationLimit){toast(`上阵人数超过人口上限 ${run.populationLimit}`);return false}if(!units.some(u=>u.team==='red'&&!u.onBench&&!u.inWarehouse)){if(!loadCurrentEnemy())return false}battlePlayerSnapshot=clone(formationSnapshot().filter(x=>x.team==='blue'));run.formation=clone(battlePlayerSnapshot);saveRun(false);return true}
 function installUi(){
   const actions=$('.actions');actions.insertAdjacentHTML('beforeend','<span class="pve-divider"></span><button class="btn" id="loadPveSlotBtn">载入挑战关卡阵容</button><button class="btn" id="savePveSlotBtn">保存当前红方阵容</button><button class="btn" id="openChallengeBtn">挑战模式</button><button class="btn hidden" id="settleChallengeBtn">结算对局</button><button class="btn hidden" id="exitChallengeBtn">返回测试模式</button>');
   $('.arena').insertAdjacentHTML('beforeend',`<div id="pveShopBar" class="pve-shop-bar hidden"><div class="pve-shop-meta"><div class="pve-pop-streak"><span id="pvePopulation">人口 0/3</span><span class="pve-streak" title="当前连胜"><i>🔥</i><b id="pveStreakValue">0</b></span></div><div id="pveShopOdds" class="pve-shop-odds"></div><span></span></div><div class="pve-shop-main"><div class="pve-shop-actions"><div class="pve-level-line"><b id="pveLevel">Lv3</b><span id="pveXp">经验 0/6</span></div><div id="pveXpBar" class="pve-xp-bar" aria-hidden="true"><i id="pveXpBarFill"></i></div><div class="pve-shop-action-buttons"><button id="buyXpBtn" title="花费4金币获得4经验"></button><button id="refreshShopBtn"></button></div></div><div id="pveShopCards" class="pve-shop-cards"></div><div class="pve-shop-state right"><div class="pve-shop-right-row"><button id="lockShopBtn">锁定</button><b id="pveGold" class="pve-gold" title="金币"><img src="assets/two-coins.svg" alt="金币"><span id="pveGoldValue">20</span></b></div><div class="pve-shop-right-row"><span id="pveStage">关卡 1-1</span><span id="pveLives" class="pve-lives" title="剩余失败机会：3/3">♥♥♥</span></div></div></div></div>`);
