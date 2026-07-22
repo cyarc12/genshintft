@@ -225,9 +225,9 @@ function installShopLayoutStyle(){
     .pve-shop-slot-empty{min-width:0;visibility:hidden}
     #pveSlotDialog>div{width:min(1180px,calc(100% - 34px));max-height:92vh;padding:24px}
     #pveSlotDialog .pve-slot-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    #pveSlotDialog .pve-slot-list button{grid-template-columns:var(--slot-title-width,96px) minmax(0,1fr);grid-template-rows:62px;min-height:86px;padding:10px 6px;font-size:14px;column-gap:3px}
-    #pveSlotDialog .pve-slot-name{align-self:start;width:var(--slot-title-width,96px);font-size:11px;line-height:28px;white-space:nowrap}
-    #pveSlotDialog .pve-slot-units{box-sizing:border-box;grid-template-columns:repeat(5,28px);grid-template-rows:repeat(2,28px);grid-auto-rows:28px;column-gap:1px;row-gap:5px;align-content:start;justify-content:center;width:100%;height:61px;padding-inline:4px}
+    #pveSlotDialog .pve-slot-list button{grid-template-columns:var(--slot-title-width,112px) minmax(0,1fr);grid-template-rows:62px;min-height:86px;padding:10px 2px;font-size:14px;column-gap:2px}
+    #pveSlotDialog .pve-slot-name{align-self:start;width:var(--slot-title-width,112px);font-size:14px;line-height:28px;white-space:nowrap}
+    #pveSlotDialog .pve-slot-units{box-sizing:border-box;grid-template-columns:repeat(5,28px);grid-template-rows:repeat(2,28px);grid-auto-rows:28px;column-gap:0;row-gap:5px;align-content:start;justify-content:center;width:100%;height:61px;padding-inline:2px}
     #pveSlotDialog .pve-slot-unit{width:28px;height:28px;aspect-ratio:auto}
     .pve-shop-bar{position:relative;overflow:hidden;transition:border-color .16s ease,box-shadow .16s ease,filter .16s ease}
     .pve-shop-bar::before,.pve-shop-bar::after{position:absolute;inset:0;z-index:20;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,visibility 0s linear .16s}
