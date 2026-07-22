@@ -77,8 +77,8 @@ function sellChallengeUnit(unit,askConfirmation=false){
   animateGoldGain(price,()=>{run.gold+=price;saveRun();renderPveHud();toast(`已出售 ${unit.name}，获得 ${price} 金币`)});return true;
 }
 function isShopSellDrop(clientX,clientY,unit){if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.isDummy||unit.isSummon)return false;const shop=$('#pveShopBar');if(!shop||shop.classList.contains('hidden'))return false;const rect=shop.getBoundingClientRect();return clientX>=rect.left&&clientX<=rect.right&&clientY>=rect.top&&clientY<=rect.bottom}
-function updateShopSellFeedback(clientX,clientY,unit){const shop=$('#pveShopBar');if(!shop)return;shop.classList.toggle('sell-drop-active',isShopSellDrop(clientX,clientY,unit))}
-function clearShopSellFeedback(){$('#pveShopBar')?.classList.remove('sell-drop-active')}
+function updateShopSellFeedback(clientX,clientY,unit){const shop=$('#pveShopBar');if(!shop)return;const eligible=mode==='challenge'&&!started&&unit?.team==='blue'&&!unit.isDummy&&!unit.isSummon;shop.classList.toggle('sell-drop-ready',eligible);shop.classList.toggle('sell-drop-active',eligible&&isShopSellDrop(clientX,clientY,unit))}
+function clearShopSellFeedback(){$('#pveShopBar')?.classList.remove('sell-drop-ready','sell-drop-active')}
 function returnChallengeUnitToBench(unit){if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.onBench)return false;const bench=emptyBlueBench();if(bench<0){toast('蓝方备战席已满');return false}placeUnit(unit,{kind:'bench',team:'blue',index:bench});toast(`${unit.name} 已回到备战席`);return true}
 function gainXp(amount){run.xp+=amount;while(run.level<9&&run.xp>=LEVEL_TOTAL[run.level+1]){run.level++;run.populationLimit=run.level;toast(`升级到 Lv${run.level}`)}}
 function renderPveHud(){
@@ -131,7 +131,7 @@ function settle(win){
     if(run.currentStageIndex>=ORDER.length){run.state='complete';terminal='挑战完成'}else{const phase=Number(stageId()[0]);grantPhase(phase)}
   }else{
     run.lives--;run.lossCount++;run.winStreak=0;
-    if(run.lives<=0){run.state='game_over';terminal='挑战失败'}else{const type=RULES[startStage].type;if(type==='normal'||type==='reward'){run.currentStageIndex++;run.selectedVariant=null}}
+    if(run.lives<=0){run.state='game_over';terminal='挑战失败'}
   }
   const reward={gold:run.gold-startGold,xp:6,equipment:gainedEquipment,lives:run.lives};saveRun();renderPveHud();
   showRoundResult(win,reward,()=>{
@@ -183,9 +183,12 @@ function installShopLayoutStyle(){
     .pve-shop-bar::before,.pve-shop-bar::after{position:absolute;inset:0;z-index:20;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,visibility 0s linear .16s}
     .pve-shop-bar::before{content:"";background:rgba(19,23,31,.68);backdrop-filter:blur(3px)}
     .pve-shop-bar::after{content:"";inset:50% auto auto 50%;width:88px;height:88px;transform:translate(-50%,-50%);background:url("assets/trash-can.svg") center/contain no-repeat;filter:drop-shadow(0 0 16px rgba(255,70,78,.6))}
-    .pve-shop-bar.sell-drop-active{border-color:#ff4e59;box-shadow:0 0 0 2px rgba(255,65,75,.42),0 0 28px rgba(255,48,60,.35)}
-    .pve-shop-bar.sell-drop-active::before{opacity:1;visibility:visible;transition:opacity .16s ease}
-    .pve-shop-bar.sell-drop-active::after{opacity:.72;visibility:visible;transition:opacity .16s ease}
+    .pve-shop-bar.sell-drop-ready{border-color:rgba(255,96,105,.54);box-shadow:0 0 0 1px rgba(255,73,84,.16),0 0 15px rgba(255,48,60,.12)}
+    .pve-shop-bar.sell-drop-ready::before{opacity:.22;visibility:visible;transition:opacity .16s ease}
+    .pve-shop-bar.sell-drop-ready::after{opacity:.32;visibility:visible;transition:opacity .16s ease}
+    .pve-shop-bar.sell-drop-active{border-color:rgba(255,78,89,.8);box-shadow:0 0 0 2px rgba(255,65,75,.2),0 0 20px rgba(255,48,60,.18)}
+    .pve-shop-bar.sell-drop-active::before{opacity:.32}
+    .pve-shop-bar.sell-drop-active::after{opacity:.48}
     .pve-round-result>div{width:min(430px,calc(100% - 30px));text-align:center;overflow:visible}
     .pve-round-result h2{margin:0 0 14px;font-size:25px;letter-spacing:2px}
     .pve-round-result.victory h2{color:#f3cf70}.pve-round-result.defeat h2{color:#ff7782}

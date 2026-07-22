@@ -924,6 +924,7 @@ function beginExistingUnitDrag(e){
   dragUnit=u;dragPoint=canvasPoint(e);dragIsNewCopy=false;pointerDownUnit=u;
   suppressNextClick=true;canvas.style.cursor='grabbing';
   showPieceDragGhost(u,e.clientX,e.clientY);
+  window.PVE_FIRST?.updateShopSellFeedback?.(e.clientX,e.clientY,u);
   pendingUnitDrag=null;
   return true;
 }
