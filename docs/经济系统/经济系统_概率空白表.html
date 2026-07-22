@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>元素自走棋 - 概率表空白模板</title>
+<style>
+:root{--bg:#080b12;--panel:#111725;--line:#26334a;--text:#edf4ff;--muted:#8fa0ba;--gold:#f2c66d}
+*{box-sizing:border-box}body{margin:0;color:var(--text);font-family:Inter,"Microsoft YaHei",sans-serif;background:radial-gradient(circle at 50% -20%,#263653 0,#0b101b 42%,#06080d 100%);min-height:100vh}
+.app{max-width:700px;margin:auto;padding:40px 24px}
+h1{font-size:22px;margin:0 0 6px;color:#ffe09a;text-align:center}
+.subtitle{color:var(--muted);font-size:13px;margin:0 0 28px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:12px 14px;border:1px solid #26354d;text-align:center}
+th{color:#8292aa;font-weight:500;font-size:11px;background:#111a29}
+td{color:#4a6080;font-size:18px;font-weight:300}
+td:first-child{text-align:left;font-weight:700;color:#f5d38a;font-size:13px}
+td input{width:55px;text-align:center;font-size:15px;font-weight:700;color:#ffe09a;background:#0d1622;border:1px solid #3a5270;border-radius:6px;padding:6px 4px;outline:none}
+td input:focus{border-color:#f2c66d;box-shadow:0 0 0 2px #f2c66d22}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px}
+.chip.t1{background:#3d3d3d;color:#ccc;border:1px solid #666}
+.chip.t2{background:#1a4a2e;color:#70eba0;border:1px solid #2f8a50}
+.chip.t3{background:#1a3a5a;color:#6eb5ff;border:1px solid #3a6a9a}
+.chip.t4{background:#3d1a4a;color:#c48eff;border:1px solid #6a3a9a}
+.chip.t5{background:#4a2a1a;color:#ffb070;border:1px solid #9a6a3a}
+.info{margin-top:18px;padding:12px 16px;border:1px dashed #3a5270;border-radius:10px;color:var(--muted);font-size:12px;line-height:1.7;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>元素自走棋 — 商店刷新概率表</h1>
+<p class="subtitle">横轴费用 · 纵轴等级 · 每行合计 100% · 你填我按这个做</p>
+
+<table>
+  <tr>
+    <th>等级（人口）</th>
+    <th><span class="chip t1">1费</span><br><small>8种 · 池144张</small></th>
+    <th><span class="chip t2">2费</span><br><small>7种 · 池98张</small></th>
+    <th><span class="chip t3">3费</span><br><small>6种 · 池60张</small></th>
+    <th><span class="chip t4">4费</span><br><small>5种 · 池35张</small></th>
+    <th><span class="chip t5">5费</span><br><small>3种 · 池15张</small></th>
+  </tr>
+  <tr><td>Lv3（3人口·开局）</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+  <tr><td>Lv4（4人口）</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+  <tr><td>Lv5（5人口）</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+  <tr style="background:#111a25"><td>Lv6（6人口）</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+  <tr><td>Lv7（7人口）</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+  <tr><td>Lv8（8人口）</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+  <tr><td>Lv9（9人口·封顶）</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+</table>
+
+<div class="info">
+  <b>已知参数</b><br>
+  29张棋子 · 全池352张 · 商店5卡位 · 刷新2金 · 开局Lv3 · 4金=4XP · 每关+3XP<br>
+  扣血补偿待定 · 12关（5+4+3）· 3 Boss · 3条命
+</div>
+</div>
+</body>
+</html>

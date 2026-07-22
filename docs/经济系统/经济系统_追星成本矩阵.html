@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>元素自走棋 - 追星成本矩阵</title>
+<style>
+:root{--bg:#080b12;--panel:#111725;--line:#26334a;--text:#edf4ff;--gold:#f2c66d;--green:#70eba0;--ok:#ffb070;--bad:#ff8896}
+*{box-sizing:border-box}body{margin:0;color:var(--text);font-family:Inter,"Microsoft YaHei",sans-serif;background:radial-gradient(circle at 50% -20%,#263653 0,#0b101b 42%,#06080d 100%);min-height:100vh}
+.app{max-width:1100px;margin:auto;padding:24px}
+h1{font-size:22px;margin:0 0 4px;color:#ffe09a;text-align:center}h2{font-size:16px;margin:24px 0 8px;color:#f5d38a;text-align:center}
+.subtitle{color:var(--muted);font-size:12px;margin:0 0 16px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+th,td{padding:9px 10px;border:1px solid #26354d;text-align:center}
+th{color:#8292aa;font-weight:500;font-size:10px;background:#111a29}
+td{color:#b8c7dc;font-size:13px;font-weight:600}
+td:first-child{text-align:left;font-weight:700;color:#f5d38a;font-size:12px}
+.chip{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:400}
+.chip.t1{background:#3d3d3d;color:#ccc;border:1px solid #666}.chip.t2{background:#1a4a2e;color:#70eba0;border:1px solid #2f8a50}
+.chip.t3{background:#1a3a5a;color:#6eb5ff;border:1px solid #3a6a9a}.chip.t4{background:#3d1a4a;color:#c48eff;border:1px solid #6a3a9a}
+.chip.t5{background:#4a2a1a;color:#ffb070;border:1px solid #9a6a3a}
+.good{color:#70eba0}.ok{color:#ffb070}.bad{color:#ff8896}
+.na{color:#4a5568;font-weight:300}
+.legend{display:flex;gap:20px;justify-content:center;margin:10px 0;font-size:11px;color:var(--muted)}
+.legend span{margin:0 3px}.legend .good{color:#70eba0}.legend .ok{color:#ffb070}.legend .bad{color:#ff8896}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>元素自走棋 — 追星成本矩阵</h1>
+<p class="subtitle">29张棋子 · 5卡位/刷 · 刷新2金 · 不包含购买棋子费用 · 不包含免费12次商店</p>
+
+<div class="legend">
+  颜色：<span class="good">≤25金（低成本）</span> · <span class="ok">26-50金（中等）</span> · <span class="bad">51金+（困难/不可行）</span>
+</div>
+
+<!-- 二星 -->
+<h2>追 ★★（二星）需要找 3 张同名卡</h2>
+<table>
+  <tr>
+    <th>等级</th>
+    <th><span class="chip t1">1费</span><br>8种·21/种</th>
+    <th><span class="chip t2">2费</span><br>7种·18/种</th>
+    <th><span class="chip t3">3费</span><br>6种·15/种</th>
+    <th><span class="chip t4">4费</span><br>5种·12/种</th>
+    <th><span class="chip t5">5费</span><br>3种·9/种</th>
+  </tr>
+  <tr><td>Lv3（开局）</td><td class="good">9次 · 18金</td><td class="bad">22次 · 44金</td><td class="bad">25次 · 50金</td><td class="na">—</td><td class="na">—</td></tr>
+  <tr><td>Lv4</td><td class="good">11次 · 22金</td><td class="ok">15次 · 30金</td><td class="ok">19次 · 38金</td><td class="na">—</td><td class="na">—</td></tr>
+  <tr><td>Lv5</td><td class="ok">15次 · 30金</td><td class="good">14次 · 28金</td><td class="good">13次 · 26金</td><td class="na" style="font-size:10px">—</td><td class="na">—</td></tr>
+  <tr style="background:#111a25"><td>Lv6</td><td class="ok">20次 · 40金</td><td class="good">12次 · 24金</td><td class="good">14次 · 28金</td><td class="bad" style="font-size:10px">61次 · 122金</td><td class="na" style="font-size:10px">—</td></tr>
+  <tr><td>Lv7</td><td class="bad">33次 · 66金</td><td class="ok">18次 · 36金</td><td class="good">10次 · 20金</td><td class="ok">21次 · 42金</td><td class="bad">37次 · 74金</td></tr>
+  <tr><td>Lv8</td><td class="bad">49次 · 98金</td><td class="ok">29次 · 58金</td><td class="good">13次 · 26金</td><td class="good">11次 · 22金</td><td class="good">13次 · 26金</td></tr>
+  <tr><td>Lv9</td><td class="bad">97次·195金</td><td class="ok">29次 · 58金</td><td class="ok">16次 · 32金</td><td class="ok">21次 · 42金</td><td class="good">6次 · 12金</td></tr>
+</table>
+
+<!-- 三星 -->
+<h2>追 ★★★（三星）需要找 9 张同名卡</h2>
+<table>
+  <tr>
+    <th>等级</th>
+    <th><span class="chip t1">1费</span><br>8种·21/种</th>
+    <th><span class="chip t2">2费</span><br>7种·18/种</th>
+    <th><span class="chip t3">3费</span><br>6种·15/种</th>
+    <th><span class="chip t4">4费</span><br>5种·12/种</th>
+    <th><span class="chip t5">5费</span><br>3种·9/种</th>
+  </tr>
+  <tr><td>Lv3（开局）</td><td class="ok">26次 · <b class="ok">52金</b></td><td class="bad">67次·134金</td><td class="bad">76次·152金</td><td class="na">—</td><td class="na">—</td></tr>
+  <tr><td>Lv4</td><td class="ok">33次 · <b class="ok">66金</b></td><td class="bad">46次 · <b class="ok">92金</b></td><td class="bad">58次·116金</td><td class="na">—</td><td class="na">—</td></tr>
+  <tr><td>Lv5</td><td class="bad">45次 · <b class="ok">90金</b></td><td class="ok">41次 · <b class="ok">82金</b></td><td class="ok">40次 · <b class="ok">80金</b></td><td class="na" style="font-size:10px">—</td><td class="na">—</td></tr>
+  <tr style="background:#111a25"><td>Lv6</td><td class="bad">61次·122金</td><td class="ok">35次 · <b class="ok">70金</b></td><td class="ok">41次 · <b class="ok">82金</b></td><td class="na" style="font-size:10px">—</td><td class="na" style="font-size:10px">—</td></tr>
+  <tr><td>Lv7</td><td class="bad" style="font-size:10px">100次·200金</td><td class="bad">54次·108金</td><td class="ok">31次 · <b class="ok">62金</b></td><td class="bad">64次·128金</td><td class="bad">112次·224金</td></tr>
+  <tr><td>Lv8</td><td class="na" style="font-size:10px">—</td><td class="bad">88次·176金</td><td class="ok">40次 · <b class="ok">80金</b></td><td class="ok">34次 · <b class="ok">68金</b></td><td class="ok">40次 · <b class="ok">80金</b></td></tr>
+  <tr><td>Lv9</td><td class="na" style="font-size:10px">—</td><td class="bad">88次·176金</td><td class="bad">47次 · <b class="ok">94金</b></td><td class="bad">64次·128金</td><td class="good">18次 · <b>36金</b></td></tr>
+</table>
+
+</div>
+</body>
+</html>

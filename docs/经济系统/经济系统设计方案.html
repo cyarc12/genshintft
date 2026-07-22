@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>元素自走棋 - 12关经济系统 v8 终版</title>
+<style>
+:root{--bg:#080b12;--panel:#111725;--line:#26334a;--text:#edf4ff;--muted:#8fa0ba;--gold:#f2c66d}
+*{box-sizing:border-box}body{margin:0;color:var(--text);font-family:Inter,"Microsoft YaHei",sans-serif;background:radial-gradient(circle at 50% -20%,#263653 0,#0b101b 42%,#06080d 100%);min-height:100vh}
+.app{max-width:1050px;margin:auto;padding:28px 24px}
+h1{font-size:25px;margin:0 0 4px;color:#ffe09a}h2{font-size:18px;margin:28px 0 6px;padding-bottom:5px;border-bottom:2px solid var(--line);color:#f5d38a}h3{font-size:14px;margin:14px 0 5px;color:#9ed2ff}
+.subtitle{color:var(--muted);font-size:13px;margin:0 0 14px}
+.card{border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:12px;background:#0e1420cc;box-shadow:0 6px 20px #0004}
+.card.green{border-left:3px solid #36c977}.card.amber{border-left:3px solid #f2c66d}.card.red{border-left:3px solid #ff6673}.card.blue{border-left:3px solid #54a7ff}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
+th,td{padding:7px 9px;border-bottom:1px solid #26354d;text-align:center}
+th{color:#8292aa;font-weight:500;font-size:11px;background:#111a29}td{color:#c6d2e3}
+td:first-child{text-align:left;font-weight:700;color:#f5d38a}
+.highlight{background:#1e2d38}.err{background:#2a1515!important}.err td{color:#ff8896}
+.note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:5px}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px}
+.chip.t1{background:#3d3d3d;color:#ccc;border:1px solid #666}.chip.t2{background:#1a4a2e;color:#70eba0;border:1px solid #2f8a50}
+.chip.t3{background:#1a3a5a;color:#6eb5ff;border:1px solid #3a6a9a}.chip.t4{background:#3d1a4a;color:#c48eff;border:1px solid #6a3a9a}
+.chip.t5{background:#4a2a1a;color:#ffb070;border:1px solid #9a6a3a}
+p{line-height:1.7;color:#b6c2d3;font-size:13px;margin:3px 0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row2 .card{margin:0}
+.big-num{font-size:22px;font-weight:800;color:#ffe09a;display:block}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>元素自走棋 — 12 关经济系统 v8 终版</h1>
+<p class="subtitle">全部参数汇总 · 概率 Lv5/Lv6 待修正 · 2026-07-19</p>
+
+<!-- 概率表 -->
+<div class="card amber">
+<h3 style="margin-top:0">商店刷新概率（% · 你填的数字）</h3>
+<table>
+  <tr><th>等级</th><th>1费(8种)</th><th>2费(7种)</th><th>3费(6种)</th><th>4费(5种)</th><th>5费(3种)</th><th>合计</th><th>状态</th></tr>
+  <tr><td>Lv3</td><td>65</td><td>20</td><td>15</td><td>0</td><td>0</td><td><b>100 ✓</b></td><td>✓</td></tr>
+  <tr><td>Lv4</td><td>50</td><td>30</td><td>20</td><td>0</td><td>0</td><td><b>100 ✓</b></td><td>✓</td></tr>
+  <tr><td>Lv5</td><td>35</td><td>34</td><td>30</td><td>1</td><td>0</td><td><b>100 ✓</b></td><td>✓</td></tr>
+  <tr><td>Lv6</td><td>25</td><td>40</td><td>29</td><td>5</td><td>1</td><td><b>100 ✓</b></td><td>✓</td></tr>
+  <tr><td>Lv7</td><td>15</td><td>25</td><td>40</td><td>15</td><td>5</td><td><b>100 ✓</b></td><td>✓</td></tr>
+  <tr><td>Lv8</td><td>15</td><td>15</td><td>30</td><td>30</td><td>10</td><td><b>100 ✓</b></td><td>✓</td></tr>
+  <tr><td>Lv9</td><td>5</td><td>15</td><td>25</td><td>15</td><td>40</td><td><b>100 ✓</b></td><td>✓</td></tr>
+</table>
+<div class="note">
+  <b>Lv5/Lv6 不闭合</b>，请修正为合计100%。其他行OK。<br>
+  Lv9: 5费40%（你说的高概率=25%，现在40%更高，继续沿用没问题）。<br>
+  <b>建议</b>：Lv5扣4费1%→给3费填到100%，Lv6扣3费5%→给4费或5费。
+</div>
+</div>
+
+<!-- 卡池 -->
+<div class="card green">
+<h3 style="margin-top:0">卡池（最终）</h3>
+<table>
+  <tr><th></th><th>1费</th><th>2费</th><th>3费</th><th>4费</th><th>5费</th><th>合计</th></tr>
+  <tr><td>角色数</td><td>8</td><td>7</td><td>6</td><td>5</td><td>3</td><td><b>29</b></td></tr>
+  <tr><td>单卡拷贝</td><td>21</td><td>18</td><td>15</td><td>12</td><td>9</td><td>—</td></tr>
+  <tr><td>全池</td><td>168</td><td>126</td><td>90</td><td>60</td><td>27</td><td><b>471</b></td></tr>
+  <tr><td>追3★</td><td>✔最多2</td><td>✔1</td><td>✔1</td><td>✔1</td><td>✔1</td><td>—</td></tr>
+</table>
+</div>
+
+<!-- XP + 金币 -->
+<div class="row2">
+<div class="card purple">
+<h3 style="margin-top:0">等级 · XP · 自然+6/关 · 4金=4XP</h3>
+<table>
+  <tr><th>等级</th><th>人口</th><th>累计XP</th><th>升下级</th><th>自然+6/关<br>到级</th><th>需购买<br>4金=4XP</th></tr>
+  <tr style="background:#1e2d38"><td>Lv3开局</td><td>3</td><td>0</td><td>6</td><td>开局</td><td>—</td></tr>
+  <tr><td>Lv4</td><td>4</td><td>6</td><td>20</td><td>1-1</td><td>—</td></tr>
+  <tr><td>Lv5</td><td>5</td><td>26</td><td>32</td><td>1-4</td><td>—</td></tr>
+  <tr><td>Lv6</td><td>6</td><td>58</td><td>48</td><td>2-3</td><td>—</td></tr>
+  <tr><td>Lv7</td><td>7</td><td>106</td><td>60</td><td>—</td><td>34XP · 9次·36金</td></tr>
+  <tr><td>Lv8</td><td>8</td><td>166</td><td>72</td><td>—</td><td>94XP · 24次·96金</td></tr>
+  <tr><td>Lv9封顶</td><td>9</td><td>238</td><td>—</td><td>—</td><td>166XP · 42次·168金</td></tr>
+</table>
+<div class="note">
+<div class="math-block" style="margin-top:4px">
+<b>12关总经济估（自然XP按4金=4XP等价换算成金）</b><br>
+初始 20 金<br>
+回合基础 5×12 = 60 金<br>
+自然XP 72 ÷ 4 × 4 = 72 等价金<br>
+利息（12关平均存40金）≈ 12×4 = 48 金<br>
+连胜（假设12连胜）≈ 3+5+7×(2+3) = 3+5+35 = 43 金<br>
+Boss关 3+4 = 7 金<br>
+━━━━━━━━━━━━━━<br>
+<b>合计 ≈ 20+60+72+48+43+7 = <span style="font-size:18px;color:#ffe09a">250 金</span></b><br>
+扣除自然XP（72等价金不可用）→ <b>可支配 ≈ 178 金</b><br>
+<span style="color:#8fa0ba">12次免费商店价值 24 金刷新费</span><br>
+<br>
+<b>典型花费</b>：冲Lv8 (96金) + 一张2★4费(22金刷新+16金购买) + 2张2★3费(2×26金刷新+2×9金购买) + 剩约0金<br>
+<b>结论</b>：178可支配金刚好够 Lv8 + 3张2★中费核心。追5费或双4费需要取舍。
+</div>
+</div>
+<div class="card blue">
+<h3 style="margin-top:0">金币规则</h3>
+<table>
+  <tr><th>来源</th><th>数值</th><th>说明</th></tr>
+  <tr><td>初始金币</td><td><b>20 金</b></td><td>开局一次性发放，可立刻买XP或刷新</td></tr>
+  <tr><td>回合基础</td><td><b>5 金</b></td><td>每回合固定</td></tr>
+  <tr><td>利息</td><td><b>⌊金/10⌋ 上限 5</b></td><td>每存10金+1利息，50金吃满</td></tr>
+  <tr><td>连胜</td><td>+1/+2/+3 (≥3/≥5/≥7)</td><td>不掉血回合>2开始给</td></tr>
+  <tr><td>Boss关额外</td><td>+3 / +4</td><td>1-5 / 2-4</td></tr>
+  <tr><td>买棋子</td><td>支付对应费用</td><td>1费=1金，5费=5金</td></tr>
+  <tr><td>出售棋子</td><td>费用×星级系数</td><td>1★原价 · 2★⌊原价×1.8⌋ · 3★原价×3</td></tr>
+  <tr><td>商店刷新</td><td><b>2 金</b></td><td>5卡位</td></tr>
+  <tr><td>买XP</td><td><b>4 金 = 4 XP</b></td><td>唯一升级方式</td></tr></table>
+</div>
+</div>
+
+<!-- 汇总 -->
+<div class="card">
+<h3 style="margin-top:0">全部确定参数 ✓</h3>
+<table>
+  <tr><th>参数</th><th>值</th></tr>
+  <tr><td>关卡</td><td>12（5+4+3）3 Boss</td></tr>
+  <tr><td>棋子</td><td>29张 · 全池471张（21/18/15/12/9）</td></tr>
+  <tr><td>开局</td><td>Lv3 · 3人口 · <b>20 金币</b></td></tr>
+  <tr><td>XP曲线</td><td>Lv3→4:6 · →5:20 · →6:32 · →7:48 · →8:60 · →9:72</td></tr>
+  <tr><td>自然XP</td><td>+6/关（12关共72，自然到Lv6）</td></tr>
+  <tr><td>买XP</td><td>4金=4XP · Lv8需96金</td></tr>
+  <tr><td>概率表</td><td>7行×5列全闭合100%</td></tr>
+  <tr><td>基础金币</td><td>5金/回合</td></tr>
+  <tr><td>利息</td><td>⌊金/10⌋ · 上限5 · 50金吃满</td></tr>
+  <tr><td>连胜</td><td>+1/+2/+3 (≥3/≥5/≥7连)</td></tr>
+  <tr><td>商店</td><td>5卡位 · 2金刷新</td></tr>
+  <tr><td>生命</td><td>3条命 · 输扣1</td></tr>
+  <tr><td>扣血补偿</td><td><b>第一次</b>：3选1 — 随机4费卡+4金 / 10金 / 1件装备</td></tr>
+  <tr><td></td><td><b>第二次</b>：3选1 — 随机5费卡+10金 / 20金 / 2件装备</td></tr></table>
+</div>
+
+</div>
+</body>
+</html>
