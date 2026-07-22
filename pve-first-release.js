@@ -98,7 +98,7 @@ function renderPveHud(){
   $('#pveStage').textContent=`关卡 ${stageId()}`;
   $('#pveLives').textContent='♥'.repeat(Math.max(0,run.lives));
   $('#pveLives').title=`剩余失败机会：${run.lives}/3`;
-  $('#pveStreak').textContent=`连胜 ${run.winStreak}`;
+  $('#pveStreakValue').textContent=run.winStreak;
   $('#buyXpBtn').innerHTML=`<span>购买经验</span><span class="pve-button-price"><img src="assets/two-coins.svg" alt="">4</span>`;
   $('#refreshShopBtn').innerHTML=run.freeRefreshes>0?`<span>刷新</span><span class="pve-free-price">免费×${run.freeRefreshes}</span>`:`<span>刷新</span><span class="pve-button-price"><img src="assets/two-coins.svg" alt="">2</span>`;
   $('#lockShopBtn').classList.toggle('active',run.shopLocked);$('#lockShopBtn').setAttribute('aria-pressed',String(run.shopLocked));$('#lockShopBtn').title=run.shopLocked?'点击解锁商店':'点击锁定商店';$('#lockShopBtn').innerHTML=`<img src="assets/${run.shopLocked?'shop-lock':'shop-unlock'}.svg" alt=""><span>${run.shopLocked?'已锁定':'未锁定'}</span>`;
@@ -109,6 +109,24 @@ function renderChallengeInventory(){
   const cards=Object.entries(counts).map(([id,count])=>{const c=EQUIPMENT_CONFIG[id];return`<div class="wh-equip-card" data-item-id="${id}" data-item-kind="equipment"><img class="wh-equip-icon" src="${c.icon}" draggable="false"><div class="wh-equip-name">${c.name}</div><div class="wh-equip-stat">×${count}</div></div>`});
   if(run.removers)cards.push(`<div class="wh-equip-card special" data-item-id="item_remover" data-item-kind="consumable"><img class="wh-equip-icon" src="${CONSUMABLE_CONFIG.item_remover.icon}" draggable="false"><div class="wh-equip-name">拆卸器</div><div class="wh-equip-stat">×${run.removers}</div></div>`);
   if(run.reforgers)cards.push(`<div class="wh-equip-card special" data-item-id="item_reforger" data-item-kind="consumable"><img class="wh-equip-icon" src="${CONSUMABLE_CONFIG.item_reforger.icon}" draggable="false"><div class="wh-equip-name">重铸器</div><div class="wh-equip-stat">×${run.reforgers}</div></div>`);box.innerHTML=cards.join('')||'<p class="mode-muted">暂无装备</p>';
+}
+function randomStandardEquipment(){const ids=standardEquipmentIds();return ids.length?ids[Math.floor(Math.random()*ids.length)]:null}
+function grantRandomCard(cost,star){
+  const copies=star===2?3:1,bench=emptyBlueBench();if(bench<0)return null;
+  const names=PIECE_ORDER.filter(name=>PIECE_CONFIG[name].cost===cost&&(run.cardPool[PIECE_CONFIG[name].templateId]||0)>=copies);if(!names.length)return null;
+  const name=names[Math.floor(Math.random()*names.length)],config=PIECE_CONFIG[name],unit=makeUnit(pieceDefByName(name),`pve-loss-${Date.now()}-${nextPieceId++}`,star);
+  run.cardPool[config.templateId]-=copies;unit.team='blue';unit.onBench=true;unit.benchIndex=bench;unit.row=null;unit.col=null;unit.inWarehouse=false;units.push(unit);return`${star}★ ${name}`;
+}
+function lossCompensationFor(count){if(count===1)return{gold:10,equipmentCount:1,cards:[{cost:2,star:2}]};if(count===2)return{gold:20,equipmentCount:2,cards:[{cost:3,star:2},{cost:4,star:1}]};return null}
+function applyLossCompensation(plan){
+  const reward={gold:plan.gold,equipment:[],cards:[]};run.gold+=plan.gold;
+  for(let i=0;i<plan.equipmentCount;i++){const id=randomStandardEquipment();if(id){run.equipmentInventory.push(id);reward.equipment.push(EQUIPMENT_CONFIG[id]?.name||id)}}
+  for(const card of plan.cards){const name=grantRandomCard(card.cost,card.star);reward.cards.push(name||`${card.star}★ ${card.cost}费卡（备战席已满）`)}
+  checkSynthesisAfterDrop('blue');saveRun();renderChallengeInventory();renderPveHud();updateAliveCounts();return reward;
+}
+function showLossCompensation(reward,next){
+  const rows=[`<div class="pve-loot-row"><span><img src="assets/two-coins.svg" alt="">金币</span><b>+${reward.gold}</b></div>`,...reward.equipment.map(name=>`<div class="pve-loot-row"><span>随机装备</span><b>${name}</b></div>`),...reward.cards.map(name=>`<div class="pve-loot-row"><span>随机棋子</span><b>${name}</b></div>`)];
+  $('#pveLossRewardBody').innerHTML=rows.join('');roundResultNext=next;$('#pveLossRewardDialog').classList.remove('hidden');
 }
 function showRoundResult(win,reward,next){
   const dialog=$('#pveRoundResultDialog'),title=$('#pveRoundResultTitle'),body=$('#pveRoundResultBody');
@@ -123,7 +141,7 @@ function showRoundResult(win,reward,next){
   roundResultNext=next;dialog.classList.remove('hidden');
 }
 function settle(win){
-  const startGold=run.gold,startStage=stageId();let gainedEquipment='',terminal='';
+  const startGold=run.gold,startStage=stageId();let gainedEquipment='',terminal='',lossCompensation=null;
   run.gold+=Math.min(5,Math.floor(startGold/10))+5;gainXp(6);run.round++;
   if(win){
     run.winStreak++;run.gold+=run.winStreak>=7?3:run.winStreak>=5?2:run.winStreak>=3?1:0;
@@ -136,22 +154,25 @@ function settle(win){
     if(run.currentStageIndex>=ORDER.length){run.state='complete';terminal='挑战完成'}else{const phase=Number(stageId()[0]);grantPhase(phase)}
   }else{
     run.lives--;run.lossCount++;run.winStreak=0;
+    lossCompensation=lossCompensationFor(run.lossCount);
     if(run.lives<=0){run.state='game_over';terminal='挑战失败'}
   }
   const reward={gold:run.gold-startGold,xp:6,equipment:gainedEquipment,lives:run.lives};saveRun();renderPveHud();
   showRoundResult(win,reward,()=>{
     if(terminal){showEnd(terminal);return}
-    if(!run.shopLocked)refreshShop(true);
     const previousFormation=clone(battlePlayerSnapshot||run.formation||[]);saveRun();restorePlayerFormation(previousFormation);battlePlayerSnapshot=null;renderChallengeInventory();renderPveHud();
+    const continueRound=()=>{if(!run.shopLocked)refreshShop(true);saveRun();renderPveHud()};
+    if(!win&&lossCompensation){const compensation=applyLossCompensation(lossCompensation);showLossCompensation(compensation,continueRound)}else continueRound();
   });
 }
 function showEnd(text){$('#pveEndText').textContent=text;$('#pveEndDialog').classList.remove('hidden');renderPveHud()}
 function startPveBattle(){if(mode!=='challenge')return true;if(!ensureStageChoice())return false;const count=units.filter(u=>u.team==='blue'&&!u.onBench&&!u.inWarehouse&&u.alive).length;if(count>run.populationLimit){toast(`上阵人数超过人口上限 ${run.populationLimit}`);return false}if(!units.some(u=>u.team==='red'&&!u.onBench&&!u.inWarehouse)){if(!loadCurrentEnemy())return false}run.formation=formationSnapshot().filter(x=>x.team==='blue');battlePlayerSnapshot=clone(run.formation);saveRun();return true}
 function installUi(){
   const actions=$('.actions');actions.insertAdjacentHTML('beforeend','<span class="pve-divider"></span><button class="btn" id="loadPveSlotBtn">载入挑战关卡阵容</button><button class="btn" id="savePveSlotBtn">保存当前红方阵容</button><button class="btn" id="openChallengeBtn">挑战模式</button><button class="btn hidden" id="settleChallengeBtn">结算对局</button><button class="btn hidden" id="exitChallengeBtn">返回测试模式</button>');
-  $('.arena').insertAdjacentHTML('beforeend',`<div id="pveShopBar" class="pve-shop-bar hidden"><div class="pve-shop-meta"><span id="pvePopulation">人口 0/3</span><div id="pveShopOdds" class="pve-shop-odds"></div><span></span></div><div class="pve-shop-main"><div class="pve-shop-actions"><div class="pve-level-line"><b id="pveLevel">Lv3</b><span id="pveXp">经验 0/6</span></div><div class="pve-shop-action-buttons"><button id="buyXpBtn" title="花费4金币获得4经验"></button><button id="refreshShopBtn"></button></div></div><div id="pveShopCards" class="pve-shop-cards"></div><div class="pve-shop-state right"><button id="lockShopBtn">锁定</button><b id="pveGold" class="pve-gold" title="金币"><img src="assets/two-coins.svg" alt="金币"><span id="pveGoldValue">20</span></b><span id="pveStage">关卡 1-1</span><span id="pveLives" class="pve-lives" title="剩余失败机会：3/3">♥♥♥</span><span id="pveStreak">连胜 0</span></div></div></div>`);
+  $('.arena').insertAdjacentHTML('beforeend',`<div id="pveShopBar" class="pve-shop-bar hidden"><div class="pve-shop-meta"><div class="pve-pop-streak"><span id="pvePopulation">人口 0/3</span><span class="pve-streak" title="当前连胜"><i>🔥</i><b id="pveStreakValue">0</b></span></div><div id="pveShopOdds" class="pve-shop-odds"></div><span></span></div><div class="pve-shop-main"><div class="pve-shop-actions"><div class="pve-level-line"><b id="pveLevel">Lv3</b><span id="pveXp">经验 0/6</span></div><div class="pve-shop-action-buttons"><button id="buyXpBtn" title="花费4金币获得4经验"></button><button id="refreshShopBtn"></button></div></div><div id="pveShopCards" class="pve-shop-cards"></div><div class="pve-shop-state right"><div class="pve-shop-right-row"><button id="lockShopBtn">锁定</button><b id="pveGold" class="pve-gold" title="金币"><img src="assets/two-coins.svg" alt="金币"><span id="pveGoldValue">20</span></b></div><div class="pve-shop-right-row"><span id="pveStage">关卡 1-1</span><span id="pveLives" class="pve-lives" title="剩余失败机会：3/3">♥♥♥</span></div></div></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveSlotDialog" class="pve-modal hidden"><div><h2 id="pveSlotTitle"></h2><div id="pveSlotList" class="pve-slot-list"></div><footer><button id="confirmPveSlotBtn">确认</button><button data-close-pve-modal>取消</button></footer></div></div><div id="challengeDialog" class="pve-modal hidden"><div><h2>挑战模式</h2><p>固定12关挑战，拥有独立金币、商店和装备库存。</p><footer><button id="newPveBtn">开始新挑战</button><button id="continuePveBtn">继续挑战</button><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveVariantDialog" class="pve-modal hidden"><div><h2>选择奖励关难度</h2><footer><button data-pve-variant="easy">简单</button><button data-pve-variant="normal">普通</button><button data-pve-variant="hard">困难</button></footer></div></div><div id="pveEndDialog" class="pve-modal hidden"><div><h2 id="pveEndText"></h2><footer><button id="exitFinishedPveBtn">返回测试场</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveRoundResultDialog" class="pve-modal pve-round-result hidden"><div><h2 id="pveRoundResultTitle"></h2><div id="pveRoundResultBody"></div><footer><button id="continueRoundResultBtn">继续</button></footer></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div id="pveLossRewardDialog" class="pve-modal pve-round-result victory hidden"><div><h2>扣血补偿</h2><div class="pve-victory-mark">补偿</div><div class="pve-loot-title">已获得以下逆风奖励</div><div id="pveLossRewardBody"></div><footer><button id="continueLossRewardBtn">收下并继续</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="challengeSettlementDialog" class="pve-modal hidden"><div class="pve-challenge-settlement"><h2>本次挑战结算</h2><div class="pve-settlement-progress"><b id="challengeSettlementStage">当前关卡：1-1</b><span id="challengeSettlementRound">已完成回合：0</span></div><p>要重新开始挑战，还是结束本次挑战并返回测试场？</p><footer><button id="restartChallengeBtn">重新挑战</button><button id="finishChallengeToTestBtn">回到测试场</button><button data-close-pve-modal>取消</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="challengeSettlementConfirmDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>确认结算对局？</h2><p>结算后可以选择重新挑战，或结束挑战并回到测试场。</p><footer><button id="confirmChallengeSettlementBtn">确认结算</button><button data-close-pve-modal>继续挑战</button></footer></div></div>`);
 }
@@ -163,6 +184,8 @@ function installShopLayoutStyle(){
     .pve-shop-meta,.pve-shop-main{display:grid;grid-template-columns:145px minmax(0,1fr) 145px;gap:6px}
     .pve-shop-meta{align-items:center;min-height:25px;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid rgba(72,93,121,.45);font-size:10px}
     #pvePopulation{justify-self:start;padding-left:5px;color:#cbd9eb}
+    .pve-pop-streak{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-right:4px}
+    .pve-streak{display:inline-flex;align-items:center;gap:1px;color:#ff704f;font-size:14px;font-weight:900}.pve-streak i{font-style:normal;font-size:17px;filter:drop-shadow(0 0 4px rgba(255,70,35,.45))}
     .pve-shop-odds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;text-align:center;color:#9eafc4}
     .pve-shop-odds span{white-space:nowrap}
     .pve-shop-odds b{color:#e8eff8;font-weight:800}
@@ -174,6 +197,9 @@ function installShopLayoutStyle(){
     .pve-shop-action-buttons button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:30px;padding:5px 7px;border:1px solid #465a76;border-radius:5px;background:#172338;color:#e4edf9;font-size:10px}
     #lockShopBtn{display:inline-flex;align-items:center;gap:4px;transition:border-color .15s ease,background .15s ease,color .15s ease}
     #lockShopBtn img{width:18px;height:18px}#lockShopBtn.active{border-color:#d5ad56;background:#332918;color:#f5d98d}
+    .pve-shop-state.right{display:grid;grid-template-rows:1fr 1fr;align-content:stretch;width:145px;max-width:145px;gap:6px}
+    .pve-shop-right-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-width:0}
+    .pve-shop-right-row #pveStage{white-space:nowrap;font-size:10px}.pve-shop-right-row .pve-lives{display:inline-flex;justify-content:flex-end;min-width:0}
     .pve-button-price,.pve-free-price{display:inline-flex;align-items:center;gap:3px;color:#f2c85f;font-weight:800}
     .pve-button-price img{width:15px;height:15px}
     .pve-free-price{color:#79d69a}
@@ -224,11 +250,12 @@ function installEvents(){
   $('#newPveBtn').onclick=()=>{if(!confirm('开始新挑战会覆盖旧挑战进度，是否继续？'))return;localStorage.removeItem(RUN_KEY);activateChallenge(createRun())};$('#continuePveBtn').onclick=()=>{const saved=loadRun();if(saved)activateChallenge(saved);else toast('没有挑战存档')};
   $('#buyXpBtn').onclick=buyXp;$('#refreshShopBtn').onclick=()=>refreshShop(false);$('#lockShopBtn').onclick=()=>{run.shopLocked=!run.shopLocked;saveRun();renderPveHud()};$('#pveShopCards').onclick=e=>{const b=e.target.closest('[data-buy-offer]');if(b)buyOffer(Number(b.dataset.buyOffer))};
   $('#continueRoundResultBtn').onclick=()=>{const next=roundResultNext;roundResultNext=null;$('#pveRoundResultDialog').classList.add('hidden');if(next)next()};
+  $('#continueLossRewardBtn').onclick=()=>{const next=roundResultNext;roundResultNext=null;$('#pveLossRewardDialog').classList.add('hidden');if(next)next()};
   $('#pveVariantDialog').onclick=e=>{const b=e.target.closest('[data-pve-variant]');if(!b)return;run.selectedVariant=b.dataset.pveVariant;$('#pveVariantDialog').classList.add('hidden');loadCurrentEnemy();saveRun();renderPveHud()};$('#exitFinishedPveBtn').onclick=exitChallenge;
 }
 installStyle();installShopLayoutStyle();installUi();installEvents();
 const originalContextMenu=canvas.oncontextmenu;canvas.oncontextmenu=function(event){if(mode!=='challenge')return originalContextMenu?.call(canvas,event);event.preventDefault();if(started)return;const point=canvasPoint(event),unit=unitAt(point.x,point.y);if(unit?.team==='blue')returnChallengeUnitToBench(unit)};
-const originalStart=startBattle;startBattle=function(){if(mode==='challenge'&&!startPveBattle())return;originalStart();renderPveHud()};
+const originalStart=startBattle;startBattle=function(){if(mode==='challenge'){if(!startPveBattle())return;const deployed=units.filter(unit=>unit.alive&&unit.team==='blue'&&!unit.onBench&&!unit.inWarehouse).length;if(deployed===0){started=true;ended=false;startBtn.disabled=true;clearBlueBtn.disabled=true;clearRedBtn.disabled=true;battleState.textContent='我方没有上阵棋子';toast('场上没有棋子，本回合直接判负');setTimeout(()=>finish('红方'),180);renderPveHud();return}}originalStart();renderPveHud()};
 const originalFinish=finish;finish=function(team){originalFinish(team);if(mode==='challenge'){const win=team==='蓝方';setTimeout(()=>settle(win),650)}};
 const originalEquip=equipItemToUnit;equipItemToUnit=function(unit,id){if(mode!=='challenge')return originalEquip(unit,id);const i=run.equipmentInventory.indexOf(id);if(i<0){toast('该装备库存不足');return false}const ok=originalEquip(unit,id);if(ok){run.equipmentInventory.splice(i,1);saveRun();renderChallengeInventory()}return ok};
 const originalRemove=useItemRemover;useItemRemover=function(unit){if(mode==='challenge'&&run.removers<=0){toast('拆卸器不足');return false}const before=equipmentInventory.length,ok=originalRemove(unit);if(ok&&mode==='challenge'){run.removers--;const returned=equipmentInventory.splice(before).map(x=>x.equipmentId);run.equipmentInventory.push(...returned);saveRun();renderChallengeInventory()}return ok};
