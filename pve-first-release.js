@@ -41,7 +41,7 @@ function grantPhase(phase){if(run.claimedPhases.includes(phase))return;run.claim
 function stageId(){return ORDER[run.currentStageIndex]}
 function stageKey(){const id=stageId(),r=RULES[id];return r.type==='reward'?`${id}:${run.selectedVariant||'easy'}`:id}
 function ensureStageChoice(){const r=RULES[stageId()];if(r.type!=='reward')return true;if(run.selectedVariant)return true;$('#pveVariantDialog').classList.remove('hidden');return false}
-function restorePlayerFormation(snapshot=null){const player=clone(snapshot||run.formation||[]),ids=new Set(player.map(item=>item.id));run.formation=clone(player);enterPreparation(player);units=units.filter(u=>ids.has(u.id)&&u.team==='blue');for(const saved of player){const u=units.find(x=>x.id===saved.id);if(u)applyFormationState(u,saved)}loadCurrentEnemy();updateAliveCounts();renderDamageStats()}
+function restorePlayerFormation(snapshot=null){const player=clone(snapshot||run.formation||[]),ids=new Set(player.map(item=>item.id));run.formation=clone(player);enterPreparation(player);units=units.filter(u=>ids.has(u.id)&&u.team==='blue');for(const saved of player){const u=units.find(x=>x.id===saved.id);if(!u)continue;applyFormationState(u,saved);u.row=saved.row;u.col=saved.col;u.onBench=!!saved.onBench;u.benchIndex=saved.benchIndex;u.motion=null;u.target=null;u.targetId=null;u.moveFromHex=null;u.moveToHex=null;u.moveProgress=0;u.renderX=undefined;u.renderY=undefined;u.hp=u.maxHp;u.mp=Math.min(u.mp,u.maxMp)}loadCurrentEnemy();lastFormation=formationSnapshot();saveRun(false);updateAliveCounts();renderDamageStats()}
 function loadCurrentEnemy(){if(!ensureStageChoice())return false;const data=loadSlots()[stageKey()];if(!data?.length){toast(`关卡 ${stageKey()} 尚未保存敌人阵容`);return false}clearRedBoard();for(const saved of data){const u=unitFromSaved(saved,'pve-enemy');if(u){u.isPveEnemy=true;units.push(u)}}updateAliveCounts();renderDamageStats();return true}
 function activateChallenge(existing){
   if(mode==='test')mainSnapshot={formation:clone(formationSnapshot()),whState:clone(whState)};
@@ -58,13 +58,17 @@ function emptyBlueBench(){for(let i=0;i<BENCH_SLOTS;i++)if(!benchOccupied('blue'
 function buyOffer(index){if(started)return;const offer=run.shopOffers[index];if(!offer)return;if(run.gold<offer.cost){toast('金币不足');return}const bench=emptyBlueBench();if(bench<0){toast('蓝方备战席已满');return}const d=pieceDefByName(offer.name),u=makeUnit(d,`pve-piece-${Date.now()}-${nextPieceId++}`,1);u.team='blue';u.onBench=true;u.benchIndex=bench;u.row=null;u.col=null;u.inWarehouse=false;units.push(u);run.gold-=offer.cost;run.shopOffers[index]=null;checkSynthesisAfterDrop('blue');saveRun();renderPveHud();updateAliveCounts()}
 function buyXp(){if(started||run.level>=9)return;if(run.gold<4){toast('金币不足');return}run.gold-=4;gainXp(4);saveRun();renderPveHud()}
 function poolCopiesForStar(star){return star===3?9:star===2?3:1}
-function sellChallengeUnit(unit){
+function sellChallengeUnit(unit,askConfirmation=false){
   if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.isDummy||unit.isSummon)return false;
   const price=SELL_PRICE[unit.cost]?.[normalizeStarValue(unit.star)]||0;
-  if(!confirm(`出售 ${unit.star}★ ${unit.name}，获得 ${price} 金币？`))return false;
+  if(askConfirmation&&!confirm(`出售 ${unit.star}★ ${unit.name}，获得 ${price} 金币？`))return false;
   ensureUnitEquipment(unit);for(const item of unit.equipment||[])if(item?.equipmentId)run.equipmentInventory.push(item.equipmentId);
   run.cardPool[unit.templateId]=(run.cardPool[unit.templateId]||0)+poolCopiesForStar(normalizeStarValue(unit.star));run.gold+=price;units=units.filter(x=>x!==unit);if(selectedUnit===unit){selectedUnit=null;hideUnitInspect()}saveRun();renderChallengeInventory();renderPveHud();updateAliveCounts();renderDamageStats();toast(`已出售 ${unit.name}，获得 ${price} 金币`);return true;
 }
+function isShopSellDrop(clientX,clientY,unit){if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.isDummy||unit.isSummon)return false;const shop=$('#pveShopBar');if(!shop||shop.classList.contains('hidden'))return false;const rect=shop.getBoundingClientRect();return clientX>=rect.left&&clientX<=rect.right&&clientY>=rect.top&&clientY<=rect.bottom}
+function updateShopSellFeedback(clientX,clientY,unit){const shop=$('#pveShopBar');if(!shop)return;shop.classList.toggle('sell-drop-active',isShopSellDrop(clientX,clientY,unit))}
+function clearShopSellFeedback(){$('#pveShopBar')?.classList.remove('sell-drop-active')}
+function returnChallengeUnitToBench(unit){if(mode!=='challenge'||started||!unit||unit.team!=='blue'||unit.onBench)return false;const bench=emptyBlueBench();if(bench<0){toast('蓝方备战席已满');return false}placeUnit(unit,{kind:'bench',team:'blue',index:bench});toast(`${unit.name} 已回到备战席`);return true}
 function gainXp(amount){run.xp+=amount;while(run.level<9&&run.xp>=LEVEL_TOTAL[run.level+1]){run.level++;run.populationLimit=run.level;toast(`升级到 Lv${run.level}`)}}
 function renderPveHud(){
   if(!run)return;
@@ -154,6 +158,16 @@ function installShopLayoutStyle(){
     .pve-button-price img{width:15px;height:15px}
     .pve-free-price{color:#79d69a}
     .pve-shop-slot-empty{min-width:0;visibility:hidden}
+    #pveSlotDialog>div{width:min(1180px,calc(100% - 34px));max-height:92vh;padding:24px}
+    #pveSlotDialog .pve-slot-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    #pveSlotDialog .pve-slot-list button{min-height:58px;padding:10px 12px;font-size:14px}
+    .pve-shop-bar{position:relative;overflow:hidden;transition:border-color .16s ease,box-shadow .16s ease,filter .16s ease}
+    .pve-shop-bar::before,.pve-shop-bar::after{position:absolute;inset:0;z-index:20;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease,visibility 0s linear .16s}
+    .pve-shop-bar::before{content:"";background:rgba(19,23,31,.68);backdrop-filter:blur(3px)}
+    .pve-shop-bar::after{content:"";inset:50% auto auto 50%;width:88px;height:88px;transform:translate(-50%,-50%);background:url("assets/trash-can.svg") center/contain no-repeat;filter:drop-shadow(0 0 16px rgba(255,70,78,.6))}
+    .pve-shop-bar.sell-drop-active{border-color:#ff4e59;box-shadow:0 0 0 2px rgba(255,65,75,.42),0 0 28px rgba(255,48,60,.35)}
+    .pve-shop-bar.sell-drop-active::before{opacity:1;visibility:visible;transition:opacity .16s ease}
+    .pve-shop-bar.sell-drop-active::after{opacity:.72;visibility:visible;transition:opacity .16s ease}
     .pve-round-result>div{width:min(430px,calc(100% - 30px));text-align:center;overflow:visible}
     .pve-round-result h2{margin:0 0 14px;font-size:25px;letter-spacing:2px}
     .pve-round-result.victory h2{color:#f3cf70}.pve-round-result.defeat h2{color:#ff7782}
@@ -180,7 +194,7 @@ function installEvents(){
   $('#pveVariantDialog').onclick=e=>{const b=e.target.closest('[data-pve-variant]');if(!b)return;run.selectedVariant=b.dataset.pveVariant;$('#pveVariantDialog').classList.add('hidden');loadCurrentEnemy();saveRun();renderPveHud()};$('#exitFinishedPveBtn').onclick=exitChallenge;
 }
 installStyle();installShopLayoutStyle();installUi();installEvents();
-const originalContextMenu=canvas.oncontextmenu;canvas.oncontextmenu=function(event){if(mode!=='challenge')return originalContextMenu?.call(canvas,event);event.preventDefault();if(started)return;const point=canvasPoint(event),unit=unitAt(point.x,point.y);if(unit)sellChallengeUnit(unit)};
+const originalContextMenu=canvas.oncontextmenu;canvas.oncontextmenu=function(event){if(mode!=='challenge')return originalContextMenu?.call(canvas,event);event.preventDefault();if(started)return;const point=canvasPoint(event),unit=unitAt(point.x,point.y);if(unit?.team==='blue')returnChallengeUnitToBench(unit)};
 const originalStart=startBattle;startBattle=function(){if(mode==='challenge'&&!startPveBattle())return;originalStart();renderPveHud()};
 const originalFinish=finish;finish=function(team){originalFinish(team);if(mode==='challenge'){const win=team==='蓝方';setTimeout(()=>settle(win),650)}};
 const originalEquip=equipItemToUnit;equipItemToUnit=function(unit,id){if(mode!=='challenge')return originalEquip(unit,id);const i=run.equipmentInventory.indexOf(id);if(i<0){toast('该装备库存不足');return false}const ok=originalEquip(unit,id);if(ok){run.equipmentInventory.splice(i,1);saveRun();renderChallengeInventory()}return ok};
@@ -191,5 +205,5 @@ const originalReturnUnit=returnUnitToWarehouse;returnUnitToWarehouse=function(un
 const originalPlaceUnit=placeUnit;placeUnit=function(unit,destination){if(mode==='challenge'&&run&&!started&&unit?.onBench&&destination?.kind==='board'&&destination.row>=4&&!unitAtDestination(destination,unit)){const onBoard=units.filter(candidate=>candidate.alive&&candidate.team==='blue'&&!candidate.onBench&&!candidate.inWarehouse&&candidate!==unit).length;if(onBoard>=run.populationLimit){toast(`已达到人口上限 ${onBoard}/${run.populationLimit}`);renderPveHud();return false}}return originalPlaceUnit(unit,destination)};
 const originalValidDrop=validDrop;validDrop=function(unit,destination){if(!originalValidDrop(unit,destination))return false;if(mode!=='challenge'||!run||started||!unit||!destination)return true;const isBlueBoard=destination.kind==='board'&&destination.row>=4;if(!isBlueBoard||!unit.onBench)return true;const occupying=unitAtDestination(destination,unit);if(occupying)return true;const onBoard=units.filter(candidate=>candidate.alive&&candidate.team==='blue'&&!candidate.onBench&&!candidate.inWarehouse&&candidate!==unit).length;if(onBoard>=run.populationLimit){toast(`已达到人口上限 ${onBoard}/${run.populationLimit}`);return false}return true};
 const originalSaveFormation=saveFormation;saveFormation=function(){const value=originalSaveFormation();if(mode==='challenge'&&run&&!started){run.formation=formationSnapshot().filter(item=>item.team==='blue');localStorage.setItem(RUN_KEY,JSON.stringify(run));renderPveHud()}return value};
-window.PVE_FIRST={ORDER,RULES,SLOT_DEFS,get mode(){return mode},get run(){return run},openSlotDialog,loadSlotIntoRed,activateChallenge,exitChallenge};
+window.PVE_FIRST={ORDER,RULES,SLOT_DEFS,get mode(){return mode},get run(){return run},openSlotDialog,loadSlotIntoRed,activateChallenge,exitChallenge,isShopSellDrop,updateShopSellFeedback,clearShopSellFeedback,sellDraggedUnit:unit=>sellChallengeUnit(unit,false)};
 })();

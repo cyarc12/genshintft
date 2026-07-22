@@ -878,6 +878,7 @@ function beginWarehousePieceDrag(e){
 function clearUnitDragState(){
   const wh=document.querySelector('#whPanel');
   wh?.classList.remove('delete-drop-active');
+  window.PVE_FIRST?.clearShopSellFeedback?.();
   hidePieceDragGhost();
   pendingWhDrag=null;pendingUnitDrag=null;dragUnit=null;dragPoint=null;dragState=null;
   dragIsNewCopy=false;pointerDownUnit=null;hoverCell=null;hoverBench=null;
@@ -968,6 +969,7 @@ function handleActiveDragMove(e){
   hoverCell=dest?.kind==='board'?dest:null;
   hoverBench=dest?.kind==='bench'?dest:null;
   updateWhDropFeedback(e.clientX,e.clientY);
+  window.PVE_FIRST?.updateShopSellFeedback?.(e.clientX,e.clientY,dragUnit);
 }
 window.addEventListener('pointermove',handleActiveDragMove,{passive:false});
 
@@ -990,6 +992,10 @@ function endDrag(e){
   if(!dragUnit){pendingWhDrag=null;pendingUnitDrag=null;pointerDownUnit=null;return}
   if(!dragState){
     if(dragIsNewCopy||dragUnit.inWarehouse||String(dragUnit.id).startsWith('drag-'))units=units.filter(x=>x.id!==dragUnit.id);
+    clearUnitDragState();saveFormation();updateAliveCounts();renderDamageStats();return;
+  }
+  if(window.PVE_FIRST?.isShopSellDrop?.(e.clientX,e.clientY,dragUnit)){
+    window.PVE_FIRST.sellDraggedUnit(dragUnit);
     clearUnitDragState();saveFormation();updateAliveCounts();renderDamageStats();return;
   }
   const insideWh=isClientPointInsideWarehouse(e.clientX,e.clientY);
