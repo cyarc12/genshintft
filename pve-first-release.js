@@ -102,6 +102,7 @@ function renderPveHud(){
   $('#buyXpBtn').innerHTML=`<span>购买经验</span><span class="pve-button-price"><img src="assets/two-coins.svg" alt="">4</span>`;
   $('#refreshShopBtn').innerHTML=run.freeRefreshes>0?`<span>刷新</span><span class="pve-free-price">免费×${run.freeRefreshes}</span>`:`<span>刷新</span><span class="pve-button-price"><img src="assets/two-coins.svg" alt="">2</span>`;
   $('#lockShopBtn').classList.toggle('active',run.shopLocked);$('#lockShopBtn').setAttribute('aria-pressed',String(run.shopLocked));$('#lockShopBtn').title=run.shopLocked?'点击解锁商店':'点击锁定商店';$('#lockShopBtn').innerHTML=`<img src="assets/${run.shopLocked?'shop-lock':'shop-unlock'}.svg" alt=""><span>${run.shopLocked?'已锁定':'未锁定'}</span>`;
+  requestAnimationFrame(()=>{const lock=$('#lockShopBtn'),stage=$('#pveStage');if(lock&&stage&&lock.offsetWidth>0){stage.style.width=`${lock.offsetWidth}px`;stage.style.textAlign='center'}});
   $('#pveShopCards').innerHTML=(run.shopOffers||[]).map((o,i)=>o?`<button class="pve-shop-card cost${o.cost}" data-buy-offer="${i}" draggable="false" ${started?'disabled':''}><img src="${PIECE_CONFIG[o.name].avatar}" draggable="false"><span>${o.name}</span><small>${PIECE_CONFIG[o.name].element} · ${PIECE_CONFIG[o.name].weapon}</small></button>`:'<div class="pve-shop-slot-empty" aria-hidden="true"></div>').join('');
 }
 function renderChallengeInventory(){
@@ -186,8 +187,8 @@ function installShopLayoutStyle(){
     #pvePopulation{justify-self:start;padding-left:5px;color:#cbd9eb}
     .pve-pop-streak{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-right:4px}
     .pve-streak{display:inline-flex;align-items:center;gap:1px;color:#ff704f;font-size:14px;font-weight:900}.pve-streak i{font-style:normal;font-size:17px;filter:drop-shadow(0 0 4px rgba(255,70,35,.45))}
-    .pve-shop-odds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;text-align:center;color:#9eafc4}
-    .pve-shop-odds span{white-space:nowrap}
+    .pve-shop-odds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;text-align:center;color:#9eafc4;font-size:12px}
+    .pve-shop-odds span{white-space:nowrap;line-height:1.2}
     .pve-shop-odds b{color:#e8eff8;font-weight:800}
     .pve-shop-odds .cost1{color:#c5ccd5}.pve-shop-odds .cost2{color:#6cda8c}.pve-shop-odds .cost3{color:#70b4ff}.pve-shop-odds .cost4{color:#bd8cff}.pve-shop-odds .cost5{color:#f1cf73}
     .pve-shop-main{align-items:stretch}
