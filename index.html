@@ -912,12 +912,13 @@ function returnUnitToWarehouse(unit){
   return true;
 }
 let pendingUnitDrag=null;
-const UNIT_LONG_PRESS_MS=100,UNIT_DRAG_CANCEL_DISTANCE=10;
+const UNIT_LONG_PRESS_MS=50,UNIT_DRAG_CANCEL_DISTANCE=10;
 function suspendDragTimer(){if(dragTimer){clearTimeout(dragTimer);dragTimer=null}}
 function beginExistingUnitDrag(e){
   if(!pendingUnitDrag||dragUnit)return false;
   const u=units.find(x=>x.id===pendingUnitDrag.unitId);
   if(!u||!u.alive||u.inWarehouse||u.upgradeLocked){pendingUnitDrag=null;return false}
+  if(window.PVE_FIRST_ACTIVE&&u.team==='red'){pendingUnitDrag=null;pointerDownUnit=null;return false}
   dragState={sourceType:'existingUnit',unitId:u.id,templateId:null,origin:{team:u.team,onBench:u.onBench,benchIndex:u.benchIndex,row:u.row,col:u.col}};
   dragUnit=u;dragPoint=canvasPoint(e);dragIsNewCopy=false;pointerDownUnit=u;
   suppressNextClick=true;canvas.style.cursor='grabbing';
@@ -932,6 +933,7 @@ canvas.onpointerdown=e=>{
   const u=unitAt(x,y);
   if(!u||u.inWarehouse||u.upgradeLocked){pendingUnitDrag=null;return}
   selectedUnit=u;renderUnitInspect(u);
+  if(window.PVE_FIRST_ACTIVE&&u.team==='red'){pendingUnitDrag=null;pointerDownUnit=null;return}
   pendingUnitDrag={unitId:u.id,pointerId:e.pointerId,startClientX:e.clientX,startClientY:e.clientY,lastClientX:e.clientX,lastClientY:e.clientY};
   pointerDownUnit=u;
   suspendDragTimer();
@@ -1011,7 +1013,7 @@ window.addEventListener('pointercancel',e=>{endDrag(e)});
 function hideUnitInspect(){inspect.classList.remove('show','team-blue','team-red','team-neutral');document.querySelector('.tabs').hidden=false;logPane.hidden=false;hoverInspectUnitId=null}
 canvas.onclick=e=>{if(suppressNextClick){suppressNextClick=false;return}const {x,y}=canvasPoint(e),clicked=unitAt(x,y);if(clicked){selectedUnit=clicked;renderUnitInspect(clicked)}else{selectedUnit=null;hideUnitInspect()}};
 canvas.oncontextmenu=e=>{e.preventDefault();if(started||ended)return;const {x,y}=canvasPoint(e),u=unitAt(x,y);if(!u||u.inWarehouse||u.isSummon)return;returnUnitToWarehouse(u)};
-canvas.ondblclick=e=>{if(started||ended)return;e.preventDefault();const {x,y}=canvasPoint(e),u=unitAt(x,y);if(u)autoToggleBench(u)};
+canvas.ondblclick=e=>{if(started||ended)return;e.preventDefault();const {x,y}=canvasPoint(e),u=unitAt(x,y);if(u&&!(window.PVE_FIRST_ACTIVE&&u.team==='red'))autoToggleBench(u)};
 function renderUnitInspect(u){if(!u)return;hoverInspectUnitId=u.id;inspect.classList.remove('team-blue','team-red','team-neutral');inspect.classList.add('show',u.team?`team-${u.team}`:'team-neutral');document.querySelector('.tabs').hidden=true;logPane.hidden=true;inspect.dataset.unitName=u.name;inspect.dataset.dummy=u.isDummy?'1':'0';const detailed=u.isDummy?'最大生命 2000；生命归零时立即回满，不会死亡、行动、攻击或释放技能。':SKILL_INFO[u.name]||'该角色技能尚未配置。',brief=u.isDummy?'无伤害、无元素附着。':SKILL_BRIEF[u.name]||'暂无伤害或附着信息。',skill=skillDetailMode==='detail'?detailed:brief,panelAtk=effectiveAtk(u)*(u.name==='胡桃'&&has(u,'hutaoEmpower')?2:1),shield=u.eulaShield?`<div class="row"><span>护盾</span><b>${Math.ceil(u.eulaShield.value)} / ${u.eulaShield.max}</b></div>`:'',modeButtons=u.isDummy?'':`<span class="skill-mode"><button data-skill-mode="brief" class="${skillDetailMode==='brief'?'active':''}">简略</button><button data-skill-mode="detail" class="${skillDetailMode==='detail'?'active':''}">详细</button></span>`,teamName=u.team==='blue'?'蓝方':u.team==='red'?'红方':'仓库';const noelleRes=u.noelleExtraRes||0,shred=has(u,'resistDown'),geoDef=has(u,'geoResonanceDef')?10:0,panelDef=u.def+noelleRes+geoDef;inspect.innerHTML=`<h3 style="color:${ELEMENTS[u.element]}"><span>${u.name} · ${u.element}${u.isDummy?'':' · '+u.cost+'费 '+('★'.repeat(u.star))}</span><em class="team-label">${teamName}</em></h3><div class="row"><span>武器</span><b>${u.weapon}</b></div><div class="row"><span>生命</span><b>${Math.ceil(u.hp)} / ${u.maxHp}</b></div>${shield}<div class="row"><span>攻击 / 攻速</span><b>${u.isDummy?'不会攻击':panelAtk+' / '+panelAs(u)}</b></div><div class="row"><span>暴击 / 暴伤</span><b>${u.isDummy?'—':Math.round(u.critRate*100)+'% / '+Math.round(u.critDamage*100)+'%'}</b></div><div class="row"><span>抗性值</span><b>${panelDef}${noelleRes>0?' <span style="color:#e1b955;font-size:10px">(+'+noelleRes+' 被动)</span>':''}${shred?' <span style="color:#ff6673;font-size:10px">(-'+Math.round(u.def*(shred.value===u.element?0.3:0.15))+' 碎甲)</span>':''}</b></div><div class="row"><span>攻击距离</span><b>${u.isDummy?'—':u.range+' 格'}</b></div><div class="row"><span>法力</span><b>${u.isDummy?'无蓝条':Math.floor(u.mp)+' / '+u.maxMp}</b></div><div style="margin-top:8px;padding-top:7px;border-top:1px solid #34445c;color:#c7d4e6;line-height:1.5"><b style="color:#f5d38a">武器特性</b><br>${u.isDummy?'不触发武器特性。':WEAPON_INFO[u.weapon]}</div><div style="margin-top:8px;padding-top:7px;border-top:1px solid #34445c;color:#dce7f7;line-height:1.55;white-space:pre-line"><span class="skill-head"><b style="color:#9ed2ff">技能</b>${modeButtons}</span><span class="skill-copy">${skill}</span></div>`}
 
 function skillTextForStar(text,star){
