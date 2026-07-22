@@ -913,7 +913,7 @@ function returnUnitToWarehouse(unit){
   return true;
 }
 let pendingUnitDrag=null;
-const UNIT_LONG_PRESS_MS=50,UNIT_DRAG_CANCEL_DISTANCE=10;
+const UNIT_LONG_PRESS_MS=100,UNIT_DRAG_CANCEL_DISTANCE=10;
 function suspendDragTimer(){if(dragTimer){clearTimeout(dragTimer);dragTimer=null}}
 function beginExistingUnitDrag(e){
   if(!pendingUnitDrag||dragUnit)return false;
