@@ -201,7 +201,8 @@ function installShopLayoutStyle(){
     #lockShopBtn img{width:18px;height:18px}#lockShopBtn.active{border-color:#d5ad56;background:#332918;color:#f5d98d}
     .pve-shop-state.right{display:grid;grid-template-rows:1fr 1fr;align-content:stretch;width:145px;max-width:145px;gap:6px}
     .pve-shop-right-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-width:0}
-    .pve-shop-right-row #pveStage{white-space:nowrap;font-size:10px}.pve-shop-right-row .pve-lives{display:inline-flex;justify-content:flex-end;min-width:0}
+    .pve-shop-right-row:first-child{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px}
+    .pve-shop-right-row #pveStage{white-space:nowrap;font-size:14px;font-weight:800;letter-spacing:.3px}.pve-shop-right-row .pve-lives{display:inline-flex;justify-content:flex-end;min-width:0}
     .pve-button-price,.pve-free-price{display:inline-flex;align-items:center;gap:3px;color:#f2c85f;font-weight:800}
     .pve-button-price img{width:15px;height:15px}
     .pve-free-price{color:#79d69a}
