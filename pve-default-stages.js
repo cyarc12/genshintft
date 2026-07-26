@@ -1,0 +1,1086 @@
+/* 内置挑战模式默认关卡。玩家在本机保存的关卡仍拥有更高优先级。 */
+(function(){
+'use strict';
+window.PVE_DEFAULT_STAGES=Object.freeze({
+  "1-1": [
+    {
+      "templateId": "eula",
+      "star": 1,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "yoimiya",
+      "star": 1,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "nilou",
+      "star": 1,
+      "row": 2,
+      "col": 5,
+      "equipmentIds": []
+    }
+  ],
+  "1-2": [
+    {
+      "templateId": "diluc",
+      "star": 1,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 1,
+      "row": 2,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "yoimiya",
+      "star": 1,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 1,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    }
+  ],
+  "1-3": [
+    {
+      "templateId": "diluc",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath"
+      ]
+    },
+    {
+      "templateId": "nilou",
+      "star": 2,
+      "row": 2,
+      "col": 5,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 1,
+      "row": 1,
+      "col": 2,
+      "equipmentIds": []
+    }
+  ],
+  "1-5": [
+    {
+      "templateId": "yelan",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "sayu",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 1,
+      "row": 2,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "yelan",
+      "star": 1,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "yelan",
+      "star": 1,
+      "row": 0,
+      "col": 4,
+      "equipmentIds": []
+    }
+  ],
+  "1-6": [
+    {
+      "templateId": "klee",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "kuki",
+      "star": 1,
+      "row": 1,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "sayu",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath"
+      ]
+    },
+    {
+      "templateId": "shenhe",
+      "star": 1,
+      "row": 1,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "charlotte",
+      "star": 1,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "yelan",
+      "star": 1,
+      "row": 0,
+      "col": 3,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    }
+  ],
+  "2-5": [
+    {
+      "templateId": "keqing",
+      "star": 2,
+      "row": 1,
+      "col": 5,
+      "equipmentIds": [
+        "arcane_prism",
+        "judgment_emblem"
+      ]
+    },
+    {
+      "templateId": "keqing",
+      "star": 2,
+      "row": 1,
+      "col": 1,
+      "equipmentIds": [
+        "arcane_prism",
+        "execution_blade"
+      ]
+    },
+    {
+      "templateId": "yelan",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "yelan",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "kuki",
+      "star": 2,
+      "row": 1,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "amber",
+      "star": 1,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "sayu",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": []
+    }
+  ],
+  "1-4": [
+    {
+      "templateId": "diluc",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath"
+      ]
+    },
+    {
+      "templateId": "yoimiya",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "hunter_feather"
+      ]
+    },
+    {
+      "templateId": "shenhe",
+      "star": 1,
+      "row": 1,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "kuki",
+      "star": 1,
+      "row": 1,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "charlotte",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": []
+    }
+  ],
+  "2-1": [
+    {
+      "templateId": "klee",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "arcane_prism"
+      ]
+    },
+    {
+      "templateId": "sayu",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath"
+      ]
+    },
+    {
+      "templateId": "yelan",
+      "star": 1,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "diluc",
+      "star": 2,
+      "row": 3,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "kazuha",
+      "star": 1,
+      "row": 2,
+      "col": 3,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "keqing",
+      "star": 1,
+      "row": 2,
+      "col": 4,
+      "equipmentIds": []
+    }
+  ],
+  "2-2": [
+    {
+      "templateId": "sayu",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath"
+      ]
+    },
+    {
+      "templateId": "kazuha",
+      "star": 1,
+      "row": 2,
+      "col": 2,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "neuvillette",
+      "star": 1,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "arlecchino",
+      "star": 2,
+      "row": 2,
+      "col": 5,
+      "equipmentIds": [
+        "battle_emblem"
+      ]
+    },
+    {
+      "templateId": "eula",
+      "star": 2,
+      "row": 3,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "charlotte",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": []
+    }
+  ],
+  "2-3": [
+    {
+      "templateId": "sayu",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "yelan",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "keqing",
+      "star": 2,
+      "row": 2,
+      "col": 5,
+      "equipmentIds": [
+        "hunter_feather",
+        "judgment_emblem",
+        "quicksilver_cloak"
+      ]
+    },
+    {
+      "templateId": "charlotte",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 2,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 2,
+      "row": 2,
+      "col": 3,
+      "equipmentIds": []
+    }
+  ],
+  "2-4": [
+    {
+      "templateId": "yelan",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "charlotte",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 2,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": [
+        "redemption_lamp"
+      ]
+    },
+    {
+      "templateId": "eula",
+      "star": 3,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 1,
+      "row": 1,
+      "col": 1,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "jean",
+      "star": 1,
+      "row": 1,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "klee",
+      "star": 2,
+      "row": 0,
+      "col": 5,
+      "equipmentIds": [
+        "arcane_prism",
+        "mana_ring"
+      ]
+    }
+  ],
+  "2-6": [
+    {
+      "templateId": "noelle",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "bulwark_armor"
+      ]
+    },
+    {
+      "templateId": "fischl",
+      "star": 1,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "temporal_bowstring",
+        "giant_slayer",
+        "execution_blade"
+      ]
+    },
+    {
+      "templateId": "jean",
+      "star": 1,
+      "row": 2,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "kuki",
+      "star": 2,
+      "row": 2,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "charlotte",
+      "star": 2,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "neuvillette",
+      "star": 2,
+      "row": 0,
+      "col": 4,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    }
+  ],
+  "3-6": [
+    {
+      "templateId": "amber",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "arcane_prism",
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "ganyu",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "mana_ring",
+        "temporal_bowstring"
+      ]
+    },
+    {
+      "templateId": "noelle",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath",
+        "bulwark_armor",
+        "thornmail"
+      ]
+    },
+    {
+      "templateId": "yae",
+      "star": 2,
+      "row": 0,
+      "col": 4,
+      "equipmentIds": [
+        "mana_ring",
+        "hunter_feather"
+      ]
+    },
+    {
+      "templateId": "furina",
+      "star": 2,
+      "row": 1,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 2,
+      "row": 1,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "charlotte",
+      "star": 2,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "shenhe",
+      "star": 1,
+      "row": 1,
+      "col": 1,
+      "equipmentIds": []
+    }
+  ],
+  "EX-1": [
+    {
+      "templateId": "yae",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "hunter_feather",
+        "mana_ring",
+        "arcane_prism"
+      ]
+    },
+    {
+      "templateId": "ganyu",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "hutao",
+      "star": 2,
+      "row": 2,
+      "col": 2,
+      "equipmentIds": [
+        "quicksilver_cloak",
+        "battle_emblem",
+        "bloodthirst_blade"
+      ]
+    },
+    {
+      "templateId": "jean",
+      "star": 2,
+      "row": 3,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "noelle",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "bulwark_armor",
+        "emergency_pendant",
+        "emergency_pendant"
+      ]
+    },
+    {
+      "templateId": "amber",
+      "star": 2,
+      "row": 0,
+      "col": 4,
+      "equipmentIds": [
+        "mana_ring",
+        "arcane_prism",
+        "giant_slayer"
+      ]
+    },
+    {
+      "templateId": "yelan",
+      "star": 2,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "shenhe",
+      "star": 1,
+      "row": 2,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "ayaka",
+      "star": 1,
+      "row": 0,
+      "col": 1,
+      "equipmentIds": []
+    }
+  ],
+  "EX-2": [
+    {
+      "templateId": "yelan",
+      "star": 3,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "mana_ring",
+        "hunter_feather"
+      ]
+    },
+    {
+      "templateId": "noelle",
+      "star": 3,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "regeneration_pendant",
+        "bulwark_armor",
+        "emergency_pendant"
+      ]
+    },
+    {
+      "templateId": "fischl",
+      "star": 3,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "bloodthirst_blade",
+        "temporal_bowstring",
+        "execution_blade"
+      ]
+    },
+    {
+      "templateId": "ganyu",
+      "star": 2,
+      "row": 0,
+      "col": 3,
+      "equipmentIds": [
+        "mana_ring",
+        "judgment_emblem"
+      ]
+    }
+  ],
+  "3-5": [
+    {
+      "templateId": "jean",
+      "star": 2,
+      "row": 2,
+      "col": 3,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "jean",
+      "star": 2,
+      "row": 2,
+      "col": 4,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "jean",
+      "star": 1,
+      "row": 3,
+      "col": 4,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "sayu",
+      "star": 3,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "jean",
+      "star": 1,
+      "row": 3,
+      "col": 2,
+      "equipmentIds": [
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "amber",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "mana_ring",
+        "arcane_prism"
+      ]
+    },
+    {
+      "templateId": "amber",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "mana_ring",
+        "arcane_prism"
+      ]
+    },
+    {
+      "templateId": "amber",
+      "star": 1,
+      "row": 0,
+      "col": 3,
+      "equipmentIds": [
+        "mana_ring",
+        "judgment_emblem"
+      ]
+    }
+  ],
+  "3-1": [
+    {
+      "templateId": "yae",
+      "star": 1,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "hunter_feather",
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "noelle",
+      "star": 1,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath",
+        "bulwark_armor",
+        "emergency_pendant"
+      ]
+    },
+    {
+      "templateId": "sayu",
+      "star": 2,
+      "row": 2,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "klee",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "kuki",
+      "star": 2,
+      "row": 2,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 2,
+      "row": 2,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "barbara",
+      "star": 2,
+      "row": 0,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "charlotte",
+      "star": 2,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    }
+  ],
+  "3-2": [
+    {
+      "templateId": "noelle",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "bulwark_armor"
+      ]
+    },
+    {
+      "templateId": "tartaglia",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "arcane_prism",
+        "shieldbreaker_spear",
+        "giant_slayer"
+      ]
+    },
+    {
+      "templateId": "arlecchino",
+      "star": 2,
+      "row": 2,
+      "col": 4,
+      "equipmentIds": [
+        "battle_emblem",
+        "bloodthirst_blade"
+      ]
+    },
+    {
+      "templateId": "neuvillette",
+      "star": 1,
+      "row": 0,
+      "col": 1,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "ganyu",
+      "star": 1,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "judgment_emblem"
+      ]
+    },
+    {
+      "templateId": "yelan",
+      "star": 1,
+      "row": 0,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "raiden",
+      "star": 1,
+      "row": 0,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "jean",
+      "star": 1,
+      "row": 2,
+      "col": 3,
+      "equipmentIds": []
+    }
+  ],
+  "3-3": [
+    {
+      "templateId": "noelle",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath",
+        "bulwark_armor"
+      ]
+    },
+    {
+      "templateId": "amber",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "arcane_prism",
+        "mana_ring"
+      ]
+    },
+    {
+      "templateId": "yae",
+      "star": 1,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "hunter_feather",
+        "mana_ring",
+        "arcane_prism"
+      ]
+    },
+    {
+      "templateId": "hutao",
+      "star": 1,
+      "row": 1,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 1,
+      "row": 0,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 1,
+      "row": 1,
+      "col": 4,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "charlotte",
+      "star": 1,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    }
+  ],
+  "3-4": [
+    {
+      "templateId": "noelle",
+      "star": 2,
+      "row": 3,
+      "col": 3,
+      "equipmentIds": [
+        "guardian_oath",
+        "bulwark_armor",
+        "guardian_oath"
+      ]
+    },
+    {
+      "templateId": "amber",
+      "star": 2,
+      "row": 0,
+      "col": 6,
+      "equipmentIds": [
+        "arcane_prism",
+        "mana_ring",
+        "judgment_emblem"
+      ]
+    },
+    {
+      "templateId": "charlotte",
+      "star": 1,
+      "row": 0,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "furina",
+      "star": 3,
+      "row": 1,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "layla",
+      "star": 3,
+      "row": 0,
+      "col": 3,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "fischl",
+      "star": 2,
+      "row": 0,
+      "col": 0,
+      "equipmentIds": [
+        "mana_ring",
+        "shieldbreaker_spear"
+      ]
+    },
+    {
+      "templateId": "kuki",
+      "star": 2,
+      "row": 1,
+      "col": 2,
+      "equipmentIds": []
+    },
+    {
+      "templateId": "ganyu",
+      "star": 1,
+      "row": 0,
+      "col": 4,
+      "equipmentIds": []
+    }
+  ]
+});
+})();

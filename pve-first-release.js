@@ -49,6 +49,12 @@ function loadSlots(){
     }
     const defaults=JSON.parse(localStorage.getItem(DEFAULT_SLOT_KEY)||'null');
     if(defaults){localStorage.setItem(SLOT_KEY,JSON.stringify(defaults));return defaults}
+    const builtIn=window.PVE_DEFAULT_STAGES&&clone(window.PVE_DEFAULT_STAGES);
+    if(builtIn&&ORDER.every(id=>Array.isArray(builtIn[id]))){
+      localStorage.setItem(DEFAULT_SLOT_KEY,JSON.stringify(builtIn));
+      localStorage.setItem(SLOT_KEY,JSON.stringify(builtIn));
+      return builtIn;
+    }
     const old=JSON.parse(localStorage.getItem(OLD_SLOT_KEY)||'{}'),migrated={};
     OLD_SLOT_ORDER.forEach((oldKey,index)=>{if(old[oldKey]?.length)migrated[ORDER[index]]=old[oldKey]});
     localStorage.setItem(SLOT_KEY,JSON.stringify(migrated));
