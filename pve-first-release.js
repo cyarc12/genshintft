@@ -42,23 +42,27 @@ const standardEquipmentIds=()=>Object.values(EQUIPMENT_CONFIG).filter(c=>c.itemC
 function toast(text){if(typeof showEquipmentToast==='function')showEquipmentToast(text);else addLog(text,'reaction')}
 function loadSlots(){
   try{
-    const current=JSON.parse(localStorage.getItem(SLOT_KEY)||'null');
-    if(current){
-      if(ORDER.every(id=>Array.isArray(current[id]))&&!localStorage.getItem(DEFAULT_SLOT_KEY))localStorage.setItem(DEFAULT_SLOT_KEY,JSON.stringify(current));
-      return current;
-    }
-    const defaults=JSON.parse(localStorage.getItem(DEFAULT_SLOT_KEY)||'null');
-    if(defaults){localStorage.setItem(SLOT_KEY,JSON.stringify(defaults));return defaults}
+    // 1. Always start from built-in defaults (source file is authoritative)
     const builtIn=window.PVE_DEFAULT_STAGES&&clone(window.PVE_DEFAULT_STAGES);
-    if(builtIn&&ORDER.every(id=>Array.isArray(builtIn[id]))){
-      localStorage.setItem(DEFAULT_SLOT_KEY,JSON.stringify(builtIn));
-      localStorage.setItem(SLOT_KEY,JSON.stringify(builtIn));
-      return builtIn;
+    if(!builtIn||!ORDER.every(id=>Array.isArray(builtIn[id]))){
+      // No built-in data: try old migration as last resort
+      const old=JSON.parse(localStorage.getItem(OLD_SLOT_KEY)||'{}'),migrated={};
+      OLD_SLOT_ORDER.forEach((oldKey,index)=>{if(old[oldKey]?.length)migrated[ORDER[index]]=old[oldKey]});
+      localStorage.setItem(SLOT_KEY,JSON.stringify(migrated));
+      return migrated;
     }
-    const old=JSON.parse(localStorage.getItem(OLD_SLOT_KEY)||'{}'),migrated={};
-    OLD_SLOT_ORDER.forEach((oldKey,index)=>{if(old[oldKey]?.length)migrated[ORDER[index]]=old[oldKey]});
-    localStorage.setItem(SLOT_KEY,JSON.stringify(migrated));
-    return migrated;
+    // 2. Apply user overrides from localStorage (only stages the user has customized)
+    const userSlots=JSON.parse(localStorage.getItem(SLOT_KEY)||'null');
+    if(userSlots){
+      for(const id of ORDER){
+        if(Array.isArray(userSlots[id])&&userSlots[id].length>0){
+          builtIn[id]=userSlots[id];
+        }
+      }
+    }
+    // 3. Write merged result to SLOT_KEY for runtime compatibility
+    localStorage.setItem(SLOT_KEY,JSON.stringify(builtIn));
+    return builtIn;
   }catch{return{}}
 }
 function saveSlots(v){localStorage.setItem(SLOT_KEY,JSON.stringify(v))}
