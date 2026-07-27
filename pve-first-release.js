@@ -268,8 +268,8 @@ function recordBattleReview(stage,win){
 }
 function reviewAvatar(saved){
   const entry=Object.entries(PIECE_CONFIG).find(([name,cfg])=>name===saved.name||cfg.templateId===saved.templateId);
-  const name=entry?.[0]||saved.name||'未知棋子',cfg=entry?.[1];
-  return `<span class="pve-review-unit" title="${name} · ${saved.star||1}星"><img src="${cfg?.avatar||''}" alt="${name}"><i>${'★'.repeat(saved.star||1)}</i></span>`;
+  const name=entry?.[0]||saved.name||'未知棋子',cfg=entry?.[1],elementColor=ELEMENTS[cfg?.element]||'#547399';
+  return `<span class="pve-review-unit" style="--archive-element:${elementColor}" title="${name} · ${saved.star||1}星"><img src="${cfg?.avatar||''}" alt="${name}"><i>${'★'.repeat(saved.star||1)}</i></span>`;
 }
 function reviewBoard(item){
   const pieces=[...(item.enemyFormation||[]).map(unit=>({...unit,team:'red'})),...(item.playerFormation||[]).map(unit=>({...unit,team:'blue'}))];
@@ -472,7 +472,7 @@ function installUi(){
   document.body.insertAdjacentHTML('beforeend',`<div id="exitChallengeConfirmDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>返回测试模式？</h2><p>当前挑战进度将自动保存，之后可以继续挑战。</p><footer><button id="confirmExitChallengeBtn">保存并返回</button><button data-close-pve-modal>取消</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pvePhaseThreeDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>三阶段挑战完成</h2><p>你可以获得50金币并进入EX-1与EX-2，也可以结束本次挑战，或重新开始一把。EX失败可以原状态重试，EX-2胜利后挑战完成。</p><footer><button id="enterExStagesBtn">领取50金币并进入EX</button><button id="reviewPhaseThreeBtn">挑战回顾</button><button id="replayPhaseThreeBtn">再来一把</button><button id="finishPhaseThreeBtn">回到测试场</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveExFailureDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>EX挑战失败</h2><p>EX关卡可以无限挑战。要重新挑战本关，还是结束本次挑战？</p><footer><button id="retryExStageBtn">重新挑战本关</button><button id="reviewExBtn">挑战回顾</button><button id="endExChallengeBtn">结束挑战</button></footer></div></div>`);
-  document.body.insertAdjacentHTML('beforeend',`<div id="pveReviewDialog" class="pve-modal hidden"><div class="pve-review-panel"><h2>挑战回顾</h2><div id="pveReviewBody" class="pve-review-body"></div><footer><button id="closeChallengeReviewBtn">关闭回顾</button></footer></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div id="pveReviewDialog" class="pve-modal hidden"><div class="pve-review-panel"><button id="closeChallengeReviewTopBtn" class="pve-review-close" title="返回挑战档案" aria-label="关闭回顾">×</button><h2>挑战回顾</h2><div id="pveReviewBody" class="pve-review-body"></div><footer><button id="closeChallengeReviewBtn">关闭回顾</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveReviewDetailDialog" class="pve-modal hidden"><div class="pve-review-detail-panel"><div class="pve-review-detail-title"><h2 id="pveReviewDetailTitle">逐角色统计</h2><span id="pveReviewDetailTotal"></span></div><div id="pveReviewDetailModes" class="damage-switch"><button class="active" data-review-stat-mode="dealt">造成伤害</button><button data-review-stat-mode="taken">承受伤害</button><button data-review-stat-mode="support">治疗/护盾</button></div><div id="pveReviewDetailBody" class="pve-review-detail-body damage-list"></div><footer><button data-close-pve-modal>关闭</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveArchiveSaveDialog" class="pve-modal hidden"><div class="pve-archive-save-panel"><h2>保存挑战成功档案</h2><label>档案名称<input id="pveArchiveName" maxlength="30" placeholder="输入档案名字"></label><div id="pveArchiveSaveSlots" class="pve-archive-save-slots"></div><footer><button id="confirmArchiveSaveBtn">保存档案</button><button id="skipArchiveSaveBtn">不保存并返回测试场</button></footer></div></div>`);
   renderArchiveSlots();
@@ -563,7 +563,7 @@ function installShopLayoutStyle(){
     .lost-heart{color:#ee4658;font:76px/1 Arial,sans-serif;filter:drop-shadow(0 0 14px rgba(255,62,78,.55));animation:pveHeartBreak 1.05s ease both}
     .pve-heart-break i{position:absolute;width:5px;height:72px;background:#101a29;transform:rotate(17deg);clip-path:polygon(35% 0,100% 0,58% 42%,100% 42%,0 100%,34% 53%,0 53%);animation:pveHeartCrack .55s .18s ease both}
 	    .pve-defeat-copy{color:#ff9aa3;font-size:16px;font-weight:800}.pve-life-remain{min-height:34px;margin-top:10px;color:#ff6574;font:28px/1 Arial,sans-serif;letter-spacing:3px}
-	    .pve-review-panel{width:min(820px,calc(100% - 30px))!important;max-height:90vh!important;padding:12px!important}.pve-review-panel h2{margin:0 0 7px;text-align:center}
+	    .pve-review-panel{position:relative;width:min(820px,calc(100% - 30px))!important;max-height:90vh!important;padding:12px!important}.pve-review-panel h2{margin:0 0 7px;text-align:center}.pve-review-close{position:sticky!important;z-index:8!important;top:0!important;float:right!important;width:34px!important;min-width:34px!important;height:34px!important;padding:0!important;border-radius:50%!important;font-size:24px!important;line-height:30px!important}
 	    .pve-review-body{display:grid;gap:8px}.pve-review-body article{padding:8px 12px 9px;border:1px solid #3a506c;border-radius:9px;background:#0b1523}
 	    .pve-review-body article>header{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;font-size:16px}.pve-review-body header .win{color:#f1cf73}.pve-review-body header .loss{color:#ff7e89}
 	    .pve-review-body section{display:grid;grid-template-columns:116px minmax(0,1fr);align-items:center;gap:8px;padding:5px 0;border-top:1px solid rgba(72,94,124,.35)}
@@ -575,7 +575,7 @@ function installShopLayoutStyle(){
 	    .pve-review-piece{position:absolute;z-index:2;left:calc(21px + var(--col)*49px);top:calc(6px + var(--row)*29px);width:34px;height:34px;border:2px solid #5cb2ff;border-radius:50%;background:#0b1421}.pve-review-piece.odd{margin-left:24px}.pve-review-piece.red{border-color:#ff6874}.pve-review-piece img{width:100%;height:100%;border-radius:50%;object-fit:cover}.pve-review-piece i{position:absolute;left:50%;top:-5px;transform:translateX(-50%);color:#ffd86a;font:700 7px/1 Arial;font-style:normal;white-space:nowrap;text-shadow:0 1px 2px #000}
 	    .pve-review-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:100%;padding:5px;border:1px solid #3d536f;border-radius:6px;background:#0e1a2a;color:#aebfd2;cursor:pointer}.pve-review-stats:hover{border-color:#71a9df;background:#13243a}.pve-review-stats span{display:grid;grid-template-columns:auto minmax(45px,1fr) auto;align-items:center;gap:5px;min-width:0}.pve-review-stats em{font-size:9px;font-style:normal;white-space:nowrap}.pve-review-stats span>i{height:7px;border-radius:5px;background:#26344a;overflow:hidden}.pve-review-stats u{display:block;height:100%;border-radius:inherit;text-decoration:none}.pve-review-stats b{min-width:28px;color:#e7eff9;font-size:11px;text-align:right}
 	    .pve-review-detail-panel{width:min(660px,calc(100% - 30px))!important}.pve-review-detail-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.pve-review-detail-title h2{margin:0}.pve-review-detail-title span{color:#9eb0c6;font-size:11px}.pve-review-detail-panel .damage-switch{margin:10px 0}.pve-review-detail-body{display:grid;gap:6px;min-height:80px;padding:10px;border:1px solid #30445f;border-radius:8px;background:#09131f}.pve-review-detail-body .damage-row{grid-template-columns:12px 82px 1fr 86px}
-	    .pve-challenge-home{width:min(760px,calc(100% - 30px))!important}.pve-archive-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.pve-archive-slot{min-width:0;min-height:112px;padding:8px;border:1px solid #405675;border-radius:8px;background:#0b1523;color:#dce7f6}.pve-archive-slot>span{display:flex;justify-content:center;gap:2px;min-height:39px;margin:7px 0}.pve-archive-slot .pve-review-unit{width:30px;height:30px}.pve-archive-slot small{display:block;color:#8194ad;font-size:8px}.pve-archive-slot.filled{border-color:#b68b3f;box-shadow:inset 0 0 12px rgba(221,170,66,.08)}
+	    .pve-challenge-home{width:min(1080px,calc(100% - 30px))!important}.pve-archive-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.pve-archive-slot{min-width:0;min-height:144px;padding:9px;border:1px solid #405675;border-radius:8px;background:#0b1523;color:#dce7f6}.pve-archive-slot>span{display:grid;grid-template-columns:repeat(5,32px);grid-template-rows:repeat(2,32px);justify-content:center;align-content:center;gap:6px 3px;min-height:70px;margin:8px 0}.pve-archive-slot .pve-review-unit{box-sizing:border-box;width:32px;height:32px;border-color:var(--archive-element,#547399);overflow:visible}.pve-archive-slot small{display:block;color:#8194ad;font-size:8px}.pve-archive-slot.filled{border-color:#b68b3f;box-shadow:inset 0 0 12px rgba(221,170,66,.08)}
 	    .pve-archive-save-panel{width:min(560px,calc(100% - 30px))!important}.pve-archive-save-panel label{display:grid;gap:5px;color:#aebfd3}.pve-archive-save-panel input{padding:9px;border:1px solid #405675;border-radius:6px;background:#091321;color:#eef4fc}.pve-archive-save-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}.pve-archive-save-slots button.active{border-color:#f1c85e;background:#3a2d16;color:#ffe5a1}
 	    @keyframes pveHeartBreak{0%{transform:scale(.65);opacity:0}25%{transform:scale(1.18);opacity:1}45%{transform:scale(1) rotate(-4deg)}60%{transform:translateX(-5px) rotate(4deg)}72%{transform:translateX(5px) rotate(-3deg)}100%{transform:scale(.82);opacity:.5}}
     @keyframes pveHeartCrack{0%{opacity:0;transform:scaleY(0) rotate(17deg)}100%{opacity:1;transform:scaleY(1) rotate(17deg)}}
@@ -605,11 +605,13 @@ function installEvents(){
   $('#retryExStageBtn').onclick=retryExStage;
   $('#reviewExBtn').onclick=openChallengeReview;
   $('#endExChallengeBtn').onclick=endExChallenge;
-  $('#closeChallengeReviewBtn').onclick=()=>{
+  const closeChallengeReview=()=>{
     const dialog=$('#pveReviewDialog'),shouldExit=dialog.dataset.exitAfterReview==='true';
     dialog.classList.add('hidden');delete dialog.dataset.exitAfterReview;
     if(shouldExit)leaveChallenge(false);
   };
+  $('#closeChallengeReviewBtn').onclick=closeChallengeReview;
+  $('#closeChallengeReviewTopBtn').onclick=closeChallengeReview;
   $('#pveReviewBody').onclick=event=>{
     const details=event.target.closest('[data-review-details]');if(details){openReviewDetails(Number(details.dataset.reviewDetails),details.dataset.reviewTeam);return}
   };

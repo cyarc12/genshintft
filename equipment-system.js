@@ -19,7 +19,7 @@ function equipmentCount(unit,id){return equipmentItems(unit,id).length}
 function resetEquipmentRuntime(unit){
   const items={};
   for(const item of unit.equipment||[])if(item)items[item.instanceId]={equipmentId:item.equipmentId,timer:0,stacks:0,triggered:false};
-  unit.equipmentRuntime={items,timers:{regeneration:0,redemption:0,temporal:0},stacks:{battleWill:0,temporalBow:0},triggered:{emergencyPendant:false,mercuryCloak:false}};
+  unit.equipmentRuntime={items,timers:{regeneration:0,redemption:0,temporal:0},stacks:{battleWill:0,temporalBow:0}};
 }
 function equipmentItemRuntime(unit,item){ensureUnitEquipment(unit);const rt=unit.equipmentRuntime;rt.items=rt.items||{};return rt.items[item.instanceId]||(rt.items[item.instanceId]={equipmentId:item.equipmentId,timer:0,stacks:0,triggered:false})}
 function equipmentStackTotal(unit,id){return equipmentItems(unit,id).reduce((sum,item)=>sum+(equipmentItemRuntime(unit,item).stacks||0),0)}
@@ -35,7 +35,7 @@ function recalculateUnitEquipmentStats(unit,resetMana=false){
   if(!unit||unit.isDummy)return;
   ensureUnitEquipment(unit);const cfg=PIECE_CONFIG[unit.name];if(!cfg)return;
   const base=statsForStar(cfg,unit.star||1),oldMax=Math.max(1,unit.maxHp||base.hp),ratio=Math.max(0,Math.min(1,(unit.hp??oldMax)/oldMax)),s=collectEquipmentStats(unit);
-  unit.equipmentStats=s;unit.baseStartMana=base.initialMana;unit.maxHp=Math.round(base.hp*(1+s.hpPercent)+s.hpFlat);unit.atk=Math.round(base.atk*(1+s.atkPercent)+s.atkFlat);unit.def=(base.physicalResist??base.resist)+s.res+s.physicalRes;unit.elementDef=Number.isFinite(base.elementResist)?base.elementResist+s.res+s.elementRes:null;unit.normalBaseDamage=base.normalBaseDamage;unit.normalAtkRatio=base.normalAtkRatio;unit.as=Math.min(EQUIPMENT_GLOBAL_CAPS.attackSpeed,base.as+s.attackSpeed);unit.range=base.range;unit.maxMp=base.maxMana;unit.critRate=Math.min(EQUIPMENT_GLOBAL_CAPS.critChance,.2+s.critChance);unit.critDamage=1.4+s.critDamage;unit.hp=Math.max(unit.alive===false?0:1,Math.round(unit.maxHp*ratio));
+  unit.equipmentStats=s;unit.baseStartMana=base.initialMana;unit.maxHp=Math.round(base.hp*(1+s.hpPercent)+s.hpFlat);unit.atk=Math.round(base.atk*(1+s.atkPercent)+s.atkFlat);unit.def=(base.physicalResist??base.resist)+s.res+s.physicalRes;unit.elementDef=Number.isFinite(base.elementResist)?base.elementResist+s.res+s.elementRes:null;unit.normalBaseDamage=base.normalBaseDamage;unit.normalAtkRatio=base.normalAtkRatio;unit.as=Math.min(EQUIPMENT_GLOBAL_CAPS.attackSpeed,base.as+s.attackSpeed);unit.range=base.range+equipmentCount(unit,'eagle_scope')+equipmentStackTotal(unit,'eagle_scope');unit.maxMp=base.maxMana;unit.critRate=Math.min(EQUIPMENT_GLOBAL_CAPS.critChance,.2+s.critChance);unit.critDamage=1.4+s.critDamage;unit.hp=Math.max(unit.alive===false?0:1,Math.round(unit.maxHp*ratio));
   if(resetMana)unit.mp=Math.min(unit.maxMp,base.initialMana+s.startMana);
 }
 function canViewUnitEquipment(unit){if(!unit||unit.inWarehouse||unit.isWarehousePreview||unit.isStageEditorPreview||unit.isSummon||unit.isDummy)return false;const validBench=unit.onBench===true&&Number.isInteger(unit.benchIndex)&&unit.benchIndex>=0&&unit.benchIndex<BENCH_SLOTS;const validBoard=unit.onBench===false&&Number.isInteger(unit.row)&&Number.isInteger(unit.col)&&unit.row>=0&&unit.row<ROWS&&unit.col>=0&&unit.col<COLS;return validBench||validBoard}
@@ -57,9 +57,13 @@ const _processUpgradeQueueBeforeEquipment=processUpgradeQueue;
 processUpgradeQueue=function(...args){const result=_processUpgradeQueueBeforeEquipment(...args);for(const unit of units){ensureUnitEquipment(unit);if(!unit.isDummy)recalculateUnitEquipmentStats(unit,false)}return result};
 
 const _getFinalStatBeforeEquipment=getFinalStat;
+function rowAuraCount(unit,equipmentId){
+  if(!unit?.alive||unit.onBench||unit.inWarehouse||!Number.isInteger(unit.row)||!Number.isInteger(unit.col))return 0;
+  return units.filter(carrier=>carrier.alive&&!carrier.onBench&&!carrier.inWarehouse&&carrier.team===unit.team&&carrier.row===unit.row&&Math.abs(carrier.col-unit.col)<=2).reduce((sum,carrier)=>sum+equipmentCount(carrier,equipmentId),0);
+}
 getFinalStat=function(unit,key){let value=_getFinalStatBeforeEquipment(unit,key);if(!unit?.equipmentRuntime)return value;const rt=unit.equipmentRuntime;
-  if(key==='atk'&&hasEquipment(unit,'battle_emblem'))value+=equipmentStackTotal(unit,'battle_emblem')*2;
-  if(key==='as'){const temporal=equipmentStackTotal(unit,'temporal_bowstring')*EQUIPMENT_CONFIG.temporal_bowstring.effect.attackSpeedPerStack,berserk=equipmentCount(unit,'berserker_bracer')*Math.floor(Math.max(0,1-unit.hp/unit.maxHp)*10+.000001)*.05,hunter=has(unit,'equipmentHunter')?.value||0;value=Math.min(EQUIPMENT_GLOBAL_CAPS.attackSpeed,value+temporal+berserk+hunter)}
+  if(key==='atk'){if(hasEquipment(unit,'battle_emblem'))value+=equipmentStackTotal(unit,'battle_emblem')*2;value*=1+rowAuraCount(unit,'domain_core_battle')*.15}
+  if(key==='as'){const temporal=equipmentStackTotal(unit,'temporal_bowstring')*EQUIPMENT_CONFIG.temporal_bowstring.effect.attackSpeedPerStack,berserk=equipmentCount(unit,'berserker_bracer')*Math.floor(Math.max(0,1-unit.hp/unit.maxHp)*10+.000001)*.05,hunter=has(unit,'equipmentHunter')?.value||0,rowAura=rowAuraCount(unit,'domain_core_swift')*.20;value=Math.min(EQUIPMENT_GLOBAL_CAPS.attackSpeed,value+temporal+berserk+hunter+rowAura)}
   if(key==='dmgOut'){value+=unit.equipmentStats?.damageAmp||0;value+=equipmentItems(unit,'battle_emblem').filter(item=>(equipmentItemRuntime(unit,item).stacks||0)>=25).length*.15}
   if(key==='dmgIn'){value-=unit.equipmentStats?.damageReduction||0;value-=(unit.effects||[]).filter(e=>e.type.startsWith('equipmentMercuryDR:')||e.type.startsWith('equipmentEmergencyDR:')).reduce((sum,e)=>sum+(e.value||.15),0)}
   return Math.round(value*100)/100;
@@ -76,18 +80,56 @@ getUnitShield=function(unit){return equipmentShieldValue(unit)||_getUnitShieldBe
 
 const _effectBeforeEquipment=effect;
 effect=function(unit,type,duration,value=0){
-  if(type==='stun'&&unit?.alive){ensureUnitEquipment(unit);const q=EQUIPMENT_CONFIG.quicksilver_cloak.effect,newlyTriggered=equipmentItems(unit,'quicksilver_cloak').filter(item=>!equipmentItemRuntime(unit,item).triggered);if(newlyTriggered.length){for(const item of newlyTriggered){equipmentItemRuntime(unit,item).triggered=true;_effectBeforeEquipment(unit,`equipmentMercuryDR:${item.instanceId}`,Number.POSITIVE_INFINITY,q.damageReduction)}showEquipmentToast(`${unit.name}的水银斗篷免疫了控制`);return false}duration*=1-Math.min(EQUIPMENT_GLOBAL_CAPS.tenacity,unit.equipmentStats?.tenacity||0)}
+  if(type==='stun'&&unit?.alive)duration*=1-Math.min(EQUIPMENT_GLOBAL_CAPS.tenacity,unit.equipmentStats?.tenacity||0);
   return _effectBeforeEquipment(unit,type,duration,value);
 };
-function applyEquipmentHardControl(unit,duration,type='control'){ensureUnitEquipment(unit);const q=EQUIPMENT_CONFIG.quicksilver_cloak.effect,newlyTriggered=equipmentItems(unit,'quicksilver_cloak').filter(item=>!equipmentItemRuntime(unit,item).triggered);if(newlyTriggered.length){for(const item of newlyTriggered){equipmentItemRuntime(unit,item).triggered=true;_effectBeforeEquipment(unit,`equipmentMercuryDR:${item.instanceId}`,Number.POSITIVE_INFINITY,q.damageReduction)}return 0}return duration*(1-Math.min(EQUIPMENT_GLOBAL_CAPS.tenacity,unit.equipmentStats?.tenacity||0))}
+function applyEquipmentHardControl(unit,duration,type='control'){ensureUnitEquipment(unit);return duration*(1-Math.min(EQUIPMENT_GLOBAL_CAPS.tenacity,unit.equipmentStats?.tenacity||0))}
 
 function gainBattleWill(unit){for(const item of equipmentItems(unit,'battle_emblem')){const rt=equipmentItemRuntime(unit,item);rt.stacks=Math.min(25,(rt.stacks||0)+1)}unit.equipmentRuntime.stacks.battleWill=equipmentStackTotal(unit,'battle_emblem')}
 function onEquipmentNormalHit(unit){const count=equipmentCount(unit,'mana_ring');if(count)unit.mp=Math.min(unit.maxMp,unit.mp+5*count)}
 function onEquipmentSkillCast(unit){const count=equipmentCount(unit,'hunter_feather');if(count)effect(unit,'equipmentHunter',3,.40*count)}
 
 const _damageBeforeEquipment=damage;
+function addEquipmentShield(unit,amount,duration){
+  if(!unit?.alive||amount<=0)return;
+  const current=unit.equipmentShield;
+  if(current){current.value+=amount;current.max+=amount;current.time=Math.max(current.time,duration)}
+  else unit.equipmentShield={value:amount,max:amount,time:duration};
+  unit.shieldingDone=(unit.shieldingDone||0)+amount;
+}
+function clearEquipmentControlAndThreat(unit){
+  unit.hardFreeze=0;
+  unit.effects=(unit.effects||[]).filter(state=>!['stun','silence','frozen','freeze','taunt'].includes(state.type));
+  if(unit.aiState==='STUNNED'||unit.aiState==='FROZEN')unit.aiState='IDLE';
+  for(const enemy of units){
+    if(enemy.team===unit.team)continue;
+    if(enemy.target===unit||enemy.targetId===unit.id||enemy.tauntTarget===unit||enemy.tauntTarget?.id===unit.id){
+      enemy.target=null;enemy.targetId=null;enemy.tauntTarget=null;enemy.tauntDuration=0;
+      if(typeof cancelCurrentPath==='function')cancelCurrentPath(enemy);
+    }
+  }
+}
+function triggerLowHpEquipment(unit){
+  if(!unit?.alive||unit.hp<=0)return;
+  const ratio=unit.hp/unit.maxHp;
+  for(const item of equipmentItems(unit,'quicksilver_cloak')){
+    const rt=equipmentItemRuntime(unit,item);if(rt.triggered||ratio>=.40)continue;
+    rt.triggered=true;clearEquipmentControlAndThreat(unit);healUnit(unit,unit.maxHp*.10,unit);showEquipmentToast(`${unit.name}的水银斗篷触发`);
+  }
+  for(const item of equipmentItems(unit,'unyielding_armor')){
+    const rt=equipmentItemRuntime(unit,item);if(rt.triggered||ratio>=.50)continue;
+    rt.triggered=true;addEquipmentShield(unit,unit.maxHp*.30,5);
+  }
+  for(const item of equipmentItems(unit,'frozen_core')){
+    const rt=equipmentItemRuntime(unit,item);if(rt.triggered||ratio>=.50)continue;
+    rt.triggered=true;unit.mp=Math.min(unit.maxMp,unit.mp+20);addEquipmentShield(unit,unit.maxHp*.20,5);
+  }
+}
 damage=function(source,target,raw,options={}){
   if(!source||!target)return 0;ensureUnitEquipment(source);ensureUnitEquipment(target);
+  const contributor=source.owner?.alive?source.owner:source;
+  if(contributor?.id&&contributor.team!==target.team){target.equipmentContributors=target.equipmentContributors||new Set();target.equipmentContributors.add(contributor.id)}
+  const targetWasAlive=target.alive;
   const isTransfer=!!options.transfer,isDirect=!!options.direct,isEquipment=!!options.equipment,isSummon=!!options.summon,isSkill=!!options.skill&&!isDirect&&!isTransfer&&!isEquipment&&!isSummon,isNormal=!options.skill&&!isDirect&&!isTransfer&&!isEquipment&&!isSummon;
   if(isNormal&&Number.isFinite(source.normalAtkRatio)){
     if(source.name==='宵宫'&&has(source,'yoimiyaRapid')){
@@ -106,6 +148,15 @@ damage=function(source,target,raw,options={}){
   if(effective>0&&isSkill&&hasEquipment(source,'judgment_emblem'))effect(target,'grievous',6,.30);
   if(effective>0&&isNormal&&source!==target&&target.alive&&source.alive){const count=equipmentCount(target,'thornmail');if(count)damage(target,source,effective*.20*count,{skill:true,direct:true,equipment:true})}
   if(target.alive&&target.hp/target.maxHp<.40){for(const item of equipmentItems(target,'emergency_pendant')){const rt=equipmentItemRuntime(target,item);if(rt.triggered)continue;rt.triggered=true;healUnit(target,target.maxHp*.30,target);_effectBeforeEquipment(target,`equipmentEmergencyDR:${item.instanceId}`,5,.15)}}
+  triggerLowHpEquipment(target);
+  if(targetWasAlive&&!target.alive&&target.equipmentContributors){
+    for(const id of target.equipmentContributors){
+      const participant=units.find(unit=>unit.id===id);if(!participant?.alive)continue;
+      for(const item of equipmentItems(participant,'eagle_scope'))equipmentItemRuntime(participant,item).stacks++;
+      if(equipmentCount(participant,'eagle_scope'))recalculateUnitEquipmentStats(participant,false);
+    }
+    target.equipmentContributors.clear();
+  }
   return hpDamage;
 };
 
@@ -123,7 +174,15 @@ function tickEquipmentRuntime(dt){for(const unit of units){if(!unit.alive||unit.
 const _tickBeforeEquipment=tick;
 tick=function(dt){_tickBeforeEquipment(dt);if(started&&!paused&&!ended)tickEquipmentRuntime(dt)};
 
-function initializeEquipmentBattle(){for(const unit of units){ensureUnitEquipment(unit);recalculateUnitEquipmentStats(unit,true);resetEquipmentRuntime(unit);const stats=collectEquipmentStats(unit);unit.mp=Math.min(unit.maxMp,unit.baseStartMana+stats.startMana);const oathCount=equipmentCount(unit,'guardian_oath');if(oathCount){const amount=(300+unit.maxHp*.25)*oathCount;unit.equipmentShield={value:amount,max:amount,time:10};unit.shieldingDone=(unit.shieldingDone||0)+amount}}}
+function initializeEquipmentBattle(){
+  for(const unit of units){ensureUnitEquipment(unit);recalculateUnitEquipmentStats(unit,true);resetEquipmentRuntime(unit);const stats=collectEquipmentStats(unit);unit.mp=Math.min(unit.maxMp,unit.baseStartMana+stats.startMana);const oathCount=equipmentCount(unit,'guardian_oath');if(oathCount)addEquipmentShield(unit,(300+unit.maxHp*.25)*oathCount,10)}
+  for(const carrier of units){
+    const count=equipmentCount(carrier,'domain_core_guard');if(!count||!carrier.alive||carrier.onBench||carrier.inWarehouse)continue;
+    for(const ally of units.filter(unit=>unit.alive&&!unit.onBench&&!unit.inWarehouse&&unit.team===carrier.team&&unit.row===carrier.row&&Math.abs(unit.col-carrier.col)<=2)){
+      addEquipmentShield(ally,(200+ally.maxHp*.10)*count,8);
+    }
+  }
+}
 const _startBattleBeforeEquipment=startBattle;
 startBattle=function(){const result=_startBattleBeforeEquipment();if(started)initializeEquipmentBattle();return result};startBtn.onclick=startBattle;
 

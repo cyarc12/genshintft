@@ -15,8 +15,18 @@ guardian_oath:{id:'guardian_oath',name:'守护誓约',icon:'assets/equipment/gua
 regeneration_pendant:{id:'regeneration_pendant',name:'再生吊坠',icon:'assets/equipment/regeneration_pendant.png',stats:{hpFlat:300,manaPerSecond:2,damageReduction:.10},statText:'最大生命＋300，每秒回蓝＋2，减伤＋10%',effectText:'每2秒回复5%最大生命值。',effect:{type:'periodic_self_heal',interval:2,maxHpRatio:.05}},
 emergency_pendant:{id:'emergency_pendant',name:'应急吊坠',icon:'assets/equipment/emergency_pendant.png',stats:{hpFlat:300,startMana:20},statText:'最大生命＋300，初始法力＋20',effectText:'第一次生命低于40%时，回复30%最大生命值，并获得15%减伤，持续5秒。',effect:{type:'once_low_hp_heal',hpThreshold:.40,maxHpRatio:.30,damageReduction:.15,duration:5}},
 thornmail:{id:'thornmail',name:'荆棘铠甲',icon:'assets/equipment/thornmail.png',stats:{hpFlat:350,physicalRes:40},statText:'最大生命＋350，物理抗性＋40',effectText:'受到普通攻击时，反弹20%实际伤害。',effect:{type:'normal_attack_reflect',value:.20}},
-quicksilver_cloak:{id:'quicksilver_cloak',name:'水银斗篷',icon:'assets/equipment/quicksilver_cloak.png',stats:{hpFlat:250,elementRes:30,tenacity:.40},statText:'最大生命＋250，元素抗性＋30，韧性＋40%',effectText:'第一次受到硬控制时免疫，之后获得15%减伤。',effect:{type:'first_hard_control_immunity',damageReduction:.15}},
+quicksilver_cloak:{id:'quicksilver_cloak',name:'水银斗篷',icon:'assets/equipment/quicksilver_cloak.png',stats:{atkFlat:20,hpFlat:250,attackSpeed:.10},statText:'攻击力＋20，最大生命＋250，攻击速度＋10%',effectText:'生命首次低于40%时，清除自身当前仇恨、回复10%最大生命并解除自身控制。',effect:{type:'low_hp_cleanse_escape',hpThreshold:.40,healRatio:.10}},
 redemption_lamp:{id:'redemption_lamp',name:'救赎之灯',icon:'assets/equipment/redemption_lamp.png',stats:{startMana:20,hpFlat:150},statText:'初始法力＋20，最大生命＋150',effectText:'每7秒治疗生命百分比最低的友军300生命，并额外回复其已损失生命值的15%。',effect:{type:'periodic_lowest_ally_heal',interval:7,flat:300,missingHpRatio:.15}}
+,
+eagle_scope:{id:'eagle_scope',name:'鹰眼瞄具',icon:'assets/equipment/eagle_scope.png',stats:{attackSpeed:.40},statText:'攻击速度＋40%',effectText:'攻击距离＋1；每参与一次击杀，攻击距离额外＋1。',effect:{type:'range_growth_on_takedown',baseRange:1,rangePerTakedown:1}},
+pansheng_armor:{id:'pansheng_armor',name:'磐生重铠',icon:'assets/equipment/pansheng_armor.png',stats:{hpFlat:600,hpPercent:.10},statText:'最大生命＋600，最大生命提高10%',effectText:'无额外效果。',effect:{type:'pure_max_hp'}},
+element_scroll:{id:'element_scroll',name:'元素卷轴',icon:'assets/equipment/element_scroll.png',stats:{startMana:20,manaPerSecond:3},statText:'初始法力＋20',effectText:'每秒自动回复3点法力。',effect:{type:'automatic_mana',value:3}},
+berserker_rune:{id:'berserker_rune',name:'狂战符文',icon:'assets/equipment/berserker_rune.png',stats:{atkFlat:80},statText:'攻击力＋80',effectText:'无额外效果。',effect:{type:'pure_attack'}},
+unyielding_armor:{id:'unyielding_armor',name:'不屈战甲',icon:'assets/equipment/unyielding_armor.png',stats:{atkFlat:50,hpFlat:400},statText:'攻击力＋50，最大生命＋400',effectText:'生命首次低于50%时，获得30%最大生命值的护盾，持续5秒。',effect:{type:'low_hp_shield',hpThreshold:.50,shieldRatio:.30,duration:5}},
+domain_core_swift:{id:'domain_core_swift',name:'领域核心·迅捷',icon:'assets/equipment/domain_core_swift.png',stats:{hpFlat:150,startMana:10},statText:'最大生命＋150，初始法力＋10',effectText:'自身同一排左右各2格内的友军攻击速度＋20%。',effect:{type:'row_aura_attack_speed',range:2,value:.20}},
+domain_core_battle:{id:'domain_core_battle',name:'领域核心·战意',icon:'assets/equipment/domain_core_battle.png',stats:{hpFlat:150,startMana:10},statText:'最大生命＋150，初始法力＋10',effectText:'自身同一排左右各2格内的友军攻击力＋15%。',effect:{type:'row_aura_attack',range:2,value:.15}},
+domain_core_guard:{id:'domain_core_guard',name:'领域核心·守护',icon:'assets/equipment/domain_core_guard.png',stats:{hpFlat:150,startMana:10},statText:'最大生命＋150，初始法力＋10',effectText:'战斗开始时，自身同一排左右各2格内的友军获得200＋10%最大生命值的护盾，持续8秒。',effect:{type:'row_aura_battle_start_shield',range:2,flat:200,maxHpRatio:.10,duration:8}},
+frozen_core:{id:'frozen_core',name:'冰封核心',icon:'assets/equipment/frozen_core.png',stats:{hpFlat:300,startMana:30},statText:'最大生命＋300，初始法力＋30',effectText:'生命首次低于50%时，回复20点法力并获得20%最大生命值的护盾，持续5秒。',effect:{type:'low_hp_mana_shield',hpThreshold:.50,mana:20,shieldRatio:.20,duration:5}}
 };
 const EQUIPMENT_WAREHOUSE_META={
   arcane_prism:{category:'damage',cardStatText:'暴击＋25% · 增伤＋15%',cardEffectText:'技能可暴击'},
@@ -33,10 +43,19 @@ const EQUIPMENT_WAREHOUSE_META={
   bulwark_armor:{category:'defense',cardStatText:'物抗＋60 · 元抗＋50',cardEffectText:'减伤5%'},
   guardian_oath:{category:'defense',cardStatText:'生命＋400 · 物抗＋30 · 元抗＋20',cardEffectText:'开局获得护盾'},
   thornmail:{category:'defense',cardStatText:'生命＋350 · 物抗＋40',cardEffectText:'反弹20%实际伤害'},
-  quicksilver_cloak:{category:'defense',cardStatText:'生命＋250 · 韧性＋40%',cardEffectText:'首次免控后减伤'},
+  quicksilver_cloak:{category:'defense',cardStatText:'攻击＋20 · 生命＋250 · 攻速＋10%',cardEffectText:'低血清仇恨、回血并解控'},
   regeneration_pendant:{category:'defense',cardStatText:'生命＋300 · 每秒回蓝＋2',cardEffectText:'每2秒恢复5%生命'},
   emergency_pendant:{category:'defense',cardStatText:'生命＋300 · 初始法力＋20',cardEffectText:'低血急救并减伤'},
-  redemption_lamp:{category:'support',cardStatText:'初始法力＋20 · 生命＋150',cardEffectText:'周期治疗最低血友军'}
+  redemption_lamp:{category:'support',cardStatText:'初始法力＋20 · 生命＋150',cardEffectText:'周期治疗最低血友军'},
+  eagle_scope:{category:'damage',cardStatText:'攻速＋40% · 距离＋1',cardEffectText:'参与击杀继续增加射程'},
+  pansheng_armor:{category:'defense',cardStatText:'生命＋600 · 生命＋10%',cardEffectText:'纯生命坦克装备'},
+  element_scroll:{category:'tempo',cardStatText:'初始法力＋20',cardEffectText:'每秒自动回复3点法力'},
+  berserker_rune:{category:'damage',cardStatText:'攻击＋80',cardEffectText:'纯攻击力装备'},
+  unyielding_armor:{category:'defense',cardStatText:'攻击＋50 · 生命＋400',cardEffectText:'半血触发护盾'},
+  domain_core_swift:{category:'support',cardStatText:'生命＋150 · 初始法力＋10',cardEffectText:'横排友军攻速＋20%'},
+  domain_core_battle:{category:'support',cardStatText:'生命＋150 · 初始法力＋10',cardEffectText:'横排友军攻击＋15%'},
+  domain_core_guard:{category:'support',cardStatText:'生命＋150 · 初始法力＋10',cardEffectText:'开局为横排友军提供护盾'},
+  frozen_core:{category:'tempo',cardStatText:'生命＋300 · 初始法力＋30',cardEffectText:'半血回蓝并获得护盾'}
 };
 for(const [id,meta] of Object.entries(EQUIPMENT_WAREHOUSE_META)){
   Object.assign(EQUIPMENT_CONFIG[id],meta,{detailText:EQUIPMENT_CONFIG[id].effectText,itemClass:'standard_completed'});
