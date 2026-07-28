@@ -1053,6 +1053,17 @@ resolveHit=function(a){
   if(kokomi)raw+=u.maxHp*confirmedValue(u,[.05,.06,.08]);
   const dealt=damage(u,t,raw,{elemental,damageElement:elemental?u.element:null});
   if(attach&&t.alive)attachAndReact(u,t,dealt);
+  if(raiden&&dealt>0){
+    u.raidenHitCount=(u.raidenHitCount||0)+1;
+    if(u.raidenHitCount%4===0){
+      const recipients=units
+        .filter(ally=>ally.alive&&!ally.onBench&&!ally.inWarehouse&&!ally.isSummon&&!ally.isDummy&&ally.team===u.team&&ally!==u&&ally.maxMp>0)
+        .sort((a,b)=>(a.mp/Math.max(1,a.maxMp))-(b.mp/Math.max(1,b.maxMp))||a.mp-b.mp)
+        .slice(0,3);
+      recipients.forEach(ally=>gainMana(ally,10,true));
+      if(recipients.length)addLog(`${u.name}的梦想一心第4次普攻为${recipients.map(ally=>ally.name).join('、')}各回复10点法力`,'reaction');
+    }
+  }
   const manaLocked=hutao||raiden||yoimiya||kokomi||clorinde||has(u,'arlecchinoEmpower');
   if(!manaLocked)u.mp=Math.min(u.maxMp,u.mp+10);
   if(layla&&t.alive){attachAndReact(u,t,dealt);layla.value=(Number(layla.value)||1)-1;if(layla.value<=0)u.effects=u.effects.filter(e=>e!==layla)}
@@ -1105,7 +1116,7 @@ Object.assign(SKILL_INFO,{
   '琴':'初始法力40/95。\\n【R·蒲公英之风】自身与周围六格生成领域8秒，立即并每2秒治疗100/165/520，共4次；领域内友军减伤10%。每名敌人首次进入受到10/20/100风伤并可扩散。',
   '安柏':'初始法力40/120。\\n【R·爆弹玩偶】延迟1秒后对半径1.5格敌人造成攻击力700%/900%/2200%火伤，全部附着。',
   '诺艾尔':'初始法力30/100。\\n【被动·守护之心】每名正以诺艾尔为目标的敌人使物理抗性和元素抗性分别提高8/10/15点；敌人切换目标或死亡后，对应层数延迟2秒移除。护盾存在期间层数冻结，不新增也不衰减。\\n【R·护心岩铠】嘲讽当前目标所在格及周围六格内的敌人5秒，并获得250/400/1200 + (当前物理抗性 + 当前元素抗性)×1/2/5的护盾，持续5秒。技能不造成伤害，也不施加岩元素附着。',
-  '雷电将军':'初始法力40/80。\\n【R·奥义·梦想真说】对当前目标及同行最多3格造成攻击力300%/500%/1200%雷伤并附着；随后5秒攻速+100%、固定攻击+20/50/120，普攻转雷伤且锁蓝、不附着。',
+  '雷电将军':'初始法力40/80。\\n【R·奥义·梦想真说】对当前目标及同行最多3格造成攻击力300%/500%/1200%雷伤并附着；随后5秒攻速+100%、固定攻击+20/50/120，普攻转雷伤且锁蓝、不附着。强化期间每第4次有效普攻，为除自身外法力比例最低的3名友军各回复10点法力。',
   '胡桃':'初始法力20/70。\\n【被动】根据已损失生命比例获得增伤，最高30%。\\n【R·彼岸蝶舞】消耗当前生命30%，8秒内固定攻击+90/170/450，普攻转火伤、每第3次附着并锁蓝。首次致死保留1生命、免费刷新技能并永久获得20%额外吸血；一、二星无敌2秒，三星无敌10秒。三星强化期间额外获得3.0攻速与30%减伤。',
   '甘雨':'初始法力20/80。\\n每第3次普攻替换为霜华矢，造成攻击力220%/320%/800%冰伤并仅对主目标附着，周围1.5格承受60%。\\n【R·降众天华】一、二星在目标周围2.5格生成6秒领域；三星生成覆盖全棋盘的30秒领域。每2秒造成60/90/260冰伤；停留4秒后，一、二星冻结2秒，三星冻结10秒。',
   '八重神子':'召唤阶段10/60；大招阶段一、二星0/120，三星0/50。普通攻击固定10雷伤、不附着。杀生樱每2.5秒攻击，倍率87.5%/112.5%/300%，每第2次附着；三星第一次释放直接召唤3株杀生樱。同队3株后升阶至131.25%/168.75%/450%并切换大招。天狐显真：一星全屏200%攻击雷伤，二星全屏350%；三星十段全屏天雷，每段500%，总计5000%。首击永久施加30%重伤。'
