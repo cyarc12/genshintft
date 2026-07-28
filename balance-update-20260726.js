@@ -80,11 +80,13 @@ function initializeConfirmedUnit(u,resetRatio=false){
   const cfg=PIECE_CONFIG[u.name];if(!cfg)return;
   const oldMax=Math.max(1,u.maxHp||1),hpRatio=resetRatio?1:Math.max(0,Math.min(1,u.hp/oldMax));
   const s=statsForStar(cfg,u.star||1),eq=typeof collectEquipmentStats==='function'?collectEquipmentStats(u):{hpPercent:0,atkPercent:0,res:0,attackSpeed:0,startMana:0};
-  u.maxHp=Math.round(s.hp*(1+(eq.hpPercent||0))+(eq.hpFlat||0));u.hp=Math.max(u.alive===false?0:1,Math.round(u.maxHp*hpRatio));
+  u.maxHp=Math.round((s.hp+(eq.hpFlat||0))*(1+(eq.hpPercent||0)));u.hp=Math.max(u.alive===false?0:1,Math.round(u.maxHp*hpRatio));
   u.atk=Math.round(s.atk*(1+(eq.atkPercent||0))+(eq.atkFlat||0));u.baseAtkForGrowth=s.atk;
   u.def=s.physicalResist+(eq.res||0)+(eq.physicalRes||0);u.elementDef=s.elementResist+(eq.res||0)+(eq.elementRes||0);
   u.basePhysicalResist=s.physicalResist;u.baseElementResist=s.elementResist;
-  u.as=Math.min(5,s.as+(eq.attackSpeed||0));u.baseAsForGrowth=s.as;u.range=s.range;u.maxMp=s.maxMana;
+  const scopeBase=typeof equipmentCount==='function'?equipmentCount(u,'eagle_scope'):0;
+  const scopeGrowth=typeof equipmentStackTotal==='function'?equipmentStackTotal(u,'eagle_scope'):0;
+  u.as=Math.min(5,s.as+(eq.attackSpeed||0));u.baseAsForGrowth=s.as;u.range=s.range+scopeBase+scopeGrowth;u.maxMp=s.maxMana;
   u.baseStartMana=s.initialMana;u.normalBaseDamage=s.normalBaseDamage;u.normalAtkRatio=s.normalAtkRatio;
 }
 for(const u of units)initializeConfirmedUnit(u);
