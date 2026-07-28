@@ -385,6 +385,9 @@
     lastRenderKey = renderKey;
     slot.innerHTML = renderTeam('red') + renderTeam('blue');
     document.body.classList.toggle('pve-resonance-layout', !!window.PVE_FIRST_ACTIVE);
+    if (!started && selectedUnit && inspect?.classList.contains('show')) {
+      requestAnimationFrame(() => renderUnitInspect(selectedUnit));
+    }
   }
 
   function triggerResonanceActivation(team, element, tier) {
@@ -495,6 +498,7 @@
       const waterTier = resonanceTier(unit, '水');
       const iceTier = resonanceTier(unit, '冰');
       const electroTier = resonanceTier(unit, '雷');
+      const resonanceManaPerSecond = electroTier >= 5 ? 5 : electroTier >= 4 ? 3 : electroTier >= 3 ? 2 : electroTier >= 2 ? 1 : 0;
       unit._battleResonanceTiers = {
         fire: resonanceTier(unit, '火'),
         water: waterTier,
@@ -505,6 +509,9 @@
       };
       const hpBonus = waterTier >= 4 ? .30 : waterTier >= 3 ? .20 : waterTier >= 2 ? .15 : 0;
       unit._resonanceHpApplied = hpBonus;
+      unit._resonanceManaPerSecond = resonanceManaPerSecond;
+      unit.equipmentStats ||= {};
+      unit.equipmentStats.manaPerSecond = (Number(unit.equipmentStats.manaPerSecond) || 0) + resonanceManaPerSecond;
       unit._resonanceBaseMaxHp = unit.maxHp;
       if (hpBonus > 0) {
         unit.maxHp = Math.round(unit._resonanceBaseMaxHp * (1 + hpBonus));
@@ -595,6 +602,12 @@
           if (mpFill) mpFill.style.width = `${Math.max(0, Math.min(100, shownMp / Math.max(1, unit.maxMp) * 100))}%`;
         }
       }
+      const panelElectroTier = resonanceTier(unit, '雷');
+      const resonanceManaRate = panelElectroTier >= 5 ? 5 : panelElectroTier >= 4 ? 3 : panelElectroTier >= 3 ? 2 : panelElectroTier >= 2 ? 1 : 0;
+      const baseManaRate = (unit.weapon === '法器' ? 5 : 0) + (Number(unit.equipmentStats?.manaPerSecond) || 0);
+      const visibleManaRate = baseManaRate + (!started ? resonanceManaRate : 0);
+      const manaRateNode = inspect.querySelector('.mana-regen-rate');
+      if (manaRateNode) manaRateNode.textContent = visibleManaRate > 0 ? `+${Number.isInteger(visibleManaRate) ? visibleManaRate : visibleManaRate.toFixed(1)}/s` : '';
       const critItem = [...inspect.querySelectorAll('.stat-item')]
         .find(node => node.querySelector('span')?.textContent.trim() === '暴击');
       if (critItem?.querySelector('b')) {
@@ -693,12 +706,7 @@
         if (!unit?.alive || unit.onBench || unit.inWarehouse || unit.isDummy || unit.isSummon) continue;
         const waterTier = unit._battleResonanceTiers?.water ?? resonanceTier(unit, '水');
         const electroTier = unit._battleResonanceTiers?.electro ?? resonanceTier(unit, '雷');
-        if (waterTier >= 4) healUnit(unit, unit.maxHp * .02, unit);
-        const mana = electroTier >= 5 ? 5 : electroTier >= 4 ? 3 : electroTier >= 3 ? 2 : electroTier >= 2 ? 1 : 0;
-        if (mana > 0) {
-          if (typeof gainMana === 'function') gainMana(unit, mana, true);
-          else unit.mp = Math.min(unit.maxMp, unit.mp + mana);
-        }
+        if (waterTier >= 4) healUnit(unit, unit.maxHp * .02, unit, false);
       }
     }
     for (const team of ['red', 'blue']) {

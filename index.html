@@ -373,7 +373,7 @@ function panelAs(u){return getFinalStat(u,'as')}
 function outgoingDamageModifier(u,target=u?.target){let modifier=getFinalStat(u,'dmgOut');if(u?.weapon==='弓'&&target?.alive)modifier+=Math.max(0,dist(u,target))*.02;return Math.round(modifier*100)/100}
 function incomingDamageModifier(u,source){let m=getFinalStat(u,'dmgIn');if(u.weapon==='单手剑'&&source&&u.target&&u.target!==source)m-=.15;return Math.round(m*100)/100}
 function signedPercent(value){const rounded=Math.round(value*100);return`${rounded>0?'+':''}${rounded}%`}
-function healUnit(target,amount,source=target){if(!target?.alive||amount<=0)return 0;if(has(target,'grievous'))amount*=.7;const healed=Math.min(amount,target.maxHp-target.hp);if(healed<=0)return 0;target.hp+=healed;if(source)source.healingDone+=healed;healingAnimations.push({target,value:healed,time:0,duration:.9,seed:Math.random()*10});return healed}
+function healUnit(target,amount,source=target,show=true){if(!target?.alive||amount<=0)return 0;if(has(target,'grievous'))amount*=.7;const healed=Math.min(amount,target.maxHp-target.hp);if(healed<=0)return 0;target.hp+=healed;if(source)source.healingDone+=healed;if(show)healingAnimations.push({target,value:healed,time:0,duration:.9,seed:Math.random()*10});return healed}
 function gainMana(target,amount,show=true){if(!target?.alive||amount<=0||target.maxMp<=0)return 0;const gained=Math.min(amount,target.maxMp-target.mp);if(gained<=0)return 0;target.mp+=gained;if(show)healingAnimations.push({target,value:gained,type:'mana',time:0,duration:.9,seed:Math.random()*10});return gained}
 function randomTarget(list){return list[Math.floor(Math.random()*list.length)]}
 function findTarget(u){

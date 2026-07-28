@@ -441,23 +441,23 @@ function drawYelanBindings(){
     const target=unitById(binding.targetId);
     const p=target?.alive&&!target.onBench?unitVisualPos(target):binding.fallback;
     if(!p)continue;
-    const progress=Math.min(1,binding.time/binding.duration);
-    const tighten=Math.min(1,progress/.58);
-    const fade=progress<.68?1:Math.max(0,1-(progress-.68)/.32);
+    const progress=Math.min(1,binding.time/binding.wrapDuration);
+    const tighten=Math.min(1,progress);
+    const remaining=Math.max(0,binding.duration-binding.time);
+    const fade=Math.min(1,remaining/.22);
     const radius=35-11*Math.pow(tighten,1.7);
     ctx.save();ctx.translate(p.x,p.y);ctx.globalCompositeOperation='lighter';
     ctx.lineCap='round';ctx.shadowColor='#39bfff';ctx.shadowBlur=7;
     for(let strand=0;strand<4;strand++){
-      const phase=binding.seed+strand*Math.PI*.47+progress*(1.7+strand*.08);
       const y=-15+strand*10,vertical=7-2.5*tighten;
       ctx.globalAlpha=(.48+strand*.05)*fade;
       ctx.strokeStyle=strand%2?'#b8efff':'#48c9ff';
       ctx.lineWidth=strand%2?1.1:1.55;
       ctx.beginPath();
-      ctx.ellipse(0,y,radius*(.92+strand*.025),vertical,phase*.08,phase,phase+Math.PI*1.72);
+      ctx.ellipse(0,y,radius*(.92+strand*.025),vertical,0,0,Math.PI*2);
       ctx.stroke();
     }
-    const pull=Math.max(0,(progress-.42)/.58);
+    const pull=Math.max(0,(progress-.35)/.65);
     for(const side of [-1,1]){
       ctx.globalAlpha=.68*fade;ctx.strokeStyle='#d8f8ff';ctx.lineWidth=1.1;
       ctx.beginPath();
@@ -477,7 +477,7 @@ tick=function(dt){
   confirmedMeltEffects.forEach(effectData=>effectData.time+=dt);
   confirmedMeltEffects=confirmedMeltEffects.filter(effectData=>effectData.time<effectData.duration);
   yelanBindings.forEach(binding=>binding.time+=dt);
-  yelanBindings=yelanBindings.filter(binding=>binding.time<binding.duration);
+  yelanBindings=yelanBindings.filter(binding=>{const target=unitById(binding.targetId);return binding.time<binding.duration&&target?.alive&&has(target,'silence')});
   for(const mark of vaporMarks){mark.time-=dt;mark.maxTime-=dt;if((mark.time<=0||mark.maxTime<=0)&&!mark.settling){mark.settling=true;const target=unitById(mark.targetId);if(target?.alive&&mark.recorded>0)damage(mark.source,target,mark.recorded*.25,{skill:true,elemental:true,reaction:true,allowReaction:false,allowVaporRecord:false})}}
   vaporMarks=vaporMarks.filter(m=>!m.settling&&unitById(m.targetId)?.alive);
   electroLinks.forEach(g=>g.time-=dt);
@@ -593,10 +593,11 @@ tickKleeBombs=function(dt){
 castYelanSkill=function(u){
   const enemies=confirmedEnemies(u);if(!enemies.length)return false;
   const t=[...enemies].sort((a,b)=>(b.damageDealt||0)-(a.damageDealt||0))[0];
-  yelanBindings.push({targetId:t.id,fallback:unitVisualPos(t),time:0,duration:.82,seed:Math.random()*Math.PI*2});
+  const silenceDuration=confirmedValue(u,[2.5,3.5,5]);
+  yelanBindings.push({targetId:t.id,fallback:unitVisualPos(t),time:0,wrapDuration:.72,duration:silenceDuration});
   confirmedElementHit(u,t,confirmedValue(u,[90,160,320])+effectiveAtk(u)*confirmedValue(u,[.90,1.05,1.30]),true);
   t.mp=Math.max(0,t.mp-confirmedValue(u,[15,20,30]));
-  effect(t,'silence',confirmedValue(u,[2.5,3.5,5]),1);
+  effect(t,'silence',silenceDuration,1);
   confirmedFinish(u);return true;
 };
 castAyakaSkill=function(u){

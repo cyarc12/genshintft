@@ -1,4 +1,5 @@
 let nextEquipmentInstanceId=1,equipmentDragState=null,consumableDragState=null,equipmentHoverUnit=null,selectedEquipmentId=null,suppressEquipmentClick=false;
+let equipmentOpeningArrows=[];
 window.unitEquipmentHovering=false;
 
 function ensureUnitEquipment(unit){
@@ -158,23 +159,34 @@ damage=function(source,target,raw,options={}){
 const _castSkillBeforeEquipment=castSkill;
 castSkill=function(unit){const before=unit.mp;const result=_castSkillBeforeEquipment(unit);if(unit.mp<before||unit.mp===0)onEquipmentSkillCast(unit);return result};
 
-function tickEquipmentRuntime(dt){for(const unit of units){if(!unit.alive||unit.onBench||unit.isDummy)continue;ensureUnitEquipment(unit);const rt=unit.equipmentRuntime;
+function tickEquipmentRuntime(dt){equipmentOpeningArrows.forEach(arrow=>arrow.time+=dt);equipmentOpeningArrows=equipmentOpeningArrows.filter(arrow=>arrow.time<arrow.duration&&arrow.unit?.alive);for(const unit of units){if(!unit.alive||unit.onBench||unit.isDummy)continue;ensureUnitEquipment(unit);const rt=unit.equipmentRuntime;
     if(unit.equipmentShield){unit.equipmentShield.time-=dt;if(unit.equipmentShield.time<=0)unit.equipmentShield=null}
     unit.mp=Math.min(unit.maxMp,unit.mp+(unit.equipmentStats?.manaPerSecond||0)*dt);
     for(const item of equipmentItems(unit,'temporal_bowstring')){const itemRt=equipmentItemRuntime(unit,item);itemRt.timer+=dt;while(itemRt.timer>=3){itemRt.timer-=3;itemRt.stacks++}}
     rt.stacks.temporalBow=equipmentStackTotal(unit,'temporal_bowstring');
-    for(const item of equipmentItems(unit,'regeneration_pendant')){const itemRt=equipmentItemRuntime(unit,item);itemRt.timer+=dt;while(itemRt.timer>=2){itemRt.timer-=2;healUnit(unit,unit.maxHp*.05,unit)}}
+    for(const item of equipmentItems(unit,'regeneration_pendant')){const itemRt=equipmentItemRuntime(unit,item);itemRt.timer+=dt;while(itemRt.timer>=2){itemRt.timer-=2;healUnit(unit,unit.maxHp*.05,unit,false)}}
     for(const item of equipmentItems(unit,'redemption_lamp')){const itemRt=equipmentItemRuntime(unit,item);itemRt.timer+=dt;while(itemRt.timer>=7){itemRt.timer-=7;const allies=units.filter(x=>x.alive&&!x.onBench&&x.team===unit.team&&x.hp<x.maxHp).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp||a.hp-b.hp||String(a.id).localeCompare(String(b.id)));const main=allies[0];if(main)healUnit(main,300+(main.maxHp-main.hp)*.15,unit)}}
   }}
 const _tickBeforeEquipment=tick;
 tick=function(dt){_tickBeforeEquipment(dt);if(started&&!paused&&!ended)tickEquipmentRuntime(dt)};
 
+function addEquipmentOpeningArrow(unit,color,kind){if(!unit?.alive)return;if(equipmentOpeningArrows.some(arrow=>arrow.unit===unit&&arrow.kind===kind))return;equipmentOpeningArrows.push({unit,color,kind,time:0,duration:1.05})}
+function drawEquipmentOpeningArrows(){for(const arrow of equipmentOpeningArrows){const p=unitVisualPos(arrow.unit),progress=Math.min(1,arrow.time/arrow.duration),fade=progress<.72?1:Math.max(0,(1-progress)/.28),rise=10+progress*34,pulse=1+Math.sin(progress*Math.PI)*.16;ctx.save();ctx.translate(p.x,p.y+12-rise);ctx.scale(pulse,pulse);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.82*fade;ctx.strokeStyle=arrow.color;ctx.fillStyle=arrow.color;ctx.shadowColor=arrow.color;ctx.shadowBlur=12;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(10,-2);ctx.lineTo(5,-2);ctx.lineTo(5,10);ctx.lineTo(-5,10);ctx.lineTo(-5,-2);ctx.lineTo(-10,-2);ctx.closePath();ctx.fill();ctx.globalAlpha=.9*fade;ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();ctx.restore()}}
+const _drawBeforeEquipmentArrows=draw;
+draw=function(){_drawBeforeEquipmentArrows();drawEquipmentOpeningArrows()};
+
 function initializeEquipmentBattle(){
+  equipmentOpeningArrows=[];
   for(const unit of units){ensureUnitEquipment(unit);resetEquipmentRuntime(unit);unit.equipmentTakedownResolved=false;recalculateUnitEquipmentStats(unit,true);const stats=collectEquipmentStats(unit);unit.mp=Math.min(unit.maxMp,unit.baseStartMana+stats.startMana);const oathCount=equipmentCount(unit,'guardian_oath');if(oathCount)addEquipmentShield(unit,(300+unit.maxHp*.25)*oathCount,10)}
+  for(const ally of units.filter(unit=>unit.alive&&!unit.onBench&&!unit.inWarehouse&&!unit.isDummy&&!unit.isSummon)){
+    if(rowAuraCount(ally,'domain_core_battle')>0)addEquipmentOpeningArrow(ally,'#ff5d58','attack');
+    if(rowAuraCount(ally,'domain_core_swift')>0)addEquipmentOpeningArrow(ally,'#57e894','speed');
+  }
   for(const carrier of units){
     const count=equipmentCount(carrier,'domain_core_guard');if(!count||!carrier.alive||carrier.onBench||carrier.inWarehouse)continue;
     for(const ally of units.filter(unit=>unit.alive&&!unit.onBench&&!unit.inWarehouse&&unit.team===carrier.team&&unit.row===carrier.row&&Math.abs(unit.col-carrier.col)<=2)){
       addEquipmentShield(ally,(200+ally.maxHp*.10)*count,8);
+      addEquipmentOpeningArrow(ally,'#f4f7ff','shield');
     }
   }
 }
