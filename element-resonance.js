@@ -495,6 +495,14 @@
       const waterTier = resonanceTier(unit, '水');
       const iceTier = resonanceTier(unit, '冰');
       const electroTier = resonanceTier(unit, '雷');
+      unit._battleResonanceTiers = {
+        fire: resonanceTier(unit, '火'),
+        water: waterTier,
+        ice: iceTier,
+        electro: electroTier,
+        wind: resonanceTier(unit, '风'),
+        geo: resonanceTier(unit, '岩')
+      };
       const hpBonus = waterTier >= 4 ? .30 : waterTier >= 3 ? .20 : waterTier >= 2 ? .15 : 0;
       if (hpBonus > 0 && !unit._resonanceHpApplied) {
         unit._resonanceHpApplied = hpBonus;
@@ -681,11 +689,14 @@
       runtime.secondAccumulator -= 1;
       for (const unit of units) {
         if (!unit?.alive || unit.onBench || unit.inWarehouse || unit.isDummy || unit.isSummon) continue;
-        const waterTier = resonanceTier(unit, '水');
-        const electroTier = resonanceTier(unit, '雷');
+        const waterTier = unit._battleResonanceTiers?.water ?? resonanceTier(unit, '水');
+        const electroTier = unit._battleResonanceTiers?.electro ?? resonanceTier(unit, '雷');
         if (waterTier >= 4) healUnit(unit, unit.maxHp * .02, unit);
         const mana = electroTier >= 5 ? 5 : electroTier >= 4 ? 3 : electroTier >= 3 ? 2 : electroTier >= 2 ? 1 : 0;
-        if (mana > 0) unit.mp = Math.min(unit.maxMp, unit.mp + mana);
+        if (mana > 0) {
+          if (typeof gainMana === 'function') gainMana(unit, mana, true);
+          else unit.mp = Math.min(unit.maxMp, unit.mp + mana);
+        }
       }
     }
     for (const team of ['red', 'blue']) {
