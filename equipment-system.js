@@ -171,7 +171,7 @@ const _tickBeforeEquipment=tick;
 tick=function(dt){_tickBeforeEquipment(dt);if(started&&!paused&&!ended)tickEquipmentRuntime(dt)};
 
 function addEquipmentOpeningArrow(unit,color,kind){if(!unit?.alive)return;if(equipmentOpeningArrows.some(arrow=>arrow.unit===unit&&arrow.kind===kind))return;const sequence=equipmentOpeningArrows.filter(arrow=>arrow.unit===unit).length;equipmentOpeningArrows.push({unit,color,kind,time:0,delay:sequence*.92,duration:.92})}
-function drawEquipmentOpeningArrows(){for(const arrow of equipmentOpeningArrows){if(arrow.time<arrow.delay)continue;const p=unitVisualPos(arrow.unit),progress=Math.min(1,(arrow.time-arrow.delay)/arrow.duration),fade=progress<.76?1:Math.max(0,(1-progress)/.24);ctx.save();ctx.globalCompositeOperation='source-over';ctx.fillStyle=arrow.color;ctx.strokeStyle='#f7fbff';ctx.shadowColor=arrow.color;ctx.shadowBlur=7;for(let i=0;i<5;i++){const delay=i*.055,local=Math.max(0,Math.min(1,(progress-delay)/(1-delay))),lane=i-2,x=p.x+lane*9+(i%2?2:-2),y=p.y+24-local*(34+Math.abs(lane)*3),scale=.72+Math.sin(local*Math.PI)*.08;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=(.92-Math.abs(lane)*.045)*fade*Math.min(1,local*5);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(6,0);ctx.lineTo(3,0);ctx.lineTo(3,7);ctx.lineTo(-3,7);ctx.lineTo(-3,0);ctx.lineTo(-6,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}ctx.restore()}}
+function drawEquipmentOpeningArrows(){for(const arrow of equipmentOpeningArrows){if(arrow.time<arrow.delay)continue;const p=unitVisualPos(arrow.unit),progress=Math.min(1,(arrow.time-arrow.delay)/arrow.duration),fade=progress<.76?1:Math.max(0,(1-progress)/.24),origins=[{x:15,y:20},{x:-18,y:3},{x:15,y:-12}];ctx.save();ctx.globalCompositeOperation='source-over';ctx.fillStyle=arrow.color;ctx.strokeStyle='#172131';ctx.shadowColor=arrow.color;ctx.shadowBlur=3;for(const origin of origins){const local=progress,x=p.x+origin.x,y=p.y+origin.y-local*25,scale=.72+Math.sin(local*Math.PI)*.06;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=.96*fade*Math.min(1,local*6);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(6,0);ctx.lineTo(3,0);ctx.lineTo(3,7);ctx.lineTo(-3,7);ctx.lineTo(-3,0);ctx.lineTo(-6,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}ctx.restore()}}
 const _drawBeforeEquipmentArrows=draw;
 draw=function(){_drawBeforeEquipmentArrows();drawEquipmentOpeningArrows()};
 
@@ -179,14 +179,14 @@ function initializeEquipmentBattle(){
   equipmentOpeningArrows=[];
   for(const unit of units){ensureUnitEquipment(unit);resetEquipmentRuntime(unit);unit.equipmentTakedownResolved=false;recalculateUnitEquipmentStats(unit,true);const stats=collectEquipmentStats(unit);unit.mp=Math.min(unit.maxMp,unit.baseStartMana+stats.startMana);const oathCount=equipmentCount(unit,'guardian_oath');if(oathCount)addEquipmentShield(unit,(300+unit.maxHp*.25)*oathCount,10)}
   for(const ally of units.filter(unit=>unit.alive&&!unit.onBench&&!unit.inWarehouse&&!unit.isDummy&&!unit.isSummon)){
-    if(rowAuraCount(ally,'domain_core_battle')>0)addEquipmentOpeningArrow(ally,'#ff5d58','attack');
-    if(rowAuraCount(ally,'domain_core_swift')>0)addEquipmentOpeningArrow(ally,'#57e894','speed');
+    if(rowAuraCount(ally,'domain_core_battle')>0)addEquipmentOpeningArrow(ally,'#df3f35','attack');
+    if(rowAuraCount(ally,'domain_core_swift')>0)addEquipmentOpeningArrow(ally,'#25bb69','speed');
   }
   for(const carrier of units){
     const count=equipmentCount(carrier,'domain_core_guard');if(!count||!carrier.alive||carrier.onBench||carrier.inWarehouse)continue;
     for(const ally of units.filter(unit=>unit.alive&&!unit.onBench&&!unit.inWarehouse&&unit.team===carrier.team&&unit.row===carrier.row&&Math.abs(unit.col-carrier.col)<=2)){
       addEquipmentShield(ally,(200+ally.maxHp*.10)*count,8);
-      addEquipmentOpeningArrow(ally,'#f4f7ff','shield');
+      addEquipmentOpeningArrow(ally,'#c7d2e2','shield');
     }
   }
 }
