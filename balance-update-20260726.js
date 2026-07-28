@@ -434,7 +434,42 @@ draw=function(){
   drawBeforeConfirmedReactions();
   drawConfirmedReactionEffects();
   drawYelanBindings();
+  drawDelayedRaidenBursts();
 };
+
+let delayedRaidenBursts=[];
+function drawDelayedRaidenBursts(){
+  for(const burst of delayedRaidenBursts){
+    const source=unitById(burst.sourceId),target=unitById(burst.targetId);
+    const from=source?.alive?unitVisualPos(source):burst.from;
+    const to=target?.alive?unitVisualPos(target):burst.to;
+    if(!from||!to)continue;
+    burst.from=from;burst.to=to;
+    const dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,angle=Math.atan2(dy,dx);
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    if(burst.time<burst.explodeAt){
+      const appear=Math.min(1,burst.time/.22),charge=Math.max(0,(burst.time-.22)/(burst.explodeAt-.22));
+      ctx.translate(from.x,from.y);ctx.rotate(angle);
+      ctx.shadowColor='#8f49ff';ctx.shadowBlur=14+charge*12;
+      ctx.globalAlpha=.9;ctx.strokeStyle='#ab63ff';ctx.lineWidth=5-charge*1.5;
+      ctx.beginPath();ctx.moveTo(10,-5);ctx.lineTo(len*appear+28,-5);ctx.stroke();
+      ctx.strokeStyle='#f1e4ff';ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(len*appear+34,0);ctx.stroke();
+      ctx.globalAlpha=.35+.25*Math.sin(charge*Math.PI*6);
+      ctx.strokeStyle='#d49aff';ctx.lineWidth=10;
+      ctx.beginPath();ctx.moveTo(18,3);ctx.lineTo(len+40,3);ctx.stroke();
+    }else{
+      const p=Math.min(1,(burst.time-burst.explodeAt)/(burst.duration-burst.explodeAt)),fade=1-p;
+      ctx.translate(to.x,to.y);ctx.shadowColor='#b45cff';ctx.shadowBlur=24;
+      ctx.globalAlpha=.75*fade;ctx.strokeStyle='#c475ff';ctx.lineWidth=5-2*p;
+      ctx.beginPath();ctx.ellipse(0,2,18+p*58,8+p*25,angle,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=.42*fade;ctx.fillStyle='#e2bdff';
+      ctx.beginPath();ctx.arc(0,0,12+p*35,0,Math.PI*2);ctx.fill();
+      for(let i=0;i<8;i++){const a=i*Math.PI/4+p*.5,r=18+p*48;ctx.globalAlpha=.7*fade;ctx.strokeStyle=i%2?'#f4e7ff':'#9d4cff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);ctx.stroke()}
+    }
+    ctx.restore();
+  }
+}
 
 function drawYelanBindings(){
   for(const binding of yelanBindings){
@@ -487,6 +522,25 @@ tick=function(dt){
   );
   for(const z of confirmedSuperconductZones){z.time-=dt;for(const u of units.filter(x=>x.alive&&!x.onBench&&x.team!==z.team&&!z.triggered.has(x.id)&&z.cells.some(c=>c.row===x.row&&c.col===x.col))){z.triggered.add(u.id);u.mp=Math.max(0,u.mp-20);effect(u,'physicalResistFlatDown',5,20)}}
   confirmedSuperconductZones=confirmedSuperconductZones.filter(z=>z.time>0);
+  for(const burst of delayedRaidenBursts){
+    burst.time+=dt;
+    if(!burst.resolved&&burst.time>=burst.explodeAt){
+      burst.resolved=true;
+      const source=unitById(burst.sourceId);
+      if(!source?.alive)continue;
+      for(const id of burst.targetIds){
+        const target=unitById(id);if(!target?.alive)continue;
+        confirmedElementHit(source,target,effectiveAtk(source)*burst.dmgPct,true);
+        triggerElementalHit(target,'雷');
+        spawn(target,'#b869ff',18);
+      }
+      effect(source,'raidenEmpower',5,burst.atkBoost);
+      source.raidenHitCount=0;source.aiState='IDLE';source.decisionCooldown=.12;
+      spawn(source,'#9c57ff',22);
+      addLog(`${source.name}的延时刀光爆发，命中${burst.targetIds.length}名目标并进入梦想一心5秒`,'reaction');
+    }
+  }
+  delayedRaidenBursts=delayedRaidenBursts.filter(burst=>burst.time<burst.duration&&unitById(burst.sourceId)?.alive);
   for(const noelle of units.filter(u=>u.alive&&!u.onBench&&u.name==='诺艾尔')){
     if(noelle.noellePassivePaused)continue;
     const activeIds=new Set(units
@@ -821,8 +875,10 @@ castArlecchinoSkill=function(u){
 castRaidenSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
   const victims=confirmedEnemies(u).filter(e=>e===t||(e.row===t.row&&Math.abs(e.col-t.col)<=3)).slice(0,4);
-  victims.forEach(e=>confirmedElementHit(u,e,effectiveAtk(u)*confirmedValue(u,[3,5,12]),true));
-  effect(u,'raidenEmpower',5,confirmedValue(u,[20,50,120]));u.raidenHitCount=0;confirmedFinish(u);return true;
+  confirmedFinish(u);u.aiState='CASTING';
+  delayedRaidenBursts.push({sourceId:u.id,targetId:t.id,targetIds:victims.map(e=>e.id),from:unitVisualPos(u),to:unitVisualPos(t),time:0,explodeAt:.58,duration:.92,resolved:false,dmgPct:confirmedValue(u,[3,5,12]),atkBoost:confirmedValue(u,[20,50,120])});
+  showReaction(u,'skill','奥义·梦想真说');
+  return true;
 };
 
 // Correct the status-derived panel/combat values introduced by the confirmed
@@ -1170,7 +1226,7 @@ const reactionHost=document.querySelector('#bottomReaction');
 if(reactionHost)reactionHost.innerHTML=`<h3>元素反应效果表</h3><p style="font-size:12px;color:#aab7c9;margin:5px 0 8px;line-height:1.55">实际伤害等于护盾损失与生命损失之和，不计算溢出；触发反应后消耗元素附着。固定减抗先结算，百分比减抗后结算。</p><table class="reaction-table"><thead><tr><th>反应</th><th>组合</th><th>效果与公式</th></tr></thead><tbody>${confirmedReactionGuide.map(r=>`<tr><td><img class="table-icon" src="${REACTION_ICON_PATH[r[0]]||''}" alt="">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>`;
 
 function resetConfirmedRuntime(){
-  vaporMarks=[];electroLinks=[];confirmedSuperconductZones=[];confirmedOverloadEffects=[];confirmedMeltEffects=[];yelanBindings=[];
+  vaporMarks=[];electroLinks=[];confirmedSuperconductZones=[];confirmedOverloadEffects=[];confirmedMeltEffects=[];yelanBindings=[];delayedRaidenBursts=[];
   crystallizedByTeam.blue?.clear();crystallizedByTeam.red?.clear();
   for(const u of units){initializeConfirmedUnit(u,true);u.lifesteal=0;u.normalLifesteal=0;u.skillLifesteal=0;u.hutaoLastStandLifestealGranted=false;u.crystalAtkFlat=0;u.crystalPhysicalFlat=0;u.crystalElementFlat=0;delete u.crystalAtkPercent;delete u.crystalPhysicalPercent;delete u.crystalElementPercent;u.fischlConfirmedStacks=0;u.fischlNormalCount=0;u.ozConfirmedHits=0;u.noellePassiveSources={};u.noelleExtraRes=0;u.noellePassivePaused=false}
   for(const u of units.filter(x=>x.alive&&!x.onBench&&x.name==='菲谢尔')){
@@ -1188,6 +1244,7 @@ enterPreparation=function(...args){
   confirmedOverloadEffects=[];
   confirmedMeltEffects=[];
   yelanBindings=[];
+  delayedRaidenBursts=[];
   return enterPreparationBeforeConfirmed(...args);
 };
 const startBeforeConfirmed=startBattle;
