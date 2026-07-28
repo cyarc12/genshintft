@@ -861,9 +861,9 @@ function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);const g=ctx.create
   for(const p of particles){p.time-=1/60;p.x+=p.vx/60;p.y+=p.vy/60;ctx.globalAlpha=Math.max(0,p.time*2);ctx.fillStyle=p.color;const size=Number(p.size)||3;ctx.fillRect(p.x-size/2,p.y-size/2,size,size)}ctx.globalAlpha=1;particles=particles.filter(p=>p.time>0)}
 function finish(team){ended=true;battleState.textContent='战斗结束';winner.textContent=`${team}胜利`;resultText.textContent=`本场用时 ${time.toFixed(1)} 秒`;result.classList.add('show')}
 const FORMATION_STORAGE_KEY='element-auto-chess-formation-v5';
-function formationSnapshot(){return units.map(u=>({id:u.id,templateId:u.templateId,name:u.name,star:u.star,team:u.team,row:u.row,col:u.col,onBench:u.onBench,benchIndex:u.benchIndex,inWarehouse:u.inWarehouse,warehouseIndex:u.warehouseIndex}))}
+function formationSnapshot(){return units.filter(u=>!u.inWarehouse&&!u.isWarehousePreview&&!u.isSummon&&!String(u.id||'').startsWith('drag-')).map(u=>({id:u.id,templateId:u.templateId,name:u.name,star:u.star,team:u.team,row:u.row,col:u.col,onBench:u.onBench,benchIndex:u.benchIndex,inWarehouse:false,warehouseIndex:null}))}
 function saveFormation(){if(started)return;const formation=formationSnapshot();try{localStorage.setItem(FORMATION_STORAGE_KEY,JSON.stringify(formation))}catch{}return formation}
-function loadFormation(){try{const saved=JSON.parse(localStorage.getItem(FORMATION_STORAGE_KEY)||'null');return Array.isArray(saved)?saved:null}catch{return null}}
+function loadFormation(){try{const saved=JSON.parse(localStorage.getItem(FORMATION_STORAGE_KEY)||'null');if(!Array.isArray(saved))return null;return saved.filter(p=>p&&!p.inWarehouse&&!String(p.id||'').startsWith('drag-'))}catch{return null}}
 function applyFormationState(u,p){u.star=normalizeStarValue(p.star);u.team=p.team;u.row=p.row;u.col=p.col;u.onBench=p.onBench;u.benchIndex=p.benchIndex;u.inWarehouse=!!p.inWarehouse;u.warehouseIndex=p.warehouseIndex??u.warehouseIndex;return u}
 function pieceDefByName(name){const d=warehouseUnitDefs.find(x=>x[0]===name);return d?[...d]:null}
 function prepareUnits(formation=null){units=unitDefs.map(makeUnit);if(!formation)return;const seenIds=new Set();for(const u of units){const p=formation.find(x=>x.id===u.id&&x.name===u.name);if(p){applyFormationState(u,p);seenIds.add(p.id)}}for(const p of formation.filter(x=>typeof x.id==='string'&&!seenIds.has(x.id))){const d=pieceDefByName(p.name);if(d)units.push(applyFormationState(makeUnit(d,p.id,p.star||1),p))}nextPieceId=Math.max(nextPieceId,formation.length+1);units=units.filter(u=>!(u.onBench&&u.inWarehouse))}
@@ -1150,17 +1150,27 @@ document.querySelector('#whPanel').addEventListener('click',e=>{
   const tb=e.target.closest('[data-wh-tab]');if(tb)switchWarehouseTab(tb.dataset.whTab);
 });
 renderWhCards();
-// 一次性清空含幽灵棋子的旧存档（覆盖新旧两个 key）
+// 迁移旧阵容存档：只移除拖拽产生的临时棋子，绝不清空整份模拟阵容。
 (function(){
   for(const key of['element-auto-chess-formation','element-auto-chess-formation-v5']){
     try{
       const raw=localStorage.getItem(key);
       if(!raw)continue;
       const f=JSON.parse(raw);
-      if(Array.isArray(f)&&f.some(p=>p.inWarehouse===true||String(p.id||'').startsWith('drag-')))localStorage.removeItem(key);
-    }catch(e){try{localStorage.removeItem(key)}catch{}}
+      if(!Array.isArray(f))continue;
+      const cleaned=f.filter(p=>p&&!p.inWarehouse&&!String(p.id||'').startsWith('drag-'));
+      if(cleaned.length!==f.length)localStorage.setItem(key,JSON.stringify(cleaned));
+    }catch(e){}
   }
 })();
+// 刷新或关闭页面时保存模拟模式阵容；战斗中保存开战前的站位，避免记录移动后的坐标。
+window.addEventListener('pagehide',()=>{
+  try{
+    if(window.PVE_FIRST?.mode==='challenge')return;
+    const snapshot=started&&Array.isArray(lastFormation)?lastFormation:formationSnapshot();
+    if(Array.isArray(snapshot))localStorage.setItem(FORMATION_STORAGE_KEY,JSON.stringify(snapshot));
+  }catch(e){}
+});
 enterPreparation();requestAnimationFrame(loop);
 </script>
 <script src="equipment-system.js"></script>
