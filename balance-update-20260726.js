@@ -919,8 +919,31 @@ castKeqingSkill=function(u){
 };
 castTartagliaSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
-  confirmedElementHit(u,t,confirmedValue(u,[100,180,420])+effectiveAtk(u)*confirmedValue(u,[1.2,1.45,1.9]),true);
-  confirmedFinish(u);return true;
+  const tpl=SKILL_TEMPLATES.PROJECTILE;
+  const raw=confirmedValue(u,[100,180,420])+effectiveAtk(u)*confirmedValue(u,[1.2,1.45,1.9]);
+  const travelDuration=Math.max(.22,dist(u,t)*tpl.travel);
+  confirmedFinish(u);u.aiState='CASTING';
+  skillActions.push({
+    id:`tartaglia-water-arrow-${u.id}-${Date.now()}`,
+    sourceId:u.id,
+    targetId:t.id,
+    template:'PROJECTILE',
+    phase:'WINDUP',
+    elapsed:0,
+    windupDuration:tpl.windup,
+    travelDuration,
+    impactDuration:0,
+    recoveryDuration:tpl.recovery,
+    meta:{skillName:'尽灭水光',isTartagliaArrow:true,raw},
+    onImpact:(source,action)=>{
+      const target=getUnitById(action.targetId);
+      if(!target?.alive)return;
+      const dealt=confirmedElementHit(source,target,action.meta.raw,true);
+      spawn(target,ELEMENTS.水,18);
+      addLog(`${source.name} 的强化水箭命中 ${target.name}，造成 ${Math.round(dealt)} 点水元素伤害并附着`,'reaction');
+    }
+  });
+  return true;
 };
 castNeuvilletteSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
@@ -1233,7 +1256,7 @@ Object.assign(SKILL_INFO,{
   '珊瑚宫心海':'初始法力35/90。\\n【R·海人化羽】强化8秒并锁蓝。普攻追加最大生命5%/6%/8%水伤；每次为最低生命友军治疗心海最大生命3%/4%/6%；每第3次强化普攻附着水元素。',
   '刻晴':'初始法力30/50。\\n【R·星斗归位】释放时清除自身旧目标与移动路径，并使当前以刻晴为普通攻击目标的敌人失去锁定、重新索敌。刻晴选择自身4格内距离最远的敌人，瞬移至其附近合法空格，对目标周围1.5格所有敌人造成55/110/220 + 攻击力50%/65%/85%雷伤，仅主目标附着。随后进入3秒雷元素附魔状态，普通攻击倍率不变，仅转化为雷元素伤害。落地后重新索敌；已发射弹道与持续伤害不会消失，仍在持续的强制嘲讽不会解除。',
   '阿蕾奇诺':'初始法力25/75。\\n普通攻击永久转为火伤且不附着，并对周围1格造成攻击力30%/35%/45%溅射。技能强化7秒，攻速+40%/55%/80%，溅射提高至45%/55%/70%，状态开始与结束各附着一次。',
-  '达达利亚':'初始法力30/70。\\n【R·尽灭水光】对当前目标造成100/180/420 + 攻击力120%/145%/190%水伤并附着。参与击杀可永久获得攻击与攻速成长，本回合最多4层。',
+  '达达利亚':'初始法力30/70。\\n【R·尽灭水光】向当前目标射出一支强化水箭；水箭抵达目标时造成100/180/420 + 攻击力120%/145%/190%水伤并附着。参与击杀可永久获得攻击与攻速成长，本回合最多4层。',
   '那维莱特':'初始法力50/100。\\n【R·衡平推裁】冲击目标所在整排，造成30/55/120 + 攻击力30%/40%/55%水伤，全部附着并眩晕1.5/1.75/2.5秒。',
   '枫原万叶':'初始法力40/90。\\n【R·万叶之一刀】自身半径2格生成风域6秒，每1.5秒造成20/35/80 + 攻击力55%/65%/90%风伤，共4段；第2、4段可触发扩散。',
   '菲谢尔':'初始法力20/70。\\n开战召唤奥兹；菲谢尔每4次普攻令奥兹协同一次，奥兹造成45/80/240 + 攻击力90%/115%/220%雷伤，每第2次附着。技能令奥兹立即攻击，永久获得20%基础攻速，最多5层，并令普攻转雷伤3秒。',
