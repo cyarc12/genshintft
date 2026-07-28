@@ -159,10 +159,65 @@ damage=function(source,target,raw,options={}){
 
 function consumeAttachment(target){const old=target.attach?.element||null;target.attach=null;return old}
 function reactionName(old,now){return REACTIONS[old+now]||null}
-function createVaporMark(source,target){
-  let mark=vaporMarks.find(m=>m.targetId===target.id);
-  if(mark){mark.time=4;mark.maxTime=Math.min(8,mark.maxTime+4);mark.source=source;return}
-  vaporMarks.push({source,targetId:target.id,time:4,maxTime:4,recorded:0,settling:false});
+function createVaporMark(source,target,element,triggerDamage=0){
+  let mark=vaporMarks.find(m=>m.targetId===target.id&&!m.settling);
+  if(mark){
+    // 重复触发只提高本次标记的结算系数，不续时、不更换伤害归属。
+    mark.rate=(Number(mark.rate)||.30)+.15;
+    return mark;
+  }
+  const lastEvent=target.lastTakenEvent;
+  const confirmedTriggerDamage=
+    lastEvent?.source===source&&lastEvent?.target===target
+      ?Math.max(0,Number(lastEvent.actualTakenDamage)||0)
+      :Math.max(0,Number(triggerDamage)||0);
+  mark={
+    source,
+    targetId:target.id,
+    element:element||source?.element||'水',
+    time:4,
+    maxTime:4,
+    recorded:confirmedTriggerDamage,
+    rate:.30,
+    settling:false
+  };
+  vaporMarks.push(mark);
+  return mark;
+}
+function settleConfirmedVaporMark(mark){
+  const target=unitById(mark.targetId);
+  if(!target)return;
+  const element=mark.element||mark.source?.element||'水';
+  const recorded=Math.max(0,Number(mark.recorded)||0);
+  const rate=Math.max(0,Number(mark.rate)||.30);
+  const raw=recorded*rate;
+  let settled=0;
+  if(target.alive&&raw>0){
+    const beforeHp=Number(target.hp)||0;
+    const beforeShield=shieldAmount(target);
+    damage(mark.source||target,target,raw,{
+      skill:true,
+      elemental:true,
+      damageElement:element,
+      reaction:true,
+      allowReaction:false,
+      allowVaporRecord:false,
+      vaporSettlement:true
+    });
+    settled=Math.max(
+      0,
+      beforeHp-(Number(target.hp)||0)+beforeShield-shieldAmount(target)
+    );
+  }
+  // 结算显示与是否实际造成伤害分离；0 伤害也必须明确反馈。
+  if(typeof triggerVaporEffect==='function')triggerVaporEffect(target,settled,element);
+  if(typeof showVaporDamageNumber==='function')showVaporDamageNumber(target,settled,element);
+  if(typeof addLog==='function')addLog(
+    `${target.name} 的【蒸汽标记】结算：记录 ${Math.round(recorded)} 点伤害，`+
+    `系数 ${Math.round(rate*100)}%，生成 ${Math.round(raw)} 点${element}元素伤害，`+
+    `实际造成 ${Math.round(settled)} 点蒸发伤害`,
+    'reaction'
+  );
 }
 function isElectroLinkableUnit(unit){
   return !!(
@@ -226,7 +281,7 @@ attachAndReact=function(source,target,baseDamage=0){
     {const p=unitVisualPos(target);confirmedMeltEffects.push({x:p.x,y:p.y,time:0,duration:.72,seed:Math.random()*Math.PI*2});}
     showReaction(target,'融化','融化 ×2');
   }else if(name==='蒸发'){
-    createVaporMark(source,target);showReaction(target,'蒸发');
+    createVaporMark(source,target,el,baseDamage);showReaction(target,'蒸发');
   }else if(name==='超载'){
     const victims=units.filter(u=>u.alive&&!u.onBench&&u.team===target.team&&dist(u,target)<=1.5);
     for(const v of victims)damage(source,v,250+effectiveAtk(source)*1.5,{skill:true,elemental:true,damageElement:el,reaction:true,allowReaction:false});
@@ -517,8 +572,15 @@ tick=function(dt){
   confirmedMeltEffects=confirmedMeltEffects.filter(effectData=>effectData.time<effectData.duration);
   yelanBindings.forEach(binding=>binding.time+=dt);
   yelanBindings=yelanBindings.filter(binding=>{const target=unitById(binding.targetId);return binding.time<binding.duration&&target?.alive&&has(target,'silence')});
-  for(const mark of vaporMarks){mark.time-=dt;mark.maxTime-=dt;if((mark.time<=0||mark.maxTime<=0)&&!mark.settling){mark.settling=true;const target=unitById(mark.targetId);if(target?.alive&&mark.recorded>0)damage(mark.source,target,mark.recorded*.25,{skill:true,elemental:true,reaction:true,allowReaction:false,allowVaporRecord:false})}}
-  vaporMarks=vaporMarks.filter(m=>!m.settling&&unitById(m.targetId)?.alive);
+  for(const mark of vaporMarks){
+    mark.time-=dt;
+    mark.maxTime-=dt;
+    if((mark.time<=0||mark.maxTime<=0)&&!mark.settling){
+      mark.settling=true;
+      settleConfirmedVaporMark(mark);
+    }
+  }
+  vaporMarks=vaporMarks.filter(mark=>!mark.settling);
   electroLinks.forEach(g=>g.time-=dt);
   electroLinks=electroLinks.filter(g=>
     g.time>0&&
@@ -1217,7 +1279,7 @@ const confirmedEffectGroupData=[['持续状态',[
 const effectHost=document.querySelector('#effectGroups');
 if(effectHost)effectHost.innerHTML=`<div class="effect-items">${confirmedEffectGroupData[0][1].map(([src,name,desc])=>`<div class="effect-item"><img src="${src}" alt=""><span>${name}<small>${desc}</small></span></div>`).join('')}</div>`;
 const confirmedReactionGuide=[
-  ['蒸发','火 + 水','生成4秒蒸发标记，记录目标实际承受伤害；结束时结算记录值25%的对应元素伤害。重复触发刷新4秒但累计最长8秒，保留已记录伤害。'],
+  ['蒸发','火 + 水','生成4秒蒸发标记并记录目标实际承受伤害；结束时结算记录值30%的对应元素伤害。重复触发不延长时间，每次使本次结算系数额外提高15%。'],
   ['感电链','水 + 雷','连接同阵营2～3名敌人8秒；任一成员承受伤害时，其余成员各受到原始实际伤害15%的真实传导伤害。传导伤害不递归。'],
   ['冻结','水 + 冰','立即完全冻结2秒；期间无法移动、普攻或施放技能。韧性正常影响持续时间，不叠层、不减速。'],
   ['融化','火 + 冰','本次总伤害×2.0；不再附加易伤状态。'],

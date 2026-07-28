@@ -499,11 +499,13 @@ function settleVaporMark(target){
   target.vaporState=null;
   if(state.timer!==null)window.clearTimeout(state.timer);
   const raw=Math.max(0,state.recordedDamage*state.rate);
-  if(raw<=0){triggerVaporEffect(target,0,state.element);showVaporDamageNumber(target,0,state.element);addLog(`${target.name} 的【蒸汽标记】结算：期间记录 0 点伤害，蒸发造成 0 点伤害`,'reaction');return}
-  const source=state.source||target;
-  const before=target.damageTaken||0;
-  damage(source,target,raw,{skill:true,elemental:true,damageElement:state.element,vaporSettlement:true});
-  const settled=Math.max(0,(target.damageTaken||0)-before);
+  let settled=0;
+  if(raw>0&&target.alive){
+    const source=state.source||target;
+    const before=target.damageTaken||0;
+    damage(source,target,raw,{skill:true,elemental:true,damageElement:state.element,vaporSettlement:true});
+    settled=Math.max(0,(target.damageTaken||0)-before)
+  }
   triggerVaporEffect(target,settled,state.element);
   showVaporDamageNumber(target,settled,state.element);
   addLog(`${target.name} 的【蒸汽标记】结算：记录 ${Math.round(state.recordedDamage)} 点实际伤害，以 ${Math.round(state.rate*100)}% 系数生成伤害并经过${state.element}抗性，实际造成 ${Math.round(settled)} 点蒸发伤害`,'reaction')
