@@ -331,10 +331,10 @@ function drawConfirmedReactionEffects(){
       ctx.globalCompositeOperation='source-over';
       ctx.lineCap='round';
       ctx.lineJoin='round';
-      ctx.strokeStyle=`rgba(72,190,255,${(.2+.62*charge)*fade})`;
-      ctx.shadowColor=`rgba(45,155,255,${.72*fade})`;
-      ctx.shadowBlur=5+5*charge;
-      ctx.lineWidth=2.2+1.2*charge;
+      ctx.strokeStyle=`rgba(145,220,255,${(.10+.34*charge)*fade})`;
+      ctx.shadowColor=`rgba(105,200,255,${.38*fade})`;
+      ctx.shadowBlur=4+3*charge;
+      ctx.lineWidth=2+1*charge;
       ctx.beginPath();
       for(let side=0;side<6;side++){
         const sideProgress=Math.max(0,Math.min(1,charge*6-side));
