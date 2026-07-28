@@ -385,6 +385,16 @@
     lastRenderKey = renderKey;
     slot.innerHTML = renderTeam('red') + renderTeam('blue');
     document.body.classList.toggle('pve-resonance-layout', !!window.PVE_FIRST_ACTIVE);
+    if (!started && inspect?.classList.contains('show')) {
+      const inspectedUnit = units.find(unit => unit.id === hoverInspectUnitId)
+        || (selectedUnit && units.includes(selectedUnit) ? selectedUnit : null);
+      if (inspectedUnit) {
+        requestAnimationFrame(() => {
+          renderUnitInspect(inspectedUnit);
+          renderDamageStats();
+        });
+      }
+    }
   }
 
   function triggerResonanceActivation(team, element, tier) {
@@ -495,10 +505,23 @@
       const waterTier = resonanceTier(unit, '水');
       const iceTier = resonanceTier(unit, '冰');
       const electroTier = resonanceTier(unit, '雷');
+      const resonanceManaPerSecond = electroTier >= 5 ? 5 : electroTier >= 4 ? 3 : electroTier >= 3 ? 2 : electroTier >= 2 ? 1 : 0;
+      unit._battleResonanceTiers = {
+        fire: resonanceTier(unit, '火'),
+        water: waterTier,
+        ice: iceTier,
+        electro: electroTier,
+        wind: resonanceTier(unit, '风'),
+        geo: resonanceTier(unit, '岩')
+      };
       const hpBonus = waterTier >= 4 ? .30 : waterTier >= 3 ? .20 : waterTier >= 2 ? .15 : 0;
-      if (hpBonus > 0 && !unit._resonanceHpApplied) {
-        unit._resonanceHpApplied = hpBonus;
-        unit.maxHp = Math.round(unit.maxHp * (1 + hpBonus));
+      unit._resonanceHpApplied = hpBonus;
+      unit._resonanceManaPerSecond = resonanceManaPerSecond;
+      unit.equipmentStats ||= {};
+      unit.equipmentStats.manaPerSecond = (Number(unit.equipmentStats.manaPerSecond) || 0) + resonanceManaPerSecond;
+      unit._resonanceBaseMaxHp = unit.maxHp;
+      if (hpBonus > 0) {
+        unit.maxHp = Math.round(unit._resonanceBaseMaxHp * (1 + hpBonus));
         unit.hp = unit.maxHp;
       }
       const critBonus = iceTier >= 5 ? .30 : iceTier >= 4 ? .25 : iceTier >= 3 ? .20 : iceTier >= 2 ? .15 : 0;
@@ -586,6 +609,12 @@
           if (mpFill) mpFill.style.width = `${Math.max(0, Math.min(100, shownMp / Math.max(1, unit.maxMp) * 100))}%`;
         }
       }
+      const panelElectroTier = resonanceTier(unit, '雷');
+      const resonanceManaRate = panelElectroTier >= 5 ? 5 : panelElectroTier >= 4 ? 3 : panelElectroTier >= 3 ? 2 : panelElectroTier >= 2 ? 1 : 0;
+      const baseManaRate = (unit.weapon === '法器' ? 5 : 0) + (Number(unit.equipmentStats?.manaPerSecond) || 0);
+      const visibleManaRate = baseManaRate + (!started ? resonanceManaRate : 0);
+      const manaRateNode = inspect.querySelector('.mana-regen-rate');
+      if (manaRateNode) manaRateNode.textContent = visibleManaRate > 0 ? `+${Number.isInteger(visibleManaRate) ? visibleManaRate : visibleManaRate.toFixed(1)}/s` : '';
       const critItem = [...inspect.querySelectorAll('.stat-item')]
         .find(node => node.querySelector('span')?.textContent.trim() === '暴击');
       if (critItem?.querySelector('b')) {
@@ -639,6 +668,7 @@
     previousStartBattle();
     if (started && !ended) applyOpeningResonance();
   };
+  if (startBtn) startBtn.onclick = startBattle;
 
   const freezeEnemyTeam = team => {
     for (const target of units.filter(unit => unit.alive && !unit.onBench && unit.team !== team)) {
@@ -681,11 +711,9 @@
       runtime.secondAccumulator -= 1;
       for (const unit of units) {
         if (!unit?.alive || unit.onBench || unit.inWarehouse || unit.isDummy || unit.isSummon) continue;
-        const waterTier = resonanceTier(unit, '水');
-        const electroTier = resonanceTier(unit, '雷');
-        if (waterTier >= 4) healUnit(unit, unit.maxHp * .02, unit);
-        const mana = electroTier >= 5 ? 5 : electroTier >= 4 ? 3 : electroTier >= 3 ? 2 : electroTier >= 2 ? 1 : 0;
-        if (mana > 0) unit.mp = Math.min(unit.maxMp, unit.mp + mana);
+        const waterTier = unit._battleResonanceTiers?.water ?? resonanceTier(unit, '水');
+        const electroTier = unit._battleResonanceTiers?.electro ?? resonanceTier(unit, '雷');
+        if (waterTier >= 4) healUnit(unit, unit.maxHp * .02, unit, false);
       }
     }
     for (const team of ['red', 'blue']) {

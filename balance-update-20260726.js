@@ -21,27 +21,27 @@ const B={
   莱依拉:{hp:[700,1120,1645],atk:[35,55,80],pr:30,er:35,as:.85,range:4,mana:[20,90]},
   芭芭拉:{hp:[760,1216,1786],atk:[30,45,70],pr:30,er:35,as:.85,range:4,mana:[0,75]},
   夏洛蒂:{hp:[680,1088,1598],atk:[40,60,90],pr:30,er:35,as:.90,range:4,mana:[40,80]},
-  宵宫:{hp:[560,896,1316],atk:[50,80,125],pr:30,er:30,as:1.05,range:5,mana:[20,50]},
+  宵宫:{hp:[560,896,1316],atk:[50,80,125],pr:30,er:30,as:1.05,range:4,mana:[20,50]},
   早柚:{hp:[950,1568,2660],atk:[25,40,60],pr:55,er:45,as:.75,range:1,mana:[40,90]},
   申鹤:{hp:[800,1240,1800],atk:[45,70,100],pr:40,er:35,as:.95,range:2,mana:[35,85]},
   久岐忍:{hp:[850,1405,2210],atk:[55,85,125],pr:55,er:50,as:.95,range:1,mana:[20,75]},
   可莉:{hp:[650,1040,1528],atk:[60,90,135],pr:30,er:35,as:.95,range:4,mana:[10,60]},
-  夜兰:{hp:[600,960,1410],atk:[35,65,105],pr:30,er:30,as:1,range:5,mana:[20,70]},
+  夜兰:{hp:[600,960,1410],atk:[35,65,105],pr:30,er:30,as:1,range:4,mana:[20,70]},
   神里绫华:{hp:[800,1320,2080],atk:[55,85,125],pr:40,er:35,as:1,range:1,mana:[30,85]},
-  克洛琳德:{hp:[850,1405,2210],atk:[45,70,105],pr:40,er:35,as:.85,range:1,mana:[30,80]},
-  珊瑚宫心海:{hp:[1100,1760,2585],atk:[20,30,45],pr:25,er:30,as:.85,range:4,mana:[35,90]},
+  克洛琳德:{hp:[850,1405,2210],atk:[75,100,135],pr:40,er:35,as:.85,range:1,mana:[30,80]},
+  珊瑚宫心海:{hp:[1600,2460,3585],atk:[20,30,45],pr:25,er:30,as:.85,range:4,mana:[35,90]},
   刻晴:{hp:[900,1485,2340],atk:[50,75,115],pr:40,er:35,as:1,range:1,mana:[30,50]},
   阿蕾奇诺:{hp:[950,1475,2140],atk:[60,90,135],pr:40,er:35,as:.95,range:2,mana:[25,75]},
-  达达利亚:{hp:[625,1000,1470],atk:[50,80,125],pr:30,er:30,as:1,range:5,mana:[30,70]},
-  那维莱特:{hp:[900,1440,2115],atk:[35,55,80],pr:30,er:40,as:.85,range:4,mana:[50,100]},
+  达达利亚:{hp:[625,1000,1470],atk:[50,80,125],pr:30,er:30,as:1,range:4,mana:[30,70]},
+  那维莱特:{hp:[900,1440,2115],atk:[35,55,80],pr:30,er:40,as:.85,range:4,mana:[50,120]},
   枫原万叶:{hp:[1050,1735,2730],atk:[45,70,105],pr:45,er:40,as:.95,range:1,mana:[40,90]},
-  菲谢尔:{hp:[650,1170,3250],atk:[55,90,140],pr:30,er:30,as:1,range:5,mana:[20,70]},
+  菲谢尔:{hp:[650,1170,3250],atk:[55,90,140],pr:30,er:30,as:1,range:4,mana:[20,70]},
   琴:{hp:[1200,2160,6000],atk:[40,60,100],pr:50,er:45,as:.90,range:1,mana:[40,95]},
-  安柏:{hp:[600,1080,3000],atk:[30,50,90],pr:30,er:30,as:.90,range:5,mana:[40,120]},
+  安柏:{hp:[600,1080,3000],atk:[30,50,90],pr:30,er:30,as:.90,range:4,mana:[40,120]},
   诺艾尔:{hp:[800,1440,3600],atk:[15,25,40],pr:[80,85,90],er:[70,75,80],as:.70,range:1,mana:[30,100]},
   雷电将军:{hp:[1000,1800,5000],atk:[55,85,130],pr:45,er:40,as:1,range:1,mana:[40,80]},
   胡桃:{hp:[1100,1980,5500],atk:[55,85,140],pr:40,er:35,as:1.10,range:2,mana:[20,70]},
-  甘雨:{hp:[900,1620,4500],atk:[70,115,200],pr:30,er:30,as:.95,range:5,mana:[20,80]},
+  甘雨:{hp:[900,1620,4500],atk:[70,115,200],pr:30,er:30,as:.95,range:4,mana:[20,80]},
   八重神子:{hp:[900,1620,4500],atk:[55,95,170],pr:30,er:35,as:.80,range:5,mana:[10,60]}
 };
 for(const [name,b] of Object.entries(B)){
@@ -80,11 +80,13 @@ function initializeConfirmedUnit(u,resetRatio=false){
   const cfg=PIECE_CONFIG[u.name];if(!cfg)return;
   const oldMax=Math.max(1,u.maxHp||1),hpRatio=resetRatio?1:Math.max(0,Math.min(1,u.hp/oldMax));
   const s=statsForStar(cfg,u.star||1),eq=typeof collectEquipmentStats==='function'?collectEquipmentStats(u):{hpPercent:0,atkPercent:0,res:0,attackSpeed:0,startMana:0};
-  u.maxHp=Math.round(s.hp*(1+(eq.hpPercent||0))+(eq.hpFlat||0));u.hp=Math.max(u.alive===false?0:1,Math.round(u.maxHp*hpRatio));
+  u.maxHp=Math.round((s.hp+(eq.hpFlat||0))*(1+(eq.hpPercent||0)));u.hp=Math.max(u.alive===false?0:1,Math.round(u.maxHp*hpRatio));
   u.atk=Math.round(s.atk*(1+(eq.atkPercent||0))+(eq.atkFlat||0));u.baseAtkForGrowth=s.atk;
   u.def=s.physicalResist+(eq.res||0)+(eq.physicalRes||0);u.elementDef=s.elementResist+(eq.res||0)+(eq.elementRes||0);
   u.basePhysicalResist=s.physicalResist;u.baseElementResist=s.elementResist;
-  u.as=Math.min(5,s.as+(eq.attackSpeed||0));u.baseAsForGrowth=s.as;u.range=s.range;u.maxMp=s.maxMana;
+  const scopeBase=typeof equipmentCount==='function'?equipmentCount(u,'eagle_scope'):0;
+  const scopeGrowth=typeof equipmentStackTotal==='function'?equipmentStackTotal(u,'eagle_scope'):0;
+  u.as=Math.min(5,s.as+(eq.attackSpeed||0));u.baseAsForGrowth=s.as;u.range=s.range+scopeBase+scopeGrowth;u.maxMp=s.maxMana;
   u.baseStartMana=s.initialMana;u.normalBaseDamage=s.normalBaseDamage;u.normalAtkRatio=s.normalAtkRatio;
 }
 for(const u of units)initializeConfirmedUnit(u);
@@ -92,7 +94,7 @@ const priorRecalc=typeof recalculateUnitEquipmentStats==='function'?recalculateU
 if(priorRecalc)recalculateUnitEquipmentStats=function(unit,resetMana=false){priorRecalc(unit,resetMana);initializeConfirmedUnit(unit);if(resetMana){const eq=typeof collectEquipmentStats==='function'?collectEquipmentStats(unit):{startMana:0};unit.mp=Math.min(unit.maxMp,unit.baseStartMana+(eq.startMana||0))}};
 
 // New reaction runtime.
-let vaporMarks=[],electroLinks=[],confirmedSuperconductZones=[],confirmedOverloadEffects=[],confirmedMeltEffects=[];
+let vaporMarks=[],electroLinks=[],confirmedSuperconductZones=[],confirmedOverloadEffects=[],confirmedMeltEffects=[],yelanBindings=[],confirmedNeuvilletteFloorWaves=[];
 const crystallizedByTeam={blue:new Set(),red:new Set()};
 function shieldAmount(u){return Math.max(0,Number(getUnitShield(u)?.value)||0)}
 function unitById(id){return units.find(u=>u.id===id)}
@@ -157,10 +159,67 @@ damage=function(source,target,raw,options={}){
 
 function consumeAttachment(target){const old=target.attach?.element||null;target.attach=null;return old}
 function reactionName(old,now){return REACTIONS[old+now]||null}
-function createVaporMark(source,target){
-  let mark=vaporMarks.find(m=>m.targetId===target.id);
-  if(mark){mark.time=4;mark.maxTime=Math.min(8,mark.maxTime+4);mark.source=source;return}
-  vaporMarks.push({source,targetId:target.id,time:4,maxTime:4,recorded:0,settling:false});
+function createVaporMark(source,target,element,triggerDamage=0){
+  let mark=vaporMarks.find(m=>m.targetId===target.id&&!m.settling);
+  if(mark){
+    if((Number(mark.triggerCount)||1)>=2)return mark;
+    // 重复触发只提高本次标记的结算系数，不续时、不更换伤害归属。
+    mark.triggerCount=2;
+    mark.rate=(Number(mark.rate)||.80)+1.20;
+    return mark;
+  }
+  const lastEvent=target.lastTakenEvent;
+  const confirmedTriggerDamage=
+    lastEvent?.source===source&&lastEvent?.target===target
+      ?Math.max(0,Number(lastEvent.actualTakenDamage)||0)
+      :Math.max(0,Number(triggerDamage)||0);
+  mark={
+    source,
+    targetId:target.id,
+    element:element||source?.element||'水',
+    time:4,
+    maxTime:4,
+    recorded:confirmedTriggerDamage,
+    rate:.80,
+    triggerCount:1,
+    settling:false
+  };
+  vaporMarks.push(mark);
+  return mark;
+}
+function settleConfirmedVaporMark(mark){
+  const target=unitById(mark.targetId);
+  if(!target)return;
+  const element=mark.element||mark.source?.element||'水';
+  const recorded=Math.max(0,Number(mark.recorded)||0);
+  const rate=Math.max(0,Number(mark.rate)||.80);
+  const raw=recorded*rate;
+  let settled=0;
+  if(target.alive&&raw>0){
+    const beforeTaken=Math.max(0,Number(target.damageTaken)||0);
+    damage(mark.source||target,target,raw,{
+      skill:true,
+      elemental:true,
+      damageElement:element,
+      reaction:true,
+      allowReaction:false,
+      allowVaporRecord:false,
+      vaporSettlement:true
+    });
+    settled=Math.max(
+      0,
+      (Math.max(0,Number(target.damageTaken)||0)-beforeTaken)
+    );
+  }
+  // 结算显示与是否实际造成伤害分离；0 伤害也必须明确反馈。
+  if(typeof triggerVaporEffect==='function')triggerVaporEffect(target,settled,element);
+  if(typeof showVaporDamageNumber==='function')showVaporDamageNumber(target,settled,element);
+  if(typeof addLog==='function')addLog(
+    `${target.name} 的【蒸汽标记】结算：记录 ${Math.round(recorded)} 点伤害，`+
+    `系数 ${Math.round(rate*100)}%，生成 ${Math.round(raw)} 点${element}元素伤害，`+
+    `实际造成 ${Math.round(settled)} 点蒸发伤害`,
+    'reaction'
+  );
 }
 function isElectroLinkableUnit(unit){
   return !!(
@@ -168,7 +227,6 @@ function isElectroLinkableUnit(unit){
     !unit.onBench&&
     !unit.inWarehouse&&
     !unit.isSummon&&
-    !unit.isDummy&&
     Number.isInteger(unit.row)&&
     Number.isInteger(unit.col)
   );
@@ -224,7 +282,7 @@ attachAndReact=function(source,target,baseDamage=0){
     {const p=unitVisualPos(target);confirmedMeltEffects.push({x:p.x,y:p.y,time:0,duration:.72,seed:Math.random()*Math.PI*2});}
     showReaction(target,'融化','融化 ×2');
   }else if(name==='蒸发'){
-    createVaporMark(source,target);showReaction(target,'蒸发');
+    createVaporMark(source,target,el,baseDamage);showReaction(target,'蒸发');
   }else if(name==='超载'){
     const victims=units.filter(u=>u.alive&&!u.onBench&&u.team===target.team&&dist(u,target)<=1.5);
     for(const v of victims)damage(source,v,250+effectiveAtk(source)*1.5,{skill:true,elemental:true,damageElement:el,reaction:true,allowReaction:false});
@@ -258,6 +316,39 @@ attachAndReact=function(source,target,baseDamage=0){
 
 function drawConfirmedReactionEffects(){
   const now=performance.now()/1000;
+
+  for(const wave of confirmedNeuvilletteFloorWaves){
+    for(const cell of wave.cells){
+      const local=wave.time-cell.delay;
+      if(local<=0)continue;
+      const charge=Math.min(1,local/cell.charge);
+      const fadeStart=cell.charge+cell.hold;
+      const fade=local<=fadeStart?1:Math.max(0,1-(local-fadeStart)/cell.fade);
+      if(fade<=0)continue;
+      const p=hexPos(cell.row,cell.col);
+      const radius=S-3;
+      ctx.save();
+      ctx.globalCompositeOperation='source-over';
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.strokeStyle=`rgba(145,220,255,${(.10+.34*charge)*fade})`;
+      ctx.shadowColor=`rgba(105,200,255,${.38*fade})`;
+      ctx.shadowBlur=4+3*charge;
+      ctx.lineWidth=2+1*charge;
+      ctx.beginPath();
+      for(let side=0;side<6;side++){
+        const sideProgress=Math.max(0,Math.min(1,charge*6-side));
+        if(sideProgress<=0)break;
+        const a0=-Math.PI/2+side*Math.PI/3;
+        const a1=a0+Math.PI/3*sideProgress;
+        const x0=p.x+Math.cos(a0)*radius,y0=p.y+Math.sin(a0)*radius;
+        const x1=p.x+Math.cos(a1)*radius,y1=p.y+Math.sin(a1)*radius;
+        ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
 
   for(const effectData of confirmedOverloadEffects){
     const progress=Math.min(1,effectData.time/effectData.duration);
@@ -431,17 +522,119 @@ const drawBeforeConfirmedReactions=draw;
 draw=function(){
   drawBeforeConfirmedReactions();
   drawConfirmedReactionEffects();
+  drawYelanBindings();
+  drawDelayedRaidenBursts();
 };
+
+let delayedRaidenBursts=[];
+function drawDelayedRaidenBursts(){
+  for(const burst of delayedRaidenBursts){
+    const source=unitById(burst.sourceId),target=unitById(burst.targetId);
+    const from=source?.alive?unitVisualPos(source):burst.from;
+    const to=target?.alive?unitVisualPos(target):burst.to;
+    if(!from||!to)continue;
+    burst.from=from;burst.to=to;
+    const dx=to.x-from.x,dy=to.y-from.y,angle=Math.atan2(dy,dx)+Math.PI/2;
+    ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(to.x,to.y);ctx.rotate(angle);
+    if(burst.time<burst.explodeAt){
+      const appear=Math.min(1,burst.time/.22),charge=Math.max(0,(burst.time-.22)/(burst.explodeAt-.22));
+      const halfLength=46*appear;
+      ctx.shadowColor='#8f49ff';ctx.shadowBlur=10+charge*10;
+      ctx.globalAlpha=.5;ctx.strokeStyle='#5e268c';ctx.lineWidth=7-charge*2;
+      ctx.beginPath();ctx.moveTo(-halfLength,0);ctx.quadraticCurveTo(0,charge*2,halfLength,0);ctx.stroke();
+      ctx.globalAlpha=.92;ctx.strokeStyle='#bd72ff';ctx.lineWidth=2.4-charge*.7;
+      ctx.beginPath();ctx.moveTo(-halfLength,0);ctx.quadraticCurveTo(0,-charge*1.5,halfLength,0);ctx.stroke();
+      ctx.globalAlpha=.72+.2*Math.sin(charge*Math.PI*6);ctx.strokeStyle='#f4e7ff';ctx.lineWidth=.9;
+      ctx.beginPath();ctx.moveTo(-halfLength*.82,0);ctx.lineTo(halfLength*.82,0);ctx.stroke();
+      for(const side of [-1,1]){ctx.globalAlpha=.48*charge;ctx.strokeStyle='#9b4ee8';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(side*halfLength*.25,0);ctx.lineTo(side*halfLength*.48,-5-side*2);ctx.lineTo(side*halfLength*.68,0);ctx.stroke()}
+    }else{
+      const p=Math.min(1,(burst.time-burst.explodeAt)/(burst.duration-burst.explodeAt)),fade=1-p;
+      const open=Math.sin(Math.min(1,p*1.18)*Math.PI),halfLength=43+6*p,lid=4+11*open;
+      ctx.shadowColor='#b45cff';ctx.shadowBlur=18;
+      ctx.globalAlpha=.82*fade;ctx.fillStyle='rgba(75,20,112,.72)';
+      ctx.beginPath();ctx.moveTo(-halfLength,0);ctx.quadraticCurveTo(0,-lid,halfLength,0);ctx.quadraticCurveTo(0,lid,-halfLength,0);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='#c875ff';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(-halfLength,0);ctx.quadraticCurveTo(0,-lid,halfLength,0);ctx.quadraticCurveTo(0,lid,-halfLength,0);ctx.stroke();
+      ctx.globalAlpha=.96*fade;ctx.fillStyle='#f5eaff';ctx.shadowBlur=26;
+      ctx.beginPath();ctx.ellipse(0,0,4+6*open,2+7*open,0,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=.72*fade;ctx.strokeStyle='#a44dff';ctx.lineWidth=2;
+      for(let i=0;i<6;i++){const x=-34+i*13.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+(i%2?4:-4),-lid-6-7*p);ctx.stroke();ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+(i%2?-4:4),lid+6+7*p);ctx.stroke()}
+    }
+    ctx.restore();
+  }
+}
+
+function drawYelanBindings(){
+  for(const binding of yelanBindings){
+    const target=unitById(binding.targetId);
+    const p=target?.alive&&!target.onBench?unitVisualPos(target):binding.fallback;
+    if(!p)continue;
+    const progress=Math.min(1,binding.time/binding.wrapDuration);
+    const tighten=Math.min(1,progress);
+    const remaining=Math.max(0,binding.duration-binding.time);
+    const fade=Math.min(1,remaining/.22);
+    const radius=35-11*Math.pow(tighten,1.7);
+    ctx.save();ctx.translate(p.x,p.y);ctx.globalCompositeOperation='lighter';
+    ctx.lineCap='round';ctx.shadowColor='#39bfff';ctx.shadowBlur=7;
+    for(let strand=0;strand<4;strand++){
+      const y=-15+strand*10,vertical=7-2.5*tighten;
+      ctx.globalAlpha=(.48+strand*.05)*fade;
+      ctx.strokeStyle=strand%2?'#b8efff':'#48c9ff';
+      ctx.lineWidth=strand%2?1.1:1.55;
+      ctx.beginPath();
+      ctx.ellipse(0,y,radius*(.92+strand*.025),vertical,0,0,Math.PI*2);
+      ctx.stroke();
+    }
+    const pull=Math.max(0,(progress-.35)/.65);
+    for(const side of [-1,1]){
+      ctx.globalAlpha=.68*fade;ctx.strokeStyle='#d8f8ff';ctx.lineWidth=1.1;
+      ctx.beginPath();
+      ctx.moveTo(side*(radius+5)*(1-pull),-20+pull*10);
+      ctx.quadraticCurveTo(side*(radius*.55),0,side*(5+radius*.12*(1-pull)),15-pull*8);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
 
 const tickBeforeConfirmed=tick;
 tick=function(dt){
   tickBeforeConfirmed(dt);if(!started||paused||ended)return;
+  for(const wave of confirmedNeuvilletteFloorWaves){
+    wave.time+=dt;
+    for(const cell of wave.cells){
+      if(cell.hit||wave.time<cell.delay+cell.charge)continue;
+      cell.hit=true;
+      const targets=units.filter(target=>
+        target.alive&&!target.onBench&&target.team!==wave.team&&
+        target.row===cell.row&&target.col===cell.col
+      );
+      for(const target of targets){
+        confirmedElementHit(wave.source,target,wave.raw,true);
+        if(!target.alive)continue;
+        const duration=typeof applyEquipmentHardControl==='function'
+          ?applyEquipmentHardControl(target,wave.stunDuration,'stun')
+          :wave.stunDuration;
+        if(duration>0)effect(target,'stun',duration,1);
+      }
+    }
+  }
+  confirmedNeuvilletteFloorWaves=confirmedNeuvilletteFloorWaves.filter(wave=>wave.time<wave.duration);
   confirmedOverloadEffects.forEach(effectData=>effectData.time+=dt);
   confirmedOverloadEffects=confirmedOverloadEffects.filter(effectData=>effectData.time<effectData.duration);
   confirmedMeltEffects.forEach(effectData=>effectData.time+=dt);
   confirmedMeltEffects=confirmedMeltEffects.filter(effectData=>effectData.time<effectData.duration);
-  for(const mark of vaporMarks){mark.time-=dt;mark.maxTime-=dt;if((mark.time<=0||mark.maxTime<=0)&&!mark.settling){mark.settling=true;const target=unitById(mark.targetId);if(target?.alive&&mark.recorded>0)damage(mark.source,target,mark.recorded*.25,{skill:true,elemental:true,reaction:true,allowReaction:false,allowVaporRecord:false})}}
-  vaporMarks=vaporMarks.filter(m=>!m.settling&&unitById(m.targetId)?.alive);
+  yelanBindings.forEach(binding=>binding.time+=dt);
+  yelanBindings=yelanBindings.filter(binding=>{const target=unitById(binding.targetId);return binding.time<binding.duration&&target?.alive&&has(target,'silence')});
+  for(const mark of vaporMarks){
+    mark.time-=dt;
+    mark.maxTime-=dt;
+    if((mark.time<=0||mark.maxTime<=0)&&!mark.settling){
+      mark.settling=true;
+      settleConfirmedVaporMark(mark);
+    }
+  }
+  vaporMarks=vaporMarks.filter(mark=>!mark.settling);
   electroLinks.forEach(g=>g.time-=dt);
   electroLinks=electroLinks.filter(g=>
     g.time>0&&
@@ -449,6 +642,25 @@ tick=function(dt){
   );
   for(const z of confirmedSuperconductZones){z.time-=dt;for(const u of units.filter(x=>x.alive&&!x.onBench&&x.team!==z.team&&!z.triggered.has(x.id)&&z.cells.some(c=>c.row===x.row&&c.col===x.col))){z.triggered.add(u.id);u.mp=Math.max(0,u.mp-20);effect(u,'physicalResistFlatDown',5,20)}}
   confirmedSuperconductZones=confirmedSuperconductZones.filter(z=>z.time>0);
+  for(const burst of delayedRaidenBursts){
+    burst.time+=dt;
+    if(!burst.resolved&&burst.time>=burst.explodeAt){
+      burst.resolved=true;
+      const source=unitById(burst.sourceId);
+      if(!source?.alive)continue;
+      for(const id of burst.targetIds){
+        const target=unitById(id);if(!target?.alive)continue;
+        confirmedElementHit(source,target,effectiveAtk(source)*burst.dmgPct,true);
+        triggerElementalHit(target,'雷');
+        spawn(target,'#b869ff',18);
+      }
+      effect(source,'raidenEmpower',5,burst.atkBoost);
+      source.raidenHitCount=0;source.aiState='IDLE';source.decisionCooldown=.12;
+      spawn(source,'#9c57ff',22);
+      addLog(`${source.name}的延时刀光爆发，命中${burst.targetIds.length}名目标并进入梦想一心5秒`,'reaction');
+    }
+  }
+  delayedRaidenBursts=delayedRaidenBursts.filter(burst=>burst.time<burst.duration&&unitById(burst.sourceId)?.alive);
   for(const noelle of units.filter(u=>u.alive&&!u.onBench&&u.name==='诺艾尔')){
     if(noelle.noellePassivePaused)continue;
     const activeIds=new Set(units
@@ -512,8 +724,40 @@ incomingDamageModifier=function(u,source){
 
 castDilucSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
-  const dealt=confirmedElementHit(u,t,confirmedValue(u,[30,45,90])+effectiveAtk(u)*confirmedValue(u,[.75,.95,1.20]),true);
-  healUnit(u,dealt*confirmedValue(u,[1.8,2.2,4]),u);confirmedFinish(u);return true;
+  const tpl=SKILL_TEMPLATES.PROJECTILE;
+  const raw=confirmedValue(u,[30,45,90])+effectiveAtk(u)*confirmedValue(u,[.75,.95,1.20]);
+  const lifesteal=confirmedValue(u,[1.8,2.2,4]);
+  confirmedFinish(u);u.aiState='CASTING';
+  skillActions.push({
+    id:`diluc-slash-${u.id}-${Date.now()}`,sourceId:u.id,targetId:t.id,template:'PROJECTILE',
+    phase:'WINDUP',elapsed:0,windupDuration:.16,travelDuration:.20,impactDuration:0,recoveryDuration:.26,
+    meta:{skillName:'逆焰之刃',isElementalSlash:true,isCenteredSlash:true,slashElement:'火',slashStyle:'heavy',raw,lifesteal},
+    onImpact:(source,action)=>{
+      const target=getUnitById(action.targetId);if(!target?.alive)return;
+      const dealt=confirmedElementHit(source,target,action.meta.raw,true);
+      healUnit(source,dealt*action.meta.lifesteal,source);
+    }
+  });
+  return true;
+};
+castNilouSkill=function(u){
+  const target=confirmedTarget(u);if(!target)return false;
+  u.nilouCastCount=(Number(u.nilouCastCount)||0)%3+1;
+  const third=u.nilouCastCount===3;
+  const raw=third
+    ?confirmedValue(u,[80,150,350])+effectiveAtk(u)*confirmedValue(u,[1.50,1.75,2.20])
+    :confirmedValue(u,[30,55,110])+effectiveAtk(u)*confirmedValue(u,[.70,.80,1.00]);
+  confirmedFinish(u);u.aiState='CASTING';
+  skillActions.push({
+    id:`nilou-slash-${u.id}-${u.nilouCastCount}-${Date.now()}`,sourceId:u.id,targetId:target.id,template:'PROJECTILE',
+    phase:'WINDUP',elapsed:0,windupDuration:.13,travelDuration:.18,impactDuration:0,recoveryDuration:.22,
+    meta:{skillName:'七域舞步',isElementalSlash:true,isNilouSlash:true,slashElement:'水',slashStyle:third?'finisher':'light',raw},
+    onImpact:(source,action)=>{
+      const enemy=getUnitById(action.targetId);if(!enemy?.alive)return;
+      confirmedElementHit(source,enemy,action.meta.raw,true);
+    }
+  });
+  return true;
 };
 castBarbaraSkill=function(u){
   for(const ally of confirmedAllies(u))healUnit(ally,confirmedValue(u,[55,95,180]),u);
@@ -521,11 +765,22 @@ castBarbaraSkill=function(u){
   confirmedFinish(u);return true;
 };
 castCharlotteSkill=function(u){
-  for(const t of confirmedNearest(u,confirmedEnemies(u),2)){
-    confirmedElementHit(u,t,confirmedValue(u,[20,40,100])+effectiveAtk(u)*confirmedValue(u,[.35,.45,.65]),true);
-    effect(t,'grievous',confirmedValue(u,[5,6,8]),.30);
-  }
-  confirmedFinish(u);return true;
+  const targets=confirmedNearest(u,confirmedEnemies(u),2);if(!targets.length)return false;
+  const raw=confirmedValue(u,[20,40,100])+effectiveAtk(u)*confirmedValue(u,[.35,.45,.65]);
+  const duration=confirmedValue(u,[5,6,8]),tpl=SKILL_TEMPLATES.PROJECTILE;
+  confirmedFinish(u);u.aiState='CASTING';
+  targets.forEach((target,index)=>skillActions.push({
+    id:`charlotte-orb-${u.id}-${index}-${Date.now()}`,sourceId:u.id,targetId:target.id,template:'PROJECTILE',
+    phase:'WINDUP',elapsed:index*.05,windupDuration:tpl.windup,
+    travelDuration:Math.max(.22,dist(u,target)*tpl.travel),impactDuration:0,recoveryDuration:tpl.recovery,
+    meta:{skillName:'定格·全方位确证',isCharlotteOrb:true,raw,duration},
+    onImpact:(source,action)=>{
+      const enemy=getUnitById(action.targetId);if(!enemy?.alive)return;
+      confirmedElementHit(source,enemy,action.meta.raw,true);
+      effect(enemy,'grievous',action.meta.duration,.30);
+    }
+  }));
+  return true;
 };
 castKukiSkill=function(u){
   u.hp=Math.max(1,u.hp-u.hp*.20);
@@ -555,19 +810,33 @@ tickKleeBombs=function(dt){
 castYelanSkill=function(u){
   const enemies=confirmedEnemies(u);if(!enemies.length)return false;
   const t=[...enemies].sort((a,b)=>(b.damageDealt||0)-(a.damageDealt||0))[0];
+  const silenceDuration=confirmedValue(u,[2.5,3.5,5]);
+  yelanBindings.push({targetId:t.id,fallback:unitVisualPos(t),time:0,wrapDuration:.72,duration:silenceDuration});
   confirmedElementHit(u,t,confirmedValue(u,[90,160,320])+effectiveAtk(u)*confirmedValue(u,[.90,1.05,1.30]),true);
   t.mp=Math.max(0,t.mp-confirmedValue(u,[15,20,30]));
-  effect(t,'silence',confirmedValue(u,[2.5,3.5,5]),1);
+  effect(t,'silence',silenceDuration,1);
   confirmedFinish(u);return true;
 };
 castAyakaSkill=function(u){
-  for(const t of confirmedNearest(u,confirmedEnemies(u),3))
-    confirmedElementHit(u,t,confirmedValue(u,[100,180,400])+effectiveAtk(u)*confirmedValue(u,[1,1.2,1.55]),true);
-  confirmedFinish(u);return true;
+  const targets=confirmedNearest(u,confirmedEnemies(u),3);if(!targets.length)return false;
+  const raw=confirmedValue(u,[100,180,400])+effectiveAtk(u)*confirmedValue(u,[1,1.2,1.55]);
+  confirmedFinish(u);u.aiState='CASTING';
+  targets.forEach((target,index)=>skillActions.push({
+    id:`ayaka-triple-slash-${u.id}-${index}-${Date.now()}`,
+    sourceId:u.id,targetId:target.id,template:'PROJECTILE',
+    phase:'WINDUP',elapsed:index*.035,windupDuration:.12,
+    travelDuration:.34,impactDuration:0,recoveryDuration:.22,
+    meta:{skillName:'神里流·霜灭',isAyakaTripleSlash:true,raw},
+    onImpact:(source,action)=>{
+      const enemy=getUnitById(action.targetId);if(!enemy?.alive)return;
+      confirmedElementHit(source,enemy,action.meta.raw,true);
+    }
+  }));
+  return true;
 };
 castClorindeSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
-  confirmedElementHit(u,t,confirmedValue(u,[60,120,280])+effectiveAtk(u)*confirmedValue(u,[.8,1,1.3]),true);
+  confirmedElementHit(u,t,confirmedValue(u,[60,120,280]),true);
   applyTaunt(u,t,5);
   effect(u,'clorindeDuel',5,1);effect(u,'clorindeDamageBoost',5,confirmedValue(u,[.20,.30,.50]));
   effect(u,'clorindeGuard',5,-confirmedValue(u,[.10,.15,.20]));
@@ -610,10 +879,10 @@ castFurinaSkill=function(u){
   const mana=confirmedValue(u,[15,20,25]);
   u.skillReady=false;u.aiState='CASTING';
   launchFriendlyOrbs(u,targets,'水',(source,ally)=>{
-    ally.mp=Math.min(ally.maxMp,ally.mp+mana);
+    if(typeof gainMana==='function')gainMana(ally,mana,true);
+    else ally.mp=Math.min(ally.maxMp,ally.mp+mana);
     const t=ally.target?.alive?ally.target:confirmedNearest(ally,confirmedEnemies(u),1)[0];
     if(t)confirmedElementHit(source,t,confirmedValue(source,[10,20,50])+effectiveAtk(source)*confirmedValue(source,[.30,.40,.50]),true);
-    showReaction(ally,'skill',`法力 +${mana}`);
   },'mana');
   spawn(u,ELEMENTS[u.element]||'#fff',14);return true;
 };
@@ -628,7 +897,7 @@ castShenheSkill=function(u){
   for(const ally of confirmedAllies(u))ally.effects=ally.effects.filter(e=>e.type!=='shenheBuff');
   const amount=effectiveAtk(u)*confirmedValue(u,[.30,.35,.50]);
   const allies=[...confirmedAllies(u).filter(x=>x!==u)].sort((a,b)=>effectiveAtk(b)-effectiveAtk(a)).slice(0,2);
-  allies.forEach(a=>effect(a,'shenheBuff',8,amount));
+  launchFriendlyOrbs(u,allies,'冰',(source,ally)=>effect(ally,'shenheBuff',8,amount),'attack');
   for(const t of confirmedNearest(u,confirmedEnemies(u),2))
     confirmedElementHit(u,t,confirmedValue(u,[20,40,90])+effectiveAtk(u)*confirmedValue(u,[.45,.55,.70]),true);
   confirmedFinish(u);return true;
@@ -714,11 +983,7 @@ function keqingLandingCandidates(u,target){
 }
 function clearKeqingOrdinaryAggro(u){
   u.target=null;u.targetId=null;cancelCurrentPath(u);
-  for(const enemy of confirmedEnemies(u)){
-    if(enemy.target!==u&&enemy.targetId!==u.id)continue;
-    if(resolveForcedTarget(enemy)===u)continue;
-    enemy.target=null;enemy.targetId=null;cancelCurrentPath(enemy);requestDecisionImmediately(enemy);
-  }
+  if(typeof transferAggroAwayFrom==='function')transferAggroAwayFrom(u,1.5);
 }
 function resetKeqingTargetAfterLanding(u,activate=true){
   const forced=resolveForcedTarget(u),next=forced||acquireNearestTarget(u);
@@ -750,9 +1015,10 @@ castKeqingSkill=function(u){
       const center=liveTarget?.alive?{row:liveTarget.row,col:liveTarget.col}:{row:action.meta.targetRow,col:action.meta.targetCol};
       const raw=confirmedValue(source,[55,110,220])+effectiveAtk(source)*confirmedValue(source,[.50,.65,.85]);
       for(const enemy of confirmedEnemies(source).filter(e=>dist(e,center)<=1.5))
-        confirmedElementHit(source,enemy,raw,true);
+        confirmedElementHit(source,enemy,raw,enemy.id===action.targetId);
+      effect(source,'elementalInfusion',3,'雷');
       spawn(source,ELEMENTS.雷,20);
-      addLog(`${source.name} 脱离普通仇恨并瞬移至 ${target.name} 附近，造成范围雷伤并重新索敌`,'reaction');
+      addLog(`${source.name} 脱离普通仇恨并瞬移至 ${target.name} 附近，造成范围雷伤并进入3秒雷元素附魔状态`,'reaction');
       resetKeqingTargetAfterLanding(source,false);
     },
     onComplete:source=>resetKeqingTargetAfterLanding(source)
@@ -761,17 +1027,51 @@ castKeqingSkill=function(u){
 };
 castTartagliaSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
-  confirmedElementHit(u,t,confirmedValue(u,[100,180,420])+effectiveAtk(u)*confirmedValue(u,[1.2,1.45,1.9]),true);
-  confirmedFinish(u);return true;
+  const tpl=SKILL_TEMPLATES.PROJECTILE;
+  const raw=confirmedValue(u,[100,180,420])+effectiveAtk(u)*confirmedValue(u,[1.2,1.45,1.9]);
+  const travelDuration=Math.max(.22,dist(u,t)*tpl.travel);
+  confirmedFinish(u);u.aiState='CASTING';
+  skillActions.push({
+    id:`tartaglia-water-arrow-${u.id}-${Date.now()}`,
+    sourceId:u.id,
+    targetId:t.id,
+    template:'PROJECTILE',
+    phase:'WINDUP',
+    elapsed:0,
+    windupDuration:tpl.windup,
+    travelDuration,
+    impactDuration:0,
+    recoveryDuration:tpl.recovery,
+    meta:{skillName:'尽灭水光',isTartagliaArrow:true,raw},
+    onImpact:(source,action)=>{
+      const target=getUnitById(action.targetId);
+      if(!target?.alive)return;
+      const dealt=confirmedElementHit(source,target,action.meta.raw,true);
+      spawn(target,ELEMENTS.水,18);
+      addLog(`${source.name} 的强化水箭命中 ${target.name}，造成 ${Math.round(dealt)} 点水元素伤害并附着`,'reaction');
+    }
+  });
+  return true;
 };
 castNeuvilletteSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
-  const rowEnemies=confirmedEnemies(u).filter(e=>e.row===t.row);
-  for(const e of rowEnemies){
-    confirmedElementHit(u,e,confirmedValue(u,[30,55,120])+effectiveAtk(u)*confirmedValue(u,[.30,.40,.55]),true);
-    const duration=confirmedValue(u,[1.5,1.75,2.5]);
-    effect(e,'stun',typeof applyEquipmentHardControl==='function'?applyEquipmentHardControl(e,duration,'stun'):duration,1);
+  const stunDuration=confirmedValue(u,[1,2,3]);
+  const raw=confirmedValue(u,[30,55,120])+effectiveAtk(u)*confirmedValue(u,[.30,.40,.55]);
+  const spreadDelay=.11,charge=.18,fade=.32;
+  const cells=[];
+  for(let col=0;col<COLS;col++){
+    const distance=Math.abs(col-t.col);
+    cells.push({
+      row:t.row,col,
+      delay:distance*spreadDelay,
+      charge,hold:stunDuration,fade,
+      hit:false
+    });
   }
+  confirmedNeuvilletteFloorWaves.push({
+    source:u,team:u.team,time:0,cells,raw,stunDuration,
+    duration:Math.max(t.col,COLS-1-t.col)*spreadDelay+charge+stunDuration+fade
+  });
   confirmedFinish(u);return true;
 };
 castKokomiSkill=function(u){
@@ -785,8 +1085,10 @@ castArlecchinoSkill=function(u){
 castRaidenSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
   const victims=confirmedEnemies(u).filter(e=>e===t||(e.row===t.row&&Math.abs(e.col-t.col)<=3)).slice(0,4);
-  victims.forEach(e=>confirmedElementHit(u,e,effectiveAtk(u)*confirmedValue(u,[3,5,12]),true));
-  effect(u,'raidenEmpower',5,confirmedValue(u,[20,50,120]));u.raidenHitCount=0;confirmedFinish(u);return true;
+  confirmedFinish(u);u.aiState='CASTING';
+  delayedRaidenBursts.push({sourceId:u.id,targetId:t.id,targetIds:victims.map(e=>e.id),from:unitVisualPos(u),to:unitVisualPos(t),time:0,explodeAt:.58,duration:.92,resolved:false,dmgPct:confirmedValue(u,[3,5,12]),atkBoost:confirmedValue(u,[20,50,120])});
+  showReaction(u,'skill','奥义·梦想真说');
+  return true;
 };
 
 // Correct the status-derived panel/combat values introduced by the confirmed
@@ -810,7 +1112,7 @@ getFinalStat=function(u,statType){
 
 castNoelleSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
-  const victims=confirmedEnemies(u).filter(e=>e===t||dist(e,t)<=1);
+  const victims=confirmedEnemies(u).filter(e=>e===t||dist(e,t)<=2);
   victims.forEach(e=>applyTaunt(u,e,5));
   const currentAttackers=confirmedEnemies(u).filter(e=>e.target===u||e.targetId===u.id);
   const sources=u.noellePassiveSources||(u.noellePassiveSources={});
@@ -849,10 +1151,14 @@ castYaeSkill=function(u){
     }
     u.mp=0;spawn(u,ELEMENTS.雷,24);return true;
   }
-  for(const e of confirmedEnemies(u)){
-    confirmedElementHit(u,e,effectiveAtk(u)*confirmedValue(u,[2,3.5,3.5]),true);
-    effect(e,'grievous',Number.POSITIVE_INFINITY,.30);
-  }
+  const targets=confirmedEnemies(u).map(target=>({
+    target,
+    raw:effectiveAtk(u)*confirmedValue(u,[2,3.5,3.5]),
+    attaches:true,
+    grievous:true,
+    label:'大密法·天狐显真'
+  }));
+  launchSkyLightning(u,unitVisualPos(u),targets,'burst',true);
   confirmedFinish(u);return true;
 };
 tickSummons=function(dt){
@@ -862,8 +1168,13 @@ tickSummons=function(dt){
     const target=pickSummonTarget(s);if(!target)continue;
     s.hitCount=(s.hitCount||0)+1;
     const raw=effectiveAtk(s.owner)*confirmedValue(s.owner,s.advanced?[1.3125,1.6875,4.5]:[.875,1.125,3]);
-    const dealt=damage(s.owner,target,raw,{skill:true,elemental:true,damageElement:'雷',summon:true});
-    if(s.hitCount%2===0&&target.alive)attachAndReact(s.owner,target,dealt);
+    launchSkyLightning(
+      s.owner,
+      benchPos(s.team,s.benchIndex),
+      [{target,raw,attaches:s.hitCount%2===0,label:s.advanced?'高阶杀生樱落雷':'杀生樱落雷'}],
+      'summon',
+      s.advanced
+    );
   }
 };
 castGanyuSkill=function(u){
@@ -1005,9 +1316,29 @@ resolveHit=function(a){
     raw=confirmedValue(u,first?[40,80,180]:[25,45,90])+effectiveAtk(u)*confirmedValue(u,first?[1,1.15,1.45]:[.95,1.05,1.2]);
     attach=first;
   }
-  if(kokomi)raw+=u.maxHp*confirmedValue(u,[.05,.06,.08]);
+  if(kokomi)raw+=u.maxHp*confirmedValue(u,[.10,.12,.15]);
   const dealt=damage(u,t,raw,{elemental,damageElement:elemental?u.element:null});
   if(attach&&t.alive)attachAndReact(u,t,dealt);
+  if(clorinde&&t.alive){
+    const extraRaw=effectiveAtk(u)*confirmedValue(u,[.8,1,1.3]);
+    const extraDealt=damage(u,t,extraRaw,{
+      elemental:true,
+      damageElement:'雷',
+      allowReaction:false
+    });
+    addLog(`${u.name}的强化普攻追加${Math.round(extraDealt)}点雷伤（不附着）`,'reaction');
+  }
+  if(raiden&&dealt>0){
+    u.raidenHitCount=(u.raidenHitCount||0)+1;
+    if(u.raidenHitCount%4===0){
+      const recipients=units
+        .filter(ally=>ally.alive&&!ally.onBench&&!ally.inWarehouse&&!ally.isSummon&&!ally.isDummy&&ally.team===u.team&&ally!==u&&ally.maxMp>0)
+        .sort((a,b)=>(a.mp/Math.max(1,a.maxMp))-(b.mp/Math.max(1,b.maxMp))||a.mp-b.mp)
+        .slice(0,3);
+      recipients.forEach(ally=>gainMana(ally,10,true));
+      if(recipients.length)addLog(`${u.name}的梦想一心第4次普攻为${recipients.map(ally=>ally.name).join('、')}各回复10点法力`,'reaction');
+    }
+  }
   const manaLocked=hutao||raiden||yoimiya||kokomi||clorinde||has(u,'arlecchinoEmpower');
   if(!manaLocked)u.mp=Math.min(u.maxMp,u.mp+10);
   if(layla&&t.alive){attachAndReact(u,t,dealt);layla.value=(Number(layla.value)||1)-1;if(layla.value<=0)u.effects=u.effects.filter(e=>e!==layla)}
@@ -1037,30 +1368,30 @@ resolveHit=function(a){
 Object.assign(SKILL_INFO,{
   '优菈':'初始法力40/80。\\n【R·冰潮的涡旋】对前方扇形造成10/20/40 + 攻击力10%/10%/15%冰伤并附着；获得300/500/900护盾5秒。护盾自然结束时，对周围1格造成剩余护盾80%/100%/120%冰伤并附着。',
   '迪卢克':'初始法力30/70。\\n【R·逆焰之刃】对当前目标造成30/45/90 + 攻击力75%/95%/120%火伤并附着；本次伤害拥有180%/220%/400%技能吸血。',
-  '妮露':'初始法力10/55。\\n【R·七域舞步】前两次造成30/55/110 + 攻击力70%/80%/95%水伤并附着；第三次先造成扇形20/40/80 + 50%/60%/75%水伤（不附着），再发射贯穿水刃造成70/130/300 + 140%/165%/200%水伤并附着，每穿过一名敌人后续伤害降低30%。',
+  '妮露':'初始法力10/55。\\n【R·七域舞步】每次施放先播放水元素挥砍，命中时才结算。前两次对当前目标造成30/55/110 + 攻击力70%/80%/100%水伤并附着；第三次改为更强的单体终结挥砍，造成80/150/350 + 攻击力150%/175%/220%水伤并附着。',
   '芙宁娜':'初始法力30/90。\\n【R·众水的歌者】令法力比例最低的两名不同友军回复15/20/25法力，可选择自己；每名受益者生成水泡，造成10/20/50 + 芙宁娜攻击力30%/40%/50%水伤并附着。只剩自己时仅生效一次。',
     '莱依拉':'初始法力20/90。\\n【R·垂裳端凝之夜】为生命比例最低友军提供280/300/850护盾5秒；莱依拉下一次普攻施加冰附着。',
   '芭芭拉':'初始法力0/75。\\n【R·闪耀奇迹】治疗全体友军55/95/180；对当前目标造成5/10/20 + 攻击力10%/10%/15%水伤并附着。',
-  '夏洛蒂':'初始法力40/80。\\n【R·定格·全方位确证】对最近两名敌人分别造成20/40/100 + 攻击力35%/45%/65%冰伤并附着；施加30%重伤5/6/8秒。',
+  '夏洛蒂':'初始法力40/80。\\n【R·定格·全方位确证】向最近两名敌人分别发射冰元素技能球；技能球命中时造成20/40/100 + 攻击力35%/45%/65%冰伤并附着，同时施加30%重伤5/6/8秒。',
   '宵宫':'初始法力20/50。\\n【R·焰硝庭火舞】强化5秒，期间普攻转火伤且不能回蓝。第一发造成40/80/180 + 攻击力100%/115%/145%并附着；后续造成25/45/90 + 攻击力95%/105%/120%，不附着。',
   '夜兰':'初始法力20/70。\\n【R·萦络纵命索】全屏锁定累计伤害最高敌人，造成90/160/320 + 攻击力90%/105%/130%水伤并附着；削减15/20/30当前法力并沉默2.5/3.5/5秒。',
-  '神里绫华':'初始法力30/75。\\n【R·神里流·霜灭】选择最近三名不同敌人，各造成100/180/400 + 攻击力100%/120%/155%冰伤并附着。',
-  '克洛琳德':'初始法力30/80。\\n【R·逐影之誓】造成60/120/280 + 攻击力80%/100%/130%雷伤并附着，嘲讽目标5秒。期间自身攻速+50%/65%/100%、增伤+20%/30%/50%、减伤10%/15%/20%，目标增伤降低20%/30%/50%；普攻转雷伤、不附着且不能通过普攻回复法力。',
+  '神里绫华':'初始法力30/75。\\n【神里流·霜灭】隔空斩击最近三名不同敌人；每名目标身上依次显现三道大型冰元素斩痕，三段动画完成时统一造成一次100/180/400 + 攻击力100%/120%/155%冰伤并附着。',
+  '克洛琳德':'初始法力30/80。\\n【逐影之誓】开启时对目标造成60/120/280雷伤并附着，嘲讽目标5秒。期间自身攻速+50%/65%/100%、增伤+20%/30%/50%、减伤10%/15%/20%，目标增伤降低20%/30%/50%；普攻转雷伤，并额外追加攻击力80%/100%/130%的雷伤。强化普攻及追加雷伤均不附着，期间不能通过普攻回复法力。',
   '早柚':'初始法力40/90。\\n【R·呜呼流·影貉缭乱】回复自身300/520/900生命，获得15%/20%/25%减伤6秒并每2秒清除自身附着；同时对最近敌人造成10/25/60 + 攻击力25%/35%/50%风伤并可扩散。',
-  '申鹤':'初始法力35/85。\\n【R·仰灵威召将役咒】令攻击力最高的两名其他友军获得申鹤攻击力30%/35%/50%的固定攻击力8秒；对最近两名敌人造成20/40/90 + 攻击力45%/55%/70%冰伤并附着。',
+  '申鹤':'初始法力35/85。\\n【R·仰灵威召将役咒】向攻击力最高的两名其他友军分别发射增益球；增益球抵达后，使其获得申鹤攻击力30%/35%/50%的固定攻击力8秒。并对最近两名敌人造成20/40/90 + 攻击力45%/55%/70%冰伤并附着。',
   '久岐忍':'初始法力20/75。\\n【R·越祓雷草之轮】消耗当前生命20%，治疗生命比例最低的两名其他友军180/240/400；对最近敌人造成15/30/70 + 攻击力35%/45%/60%雷伤并附着。',
   '可莉':'初始法力10/60。\\n【R·蹦蹦炸弹】1.5秒后对主目标造成200/350/650 + 攻击力160%/195%/220%火伤并附着；周围1格敌人承受主伤害70%，不附着。',
-  '珊瑚宫心海':'初始法力35/90。\\n【R·海人化羽】强化8秒并锁蓝。普攻追加最大生命5%/6%/8%水伤；每次为最低生命友军治疗心海最大生命3%/4%/6%；每第3次强化普攻附着水元素。',
-  '刻晴':'初始法力30/50。\\n【R·星斗归位】释放时清除自身旧目标与移动路径，并使当前以刻晴为普通攻击目标的敌人失去锁定、重新索敌。刻晴选择自身4格内距离最远的敌人，瞬移至其附近合法空格，对目标周围1.5格所有敌人造成55/110/220 + 攻击力50%/65%/85%雷伤并全部附着。落地后重新索敌；已发射弹道与持续伤害不会消失，仍在持续的强制嘲讽不会解除。',
+  '珊瑚宫心海':'初始法力35/90。\\n【海人化羽】强化8秒并锁蓝。普攻追加最大生命10%/12%/15%水伤；每次为最低生命友军治疗心海最大生命3%/4%/6%；每第3次强化普攻附着水元素。',
+  '刻晴':'初始法力30/50。\\n【R·星斗归位】释放时清除自身旧目标与移动路径，并使当前以刻晴为普通攻击目标的敌人失去锁定、重新索敌。刻晴选择自身4格内距离最远的敌人，瞬移至其附近合法空格，对目标周围1.5格所有敌人造成55/110/220 + 攻击力50%/65%/85%雷伤，仅主目标附着。随后进入3秒雷元素附魔状态，普通攻击倍率不变，仅转化为雷元素伤害。落地后重新索敌；已发射弹道与持续伤害不会消失，仍在持续的强制嘲讽不会解除。',
   '阿蕾奇诺':'初始法力25/75。\\n普通攻击永久转为火伤且不附着，并对周围1格造成攻击力30%/35%/45%溅射。技能强化7秒，攻速+40%/55%/80%，溅射提高至45%/55%/70%，状态开始与结束各附着一次。',
-  '达达利亚':'初始法力30/70。\\n【R·尽灭水光】对当前目标造成100/180/420 + 攻击力120%/145%/190%水伤并附着。参与击杀可永久获得攻击与攻速成长，本回合最多4层。',
-  '那维莱特':'初始法力50/100。\\n【R·衡平推裁】冲击目标所在整排，造成30/55/120 + 攻击力30%/40%/55%水伤，全部附着并眩晕1.5/1.75/2.5秒。',
+  '达达利亚':'初始法力30/70。\\n【R·尽灭水光】向当前目标射出一支强化水箭；水箭抵达目标时造成100/180/420 + 攻击力120%/145%/190%水伤并附着。参与击杀可永久获得攻击与攻速成长，本回合最多4层。',
+  '那维莱特':'初始法力50/120。\\n【衡平推裁】目标格的六边形边框先逐步亮起，达到命中亮度时造成30/55/120 + 攻击力30%/40%/55%水伤、附着并眩晕1/2/3秒；水格随后快速向目标所在行的两侧逐格扩散。蓝色边框在眩晕期间维持，结束后逐渐熄灭。',
   '枫原万叶':'初始法力40/90。\\n【R·万叶之一刀】自身半径2格生成风域6秒，每1.5秒造成20/35/80 + 攻击力55%/65%/90%风伤，共4段；第2、4段可触发扩散。',
   '菲谢尔':'初始法力20/70。\\n开战召唤奥兹；菲谢尔每4次普攻令奥兹协同一次，奥兹造成45/80/240 + 攻击力90%/115%/220%雷伤，每第2次附着。技能令奥兹立即攻击，永久获得20%基础攻速，最多5层，并令普攻转雷伤3秒。',
   '琴':'初始法力40/95。\\n【R·蒲公英之风】自身与周围六格生成领域8秒，立即并每2秒治疗100/165/520，共4次；领域内友军减伤10%。每名敌人首次进入受到10/20/100风伤并可扩散。',
   '安柏':'初始法力40/120。\\n【R·爆弹玩偶】延迟1秒后对半径1.5格敌人造成攻击力700%/900%/2200%火伤，全部附着。',
-  '诺艾尔':'初始法力30/100。\\n【被动·守护之心】每名正以诺艾尔为目标的敌人使物理抗性和元素抗性分别提高8/10/15点；敌人切换目标或死亡后，对应层数延迟2秒移除。护盾存在期间层数冻结，不新增也不衰减。\\n【R·护心岩铠】嘲讽当前目标所在格及周围六格内的敌人5秒，并获得250/400/1200 + (当前物理抗性 + 当前元素抗性)×1/2/5的护盾，持续5秒。技能不造成伤害，也不施加岩元素附着。',
-  '雷电将军':'初始法力40/80。\\n【R·奥义·梦想真说】对当前目标及同行最多3格造成攻击力300%/500%/1200%雷伤并附着；随后5秒攻速+100%、固定攻击+20/50/120，普攻转雷伤且锁蓝、不附着。',
+  '诺艾尔':'初始法力30/100。\\n【被动·守护之心】每名正以诺艾尔为目标的敌人使物理抗性和元素抗性分别提高8/10/15点；敌人切换目标或死亡后，对应层数延迟2秒移除。护盾存在期间层数冻结，不新增也不衰减。\\n【R·护心岩铠】嘲讽当前目标所在格周围2格内的敌人5秒，并获得250/400/1200 + (当前物理抗性 + 当前元素抗性)×1/2/5的护盾，持续5秒。技能不造成伤害，也不施加岩元素附着。',
+  '雷电将军':'初始法力40/80。\\n【R·奥义·梦想真说】对当前目标及同行最多3格造成攻击力300%/500%/1200%雷伤并附着；随后5秒攻速+100%、固定攻击+20/50/120，普攻转雷伤且锁蓝、不附着。强化期间每第4次有效普攻，为除自身外法力比例最低的3名友军各回复10点法力。',
   '胡桃':'初始法力20/70。\\n【被动】根据已损失生命比例获得增伤，最高30%。\\n【R·彼岸蝶舞】消耗当前生命30%，8秒内固定攻击+90/170/450，普攻转火伤、每第3次附着并锁蓝。首次致死保留1生命、免费刷新技能并永久获得20%额外吸血；一、二星无敌2秒，三星无敌10秒。三星强化期间额外获得3.0攻速与30%减伤。',
   '甘雨':'初始法力20/80。\\n每第3次普攻替换为霜华矢，造成攻击力220%/320%/800%冰伤并仅对主目标附着，周围1.5格承受60%。\\n【R·降众天华】一、二星在目标周围2.5格生成6秒领域；三星生成覆盖全棋盘的30秒领域。每2秒造成60/90/260冰伤；停留4秒后，一、二星冻结2秒，三星冻结10秒。',
   '八重神子':'召唤阶段10/60；大招阶段一、二星0/120，三星0/50。普通攻击固定10雷伤、不附着。杀生樱每2.5秒攻击，倍率87.5%/112.5%/300%，每第2次附着；三星第一次释放直接召唤3株杀生樱。同队3株后升阶至131.25%/168.75%/450%并切换大招。天狐显真：一星全屏200%攻击雷伤，二星全屏350%；三星十段全屏天雷，每段500%，总计5000%。首击永久施加30%重伤。'
@@ -1101,7 +1432,7 @@ const confirmedEffectGroupData=[['持续状态',[
 const effectHost=document.querySelector('#effectGroups');
 if(effectHost)effectHost.innerHTML=`<div class="effect-items">${confirmedEffectGroupData[0][1].map(([src,name,desc])=>`<div class="effect-item"><img src="${src}" alt=""><span>${name}<small>${desc}</small></span></div>`).join('')}</div>`;
 const confirmedReactionGuide=[
-  ['蒸发','火 + 水','生成4秒蒸发标记，记录目标实际承受伤害；结束时结算记录值25%的对应元素伤害。重复触发刷新4秒但累计最长8秒，保留已记录伤害。'],
+  ['蒸发','火 + 水','生成4秒蒸发标记，记录目标实际损失的护盾与生命；首次触发结算系数为80%，第二次触发提高至200%且不延长时间。标记结算前第三次及后续触发无效。'],
   ['感电链','水 + 雷','连接同阵营2～3名敌人8秒；任一成员承受伤害时，其余成员各受到原始实际伤害15%的真实传导伤害。传导伤害不递归。'],
   ['冻结','水 + 冰','立即完全冻结2秒；期间无法移动、普攻或施放技能。韧性正常影响持续时间，不叠层、不减速。'],
   ['融化','火 + 冰','本次总伤害×2.0；不再附加易伤状态。'],
@@ -1114,7 +1445,7 @@ const reactionHost=document.querySelector('#bottomReaction');
 if(reactionHost)reactionHost.innerHTML=`<h3>元素反应效果表</h3><p style="font-size:12px;color:#aab7c9;margin:5px 0 8px;line-height:1.55">实际伤害等于护盾损失与生命损失之和，不计算溢出；触发反应后消耗元素附着。固定减抗先结算，百分比减抗后结算。</p><table class="reaction-table"><thead><tr><th>反应</th><th>组合</th><th>效果与公式</th></tr></thead><tbody>${confirmedReactionGuide.map(r=>`<tr><td><img class="table-icon" src="${REACTION_ICON_PATH[r[0]]||''}" alt="">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>`;
 
 function resetConfirmedRuntime(){
-  vaporMarks=[];electroLinks=[];confirmedSuperconductZones=[];confirmedOverloadEffects=[];confirmedMeltEffects=[];
+  vaporMarks=[];electroLinks=[];confirmedSuperconductZones=[];confirmedOverloadEffects=[];confirmedMeltEffects=[];yelanBindings=[];confirmedNeuvilletteFloorWaves=[];delayedRaidenBursts=[];
   crystallizedByTeam.blue?.clear();crystallizedByTeam.red?.clear();
   for(const u of units){initializeConfirmedUnit(u,true);u.lifesteal=0;u.normalLifesteal=0;u.skillLifesteal=0;u.hutaoLastStandLifestealGranted=false;u.crystalAtkFlat=0;u.crystalPhysicalFlat=0;u.crystalElementFlat=0;delete u.crystalAtkPercent;delete u.crystalPhysicalPercent;delete u.crystalElementPercent;u.fischlConfirmedStacks=0;u.fischlNormalCount=0;u.ozConfirmedHits=0;u.noellePassiveSources={};u.noelleExtraRes=0;u.noellePassivePaused=false}
   for(const u of units.filter(x=>x.alive&&!x.onBench&&x.name==='菲谢尔')){
@@ -1131,6 +1462,9 @@ enterPreparation=function(...args){
   confirmedSuperconductZones=[];
   confirmedOverloadEffects=[];
   confirmedMeltEffects=[];
+  yelanBindings=[];
+  confirmedNeuvilletteFloorWaves=[];
+  delayedRaidenBursts=[];
   return enterPreparationBeforeConfirmed(...args);
 };
 const startBeforeConfirmed=startBattle;
