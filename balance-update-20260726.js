@@ -836,7 +836,7 @@ castAyakaSkill=function(u){
 };
 castClorindeSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
-  confirmedElementHit(u,t,confirmedValue(u,[60,120,280])+effectiveAtk(u)*confirmedValue(u,[.8,1,1.3]),true);
+  confirmedElementHit(u,t,confirmedValue(u,[60,120,280]),true);
   applyTaunt(u,t,5);
   effect(u,'clorindeDuel',5,1);effect(u,'clorindeDamageBoost',5,confirmedValue(u,[.20,.30,.50]));
   effect(u,'clorindeGuard',5,-confirmedValue(u,[.10,.15,.20]));
@@ -1319,6 +1319,15 @@ resolveHit=function(a){
   if(kokomi)raw+=u.maxHp*confirmedValue(u,[.05,.06,.08]);
   const dealt=damage(u,t,raw,{elemental,damageElement:elemental?u.element:null});
   if(attach&&t.alive)attachAndReact(u,t,dealt);
+  if(clorinde&&t.alive){
+    const extraRaw=effectiveAtk(u)*confirmedValue(u,[.8,1,1.3]);
+    const extraDealt=damage(u,t,extraRaw,{
+      elemental:true,
+      damageElement:'雷',
+      allowReaction:false
+    });
+    addLog(`${u.name}的强化普攻追加${Math.round(extraDealt)}点雷伤（不附着）`,'reaction');
+  }
   if(raiden&&dealt>0){
     u.raidenHitCount=(u.raidenHitCount||0)+1;
     if(u.raidenHitCount%4===0){
@@ -1367,7 +1376,7 @@ Object.assign(SKILL_INFO,{
   '宵宫':'初始法力20/50。\\n【R·焰硝庭火舞】强化5秒，期间普攻转火伤且不能回蓝。第一发造成40/80/180 + 攻击力100%/115%/145%并附着；后续造成25/45/90 + 攻击力95%/105%/120%，不附着。',
   '夜兰':'初始法力20/70。\\n【R·萦络纵命索】全屏锁定累计伤害最高敌人，造成90/160/320 + 攻击力90%/105%/130%水伤并附着；削减15/20/30当前法力并沉默2.5/3.5/5秒。',
   '神里绫华':'初始法力30/75。\\n【神里流·霜灭】隔空斩击最近三名不同敌人；每名目标身上依次显现三道大型冰元素斩痕，三段动画完成时统一造成一次100/180/400 + 攻击力100%/120%/155%冰伤并附着。',
-  '克洛琳德':'初始法力30/80。\\n【R·逐影之誓】造成60/120/280 + 攻击力80%/100%/130%雷伤并附着，嘲讽目标5秒。期间自身攻速+50%/65%/100%、增伤+20%/30%/50%、减伤10%/15%/20%，目标增伤降低20%/30%/50%；普攻转雷伤、不附着且不能通过普攻回复法力。',
+  '克洛琳德':'初始法力30/80。\\n【逐影之誓】开启时对目标造成60/120/280雷伤并附着，嘲讽目标5秒。期间自身攻速+50%/65%/100%、增伤+20%/30%/50%、减伤10%/15%/20%，目标增伤降低20%/30%/50%；普攻转雷伤，并额外追加攻击力80%/100%/130%的雷伤。强化普攻及追加雷伤均不附着，期间不能通过普攻回复法力。',
   '早柚':'初始法力40/90。\\n【R·呜呼流·影貉缭乱】回复自身300/520/900生命，获得15%/20%/25%减伤6秒并每2秒清除自身附着；同时对最近敌人造成10/25/60 + 攻击力25%/35%/50%风伤并可扩散。',
   '申鹤':'初始法力35/85。\\n【R·仰灵威召将役咒】向攻击力最高的两名其他友军分别发射增益球；增益球抵达后，使其获得申鹤攻击力30%/35%/50%的固定攻击力8秒。并对最近两名敌人造成20/40/90 + 攻击力45%/55%/70%冰伤并附着。',
   '久岐忍':'初始法力20/75。\\n【R·越祓雷草之轮】消耗当前生命20%，治疗生命比例最低的两名其他友军180/240/400；对最近敌人造成15/30/70 + 攻击力35%/45%/60%雷伤并附着。',
