@@ -751,7 +751,7 @@ castNilouSkill=function(u){
   skillActions.push({
     id:`nilou-slash-${u.id}-${u.nilouCastCount}-${Date.now()}`,sourceId:u.id,targetId:target.id,template:'PROJECTILE',
     phase:'WINDUP',elapsed:0,windupDuration:.13,travelDuration:.18,impactDuration:0,recoveryDuration:.22,
-    meta:{skillName:'七域舞步',isElementalSlash:true,slashElement:'水',slashStyle:third?'finisher':'light',raw},
+    meta:{skillName:'七域舞步',isElementalSlash:true,isNilouSlash:true,slashElement:'水',slashStyle:third?'finisher':'light',raw},
     onImpact:(source,action)=>{
       const enemy=getUnitById(action.targetId);if(!enemy?.alive)return;
       confirmedElementHit(source,enemy,action.meta.raw,true);
