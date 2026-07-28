@@ -181,7 +181,7 @@ const SKILL_INFO={
   '诺艾尔':'初始法力0/100。被动·守护之心：被锁定越多抗性越高（每名+10 / +12 / +15），无上限，护盾期间暂停。\nR·护心岩铠：目标周围七格全体5秒嘲讽→刷新抗性计数→护盾=最大生命×(15%+额外抗性%) / (20%+额外抗性%) / (40%+额外抗性%)，持续10秒。',
   '雷电将军':'初始法力30/70。对目标方向直线3格250% / 275% / 500%攻击雷伤+附着。进入梦想一心5秒：攻速×2、攻击+10 / +15 / +40、普攻转雷伤、锁蓝、每4次普攻附着一次。',
   '珊瑚宫心海':'初始法力40/80。进入【海人化羽】8秒。普攻追加最大生命6%水伤，每第三击附着。每次普攻为生命比例最低友军治疗最大生命8%。',
-  '刻晴':'初始法力40/70。瞬移至4格内最远敌人相邻空格，以目标为中心1.5格扇形150% / 165% / 225%攻击雷伤+附着。清空目标重新索敌。',
+  '刻晴':'初始法力30/50。瞬移至4格内最远敌人附近，对目标周围1.5格造成雷伤，仅主目标附着；随后获得3秒雷元素普攻附魔，普攻倍率不变。',
   '阿蕾奇诺':'初始法力50/90。普攻永久火元素附魔（不自动附着）。被动·赤月溅射：普攻时溅射目标周围1格30%/35%/45%火伤（不附着）。\\n【R·血火斩】对当前目标单体火伤180%/200%/270%+附着，20%吸血6秒。',
   '达达利亚':'初始法力30/60。目标+相邻七格120% / 130% / 180%攻击水伤+附着。纯远程弓。',
 '那维莱特':'初始法力30/100，攻速0.8。满蓝释放【衡平推裁】：从目标位置降下中央水柱，命中后向左右两侧逐列扩散至棋盘边缘。每道水柱落地时才对所在格敌人造成水元素伤害、施加水元素附着并眩晕1.5秒。',
@@ -212,7 +212,7 @@ const SKILL_BRIEF={
   '诺艾尔':'被动：被锁定抗性+10/12/15无上限。R：周围七格5秒嘲讽→护盾=最大生命×(15%/20%/40%+额外抗性%)。',
   '雷电将军':'目标直线3格250%/275%/500%雷伤+附着。梦想一心5秒：攻速×2、攻击+10/15/40、普攻转雷、每4击附着。',
   '珊瑚宫心海':'8秒强化：普攻追加最大生命6%水伤，每第三击附着。每次普攻治疗最低血友军8%最大生命。',
-  '刻晴':'瞬移至4格内最远敌旁边的扇形150%/165%/225%雷伤+附着。',
+  '刻晴':'瞬移切入并造成范围雷伤，仅主目标附着；随后获得3秒雷元素普攻附魔。',
   '阿蕾奇诺':'普攻永久火附魔。被动：普攻时溅射目标1格30%/35%/45%。R：单体180%/200%/270%火伤+附着，20%吸血6秒。',
   '达达利亚':'目标+相邻七格120%/130%/180%水伤+附着。纯远程弓。',
 '那维莱特':'衡平推裁：水柱从目标格开始向同排左右逐列扩散；每柱落地时造成水伤、附着并眩晕1.5秒。',
@@ -707,7 +707,7 @@ function drawAttackAnimationsSafe(){
         ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.shadowColor=blade;ctx.shadowBlur=a.infused?9:4;
         ctx.globalAlpha=.34*trailFade;ctx.strokeStyle=blade;ctx.lineWidth=4;ctx.beginPath();ctx.arc(from.x,from.y,radius+31,start,swing);ctx.stroke();
         ctx.globalAlpha=.76*trailFade;ctx.strokeStyle=a.infused?blade:'#f4f7fb';ctx.lineWidth=1.35;ctx.beginPath();ctx.arc(from.x,from.y,radius+34,start,swing);ctx.stroke();
-        ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;ctx.translate(from.x,from.y);ctx.rotate(swing);ctx.translate(radius,0);ctx.shadowBlur=a.infused?8:3;ctx.shadowColor=blade;
+        ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;ctx.translate(from.x,from.y);ctx.rotate(swing);ctx.scale(1.22,1.22);ctx.translate(radius,0);ctx.shadowBlur=a.infused?8:3;ctx.shadowColor=blade;
         ctx.fillStyle='#3d3028';ctx.beginPath();ctx.roundRect?.(-7,-1.7,9,3.4,1.4);ctx.fill();ctx.fillStyle='#c8a35a';ctx.fillRect(1,-4.5,2.5,9);
         ctx.fillStyle=blade;ctx.strokeStyle='#718198';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(4,-2.2);ctx.lineTo(29,-1.1);ctx.lineTo(34,0);ctx.lineTo(29,1.1);ctx.lineTo(4,2.2);ctx.closePath();ctx.fill();ctx.stroke();ctx.globalAlpha=.62;ctx.strokeStyle='#fff';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(8,-.6);ctx.lineTo(28,-.35);ctx.stroke();
       }else if(a.type==='heavySword'){

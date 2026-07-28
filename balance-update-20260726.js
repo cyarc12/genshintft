@@ -225,7 +225,6 @@ function isElectroLinkableUnit(unit){
     !unit.onBench&&
     !unit.inWarehouse&&
     !unit.isSummon&&
-    !unit.isDummy&&
     Number.isInteger(unit.row)&&
     Number.isInteger(unit.col)
   );
@@ -907,8 +906,9 @@ castKeqingSkill=function(u){
       const raw=confirmedValue(source,[55,110,220])+effectiveAtk(source)*confirmedValue(source,[.50,.65,.85]);
       for(const enemy of confirmedEnemies(source).filter(e=>dist(e,center)<=1.5))
         confirmedElementHit(source,enemy,raw,enemy.id===action.targetId);
+      effect(source,'elementalInfusion',3,'雷');
       spawn(source,ELEMENTS.雷,20);
-      addLog(`${source.name} 脱离普通仇恨并瞬移至 ${target.name} 附近，造成范围雷伤并重新索敌`,'reaction');
+      addLog(`${source.name} 脱离普通仇恨并瞬移至 ${target.name} 附近，造成范围雷伤并进入3秒雷元素附魔状态`,'reaction');
       resetKeqingTargetAfterLanding(source,false);
     },
     onComplete:source=>resetKeqingTargetAfterLanding(source)
@@ -1229,7 +1229,7 @@ Object.assign(SKILL_INFO,{
   '久岐忍':'初始法力20/75。\\n【R·越祓雷草之轮】消耗当前生命20%，治疗生命比例最低的两名其他友军180/240/400；对最近敌人造成15/30/70 + 攻击力35%/45%/60%雷伤并附着。',
   '可莉':'初始法力10/60。\\n【R·蹦蹦炸弹】1.5秒后对主目标造成200/350/650 + 攻击力160%/195%/220%火伤并附着；周围1格敌人承受主伤害70%，不附着。',
   '珊瑚宫心海':'初始法力35/90。\\n【R·海人化羽】强化8秒并锁蓝。普攻追加最大生命5%/6%/8%水伤；每次为最低生命友军治疗心海最大生命3%/4%/6%；每第3次强化普攻附着水元素。',
-  '刻晴':'初始法力30/50。\\n【R·星斗归位】释放时清除自身旧目标与移动路径，并使当前以刻晴为普通攻击目标的敌人失去锁定、重新索敌。刻晴选择自身4格内距离最远的敌人，瞬移至其附近合法空格，对目标周围1.5格所有敌人造成55/110/220 + 攻击力50%/65%/85%雷伤并全部附着。落地后重新索敌；已发射弹道与持续伤害不会消失，仍在持续的强制嘲讽不会解除。',
+  '刻晴':'初始法力30/50。\\n【R·星斗归位】释放时清除自身旧目标与移动路径，并使当前以刻晴为普通攻击目标的敌人失去锁定、重新索敌。刻晴选择自身4格内距离最远的敌人，瞬移至其附近合法空格，对目标周围1.5格所有敌人造成55/110/220 + 攻击力50%/65%/85%雷伤，仅主目标附着。随后进入3秒雷元素附魔状态，普通攻击倍率不变，仅转化为雷元素伤害。落地后重新索敌；已发射弹道与持续伤害不会消失，仍在持续的强制嘲讽不会解除。',
   '阿蕾奇诺':'初始法力25/75。\\n普通攻击永久转为火伤且不附着，并对周围1格造成攻击力30%/35%/45%溅射。技能强化7秒，攻速+40%/55%/80%，溅射提高至45%/55%/70%，状态开始与结束各附着一次。',
   '达达利亚':'初始法力30/70。\\n【R·尽灭水光】对当前目标造成100/180/420 + 攻击力120%/145%/190%水伤并附着。参与击杀可永久获得攻击与攻速成长，本回合最多4层。',
   '那维莱特':'初始法力50/100。\\n【R·衡平推裁】冲击目标所在整排，造成30/55/120 + 攻击力30%/40%/55%水伤，全部附着并眩晕1.5/1.75/2.5秒。',
