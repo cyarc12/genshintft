@@ -731,7 +731,7 @@ castDilucSkill=function(u){
   skillActions.push({
     id:`diluc-slash-${u.id}-${Date.now()}`,sourceId:u.id,targetId:t.id,template:'PROJECTILE',
     phase:'WINDUP',elapsed:0,windupDuration:.16,travelDuration:.20,impactDuration:0,recoveryDuration:.26,
-    meta:{skillName:'逆焰之刃',isElementalSlash:true,slashElement:'火',slashStyle:'heavy',raw,lifesteal},
+    meta:{skillName:'逆焰之刃',isElementalSlash:true,isCenteredSlash:true,slashElement:'火',slashStyle:'heavy',raw,lifesteal},
     onImpact:(source,action)=>{
       const target=getUnitById(action.targetId);if(!target?.alive)return;
       const dealt=confirmedElementHit(source,target,action.meta.raw,true);
@@ -818,9 +818,21 @@ castYelanSkill=function(u){
   confirmedFinish(u);return true;
 };
 castAyakaSkill=function(u){
-  for(const t of confirmedNearest(u,confirmedEnemies(u),3))
-    confirmedElementHit(u,t,confirmedValue(u,[100,180,400])+effectiveAtk(u)*confirmedValue(u,[1,1.2,1.55]),true);
-  confirmedFinish(u);return true;
+  const targets=confirmedNearest(u,confirmedEnemies(u),3);if(!targets.length)return false;
+  const raw=confirmedValue(u,[100,180,400])+effectiveAtk(u)*confirmedValue(u,[1,1.2,1.55]);
+  confirmedFinish(u);u.aiState='CASTING';
+  targets.forEach((target,index)=>skillActions.push({
+    id:`ayaka-triple-slash-${u.id}-${index}-${Date.now()}`,
+    sourceId:u.id,targetId:target.id,template:'PROJECTILE',
+    phase:'WINDUP',elapsed:index*.035,windupDuration:.12,
+    travelDuration:.34,impactDuration:0,recoveryDuration:.22,
+    meta:{skillName:'神里流·霜灭',isAyakaTripleSlash:true,raw},
+    onImpact:(source,action)=>{
+      const enemy=getUnitById(action.targetId);if(!enemy?.alive)return;
+      confirmedElementHit(source,enemy,action.meta.raw,true);
+    }
+  }));
+  return true;
 };
 castClorindeSkill=function(u){
   const t=confirmedTarget(u);if(!t)return false;
@@ -1354,7 +1366,7 @@ Object.assign(SKILL_INFO,{
   '夏洛蒂':'初始法力40/80。\\n【R·定格·全方位确证】向最近两名敌人分别发射冰元素技能球；技能球命中时造成20/40/100 + 攻击力35%/45%/65%冰伤并附着，同时施加30%重伤5/6/8秒。',
   '宵宫':'初始法力20/50。\\n【R·焰硝庭火舞】强化5秒，期间普攻转火伤且不能回蓝。第一发造成40/80/180 + 攻击力100%/115%/145%并附着；后续造成25/45/90 + 攻击力95%/105%/120%，不附着。',
   '夜兰':'初始法力20/70。\\n【R·萦络纵命索】全屏锁定累计伤害最高敌人，造成90/160/320 + 攻击力90%/105%/130%水伤并附着；削减15/20/30当前法力并沉默2.5/3.5/5秒。',
-  '神里绫华':'初始法力30/75。\\n【R·神里流·霜灭】选择最近三名不同敌人，各造成100/180/400 + 攻击力100%/120%/155%冰伤并附着。',
+  '神里绫华':'初始法力30/75。\\n【神里流·霜灭】隔空斩击最近三名不同敌人；每名目标身上依次显现三道大型冰元素斩痕，三段动画完成时统一造成一次100/180/400 + 攻击力100%/120%/155%冰伤并附着。',
   '克洛琳德':'初始法力30/80。\\n【R·逐影之誓】造成60/120/280 + 攻击力80%/100%/130%雷伤并附着，嘲讽目标5秒。期间自身攻速+50%/65%/100%、增伤+20%/30%/50%、减伤10%/15%/20%，目标增伤降低20%/30%/50%；普攻转雷伤、不附着且不能通过普攻回复法力。',
   '早柚':'初始法力40/90。\\n【R·呜呼流·影貉缭乱】回复自身300/520/900生命，获得15%/20%/25%减伤6秒并每2秒清除自身附着；同时对最近敌人造成10/25/60 + 攻击力25%/35%/50%风伤并可扩散。',
   '申鹤':'初始法力35/85。\\n【R·仰灵威召将役咒】向攻击力最高的两名其他友军分别发射增益球；增益球抵达后，使其获得申鹤攻击力30%/35%/50%的固定攻击力8秒。并对最近两名敌人造成20/40/90 + 攻击力45%/55%/70%冰伤并附着。',
