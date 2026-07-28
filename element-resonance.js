@@ -647,6 +647,7 @@
     previousStartBattle();
     if (started && !ended) applyOpeningResonance();
   };
+  if (startBtn) startBtn.onclick = startBattle;
 
   const freezeEnemyTeam = team => {
     for (const target of units.filter(unit => unit.alive && !unit.onBench && unit.team !== team)) {
