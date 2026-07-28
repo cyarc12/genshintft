@@ -847,10 +847,14 @@ castYaeSkill=function(u){
     }
     u.mp=0;spawn(u,ELEMENTS.雷,24);return true;
   }
-  for(const e of confirmedEnemies(u)){
-    confirmedElementHit(u,e,effectiveAtk(u)*confirmedValue(u,[2,3.5,3.5]),true);
-    effect(e,'grievous',Number.POSITIVE_INFINITY,.30);
-  }
+  const targets=confirmedEnemies(u).map(target=>({
+    target,
+    raw:effectiveAtk(u)*confirmedValue(u,[2,3.5,3.5]),
+    attaches:true,
+    grievous:true,
+    label:'大密法·天狐显真'
+  }));
+  launchSkyLightning(u,unitVisualPos(u),targets,'burst',true);
   confirmedFinish(u);return true;
 };
 tickSummons=function(dt){
@@ -860,8 +864,13 @@ tickSummons=function(dt){
     const target=pickSummonTarget(s);if(!target)continue;
     s.hitCount=(s.hitCount||0)+1;
     const raw=effectiveAtk(s.owner)*confirmedValue(s.owner,s.advanced?[1.3125,1.6875,4.5]:[.875,1.125,3]);
-    const dealt=damage(s.owner,target,raw,{skill:true,elemental:true,damageElement:'雷',summon:true});
-    if(s.hitCount%2===0&&target.alive)attachAndReact(s.owner,target,dealt);
+    launchSkyLightning(
+      s.owner,
+      benchPos(s.team,s.benchIndex),
+      [{target,raw,attaches:s.hitCount%2===0,label:s.advanced?'高阶杀生樱落雷':'杀生樱落雷'}],
+      'summon',
+      s.advanced
+    );
   }
 };
 castGanyuSkill=function(u){
