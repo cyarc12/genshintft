@@ -470,7 +470,7 @@ function triggerOverload(source,target){const p=unitVisualPos(target);explosionA
 function triggerVaporEffect(target,value,element){vaporAnimations.push({target,value:Math.max(0,Number(value)||0),element,time:0,duration:.9,seed:(Number(target.id)||String(target.id).length)*.37})}
 function activeVaporMark(target){return vaporMarks.find(mark=>mark.target===target)||null}
 function recordVaporDamage(target,amount){const mark=activeVaporMark(target);if(mark)mark.recorded+=Math.max(0,Number(amount)||0)}
-function applyVaporMark(source,target,element){
+function applyVaporMark(source,target,element,triggerDamage=0){
   const current=activeVaporMark(target);
   if(current){
     current.source=source;
@@ -479,8 +479,9 @@ function applyVaporMark(source,target,element){
     addLog(`${target.name} 的【蒸汽标记】重复触发：剩余时间不变，本次结算系数提高至 ${Math.round(current.rate*100)}%，已记录 ${Math.round(current.recorded)} 点实际伤害`,'reaction');
     return
   }
-  vaporMarks.push({target,source,element,remaining:4,recorded:0,rate:.30});
-  addLog(`${target.name} 获得【蒸汽标记】4 秒：开始记录护盾损失与生命损失，基础结算系数 30%`,'reaction')
+  const initialRecorded=Math.max(0,Number(triggerDamage)||0);
+  vaporMarks.push({target,source,element,remaining:4,recorded:initialRecorded,rate:.30});
+  addLog(`${target.name} 获得【蒸汽标记】4 秒：触发伤害 ${Math.round(initialRecorded)} 已计入记录，基础结算系数 30%`,'reaction')
 }
 function settleVaporMark(mark){
   const target=mark?.target;if(!target)return;
@@ -512,7 +513,7 @@ function tickReactionAnimations(dt){elementalHitAnimations.forEach(e=>e.time+=dt
 function tickExplosions(dt){for(const e of explosionAnimations){e.time+=dt;if(!e.resolved&&e.time>=e.impactAt){e.resolved=true;units.filter(u=>u.alive&&!u.onBench&&u.team===e.team).filter(u=>{const p=unitVisualPos(u);return Math.hypot(p.x-e.x,p.y-e.y)/HW<=1.5}).forEach(u=>{const dealt=damage(e.source,u,200,{skill:true,elemental:true,direct:true});addLog(`${u.name} 被【超载】爆炸命中，受到 ${Math.round(dealt)} 点${e.element}元素范围伤害；该伤害不附着元素且不能触发反应，伤害计入 ${e.source.name}`,'reaction')})}}explosionAnimations=explosionAnimations.filter(e=>e.time<e.duration)}
 function attachAndReact(source,target,baseDamage){const el=source.element;triggerElementalHit(target,el);if(el==='风'){if(target.attach?.element==='岩')return;if(target.attach){const spreadEl=target.attach.element,spread=units.filter(u=>u.alive&&!u.onBench&&u.team===target.team&&u!==target&&dist(u,target)<=2);triggerSwirl(source,target,spreadEl,spread);showReaction(target,'扩散');addLog(`${source.name} 对 ${target.name} 触发【扩散】：原目标与附近 ${spread.length} 个目标降低${spreadEl}抗性 30%，持续 5 秒，并受到${spreadEl}元素伤害但不获得附着`,'reaction')}return}
   if(!target.attach||target.attach.element===el){target.attach={element:el};return}const old=target.attach.element,key=old+el,name=REACTIONS[key];target.attach=null;if(!name)return;
-  if(name==='蒸发')applyVaporMark(source,target,el);
+  if(name==='蒸发')applyVaporMark(source,target,el,baseDamage);
   if(name==='冻结'){effect(target,'slow',5,.2);target.freezeStack+=3;triggerFreeze(target);let detail='攻速降低 20%，持续 5 秒';if(target.freezeStack>=6){const controlTime=typeof applyEquipmentHardControl==='function'?applyEquipmentHardControl(target,3,'freeze'):3;target.hardFreeze=controlTime;target.freezeStack=0;detail+=controlTime>0?`；这是第二次冻结，并被完全控制 ${controlTime.toFixed(2)} 秒`:'；这是第二次冻结，但硬控制被免疫'}else detail+='；冻结累计 1/2';addLog(`${target.name} 被【冻结】影响：${detail}`,'reaction')}
   if(name==='融化'){const multiplier=old==='冰'&&el==='火'?2:1.5,bonus=damage(source,target,baseDamage*(multiplier-1),{skill:true,direct:true});effect(target,'vulnerable',3,.1);showReaction(target,name,`融化 ×${multiplier.toFixed(1)}`);addLog(`${target.name} 被【融化】命中，额外受到 ${Math.round(bonus)} 点伤害；减伤变为 -10%，持续 3 秒`,'reaction')}
   if(name==='超载'){triggerOverload(source,target);addLog(`${source.name} 后手以${el}元素触发【超载】：爆炸将造成固定 200 点${el}元素范围伤害，不附着且不能再次触发反应`,'reaction')}
