@@ -21,27 +21,27 @@ const B={
   莱依拉:{hp:[700,1120,1645],atk:[35,55,80],pr:30,er:35,as:.85,range:4,mana:[20,90]},
   芭芭拉:{hp:[760,1216,1786],atk:[30,45,70],pr:30,er:35,as:.85,range:4,mana:[0,75]},
   夏洛蒂:{hp:[680,1088,1598],atk:[40,60,90],pr:30,er:35,as:.90,range:4,mana:[40,80]},
-  宵宫:{hp:[560,896,1316],atk:[50,80,125],pr:30,er:30,as:1.05,range:5,mana:[20,50]},
+  宵宫:{hp:[560,896,1316],atk:[50,80,125],pr:30,er:30,as:1.05,range:4,mana:[20,50]},
   早柚:{hp:[950,1568,2660],atk:[25,40,60],pr:55,er:45,as:.75,range:1,mana:[40,90]},
   申鹤:{hp:[800,1240,1800],atk:[45,70,100],pr:40,er:35,as:.95,range:2,mana:[35,85]},
   久岐忍:{hp:[850,1405,2210],atk:[55,85,125],pr:55,er:50,as:.95,range:1,mana:[20,75]},
   可莉:{hp:[650,1040,1528],atk:[60,90,135],pr:30,er:35,as:.95,range:4,mana:[10,60]},
-  夜兰:{hp:[600,960,1410],atk:[35,65,105],pr:30,er:30,as:1,range:5,mana:[20,70]},
+  夜兰:{hp:[600,960,1410],atk:[35,65,105],pr:30,er:30,as:1,range:4,mana:[20,70]},
   神里绫华:{hp:[800,1320,2080],atk:[55,85,125],pr:40,er:35,as:1,range:1,mana:[30,85]},
   克洛琳德:{hp:[850,1405,2210],atk:[45,70,105],pr:40,er:35,as:.85,range:1,mana:[30,80]},
   珊瑚宫心海:{hp:[1100,1760,2585],atk:[20,30,45],pr:25,er:30,as:.85,range:4,mana:[35,90]},
   刻晴:{hp:[900,1485,2340],atk:[50,75,115],pr:40,er:35,as:1,range:1,mana:[30,50]},
   阿蕾奇诺:{hp:[950,1475,2140],atk:[60,90,135],pr:40,er:35,as:.95,range:2,mana:[25,75]},
-  达达利亚:{hp:[625,1000,1470],atk:[50,80,125],pr:30,er:30,as:1,range:5,mana:[30,70]},
+  达达利亚:{hp:[625,1000,1470],atk:[50,80,125],pr:30,er:30,as:1,range:4,mana:[30,70]},
   那维莱特:{hp:[900,1440,2115],atk:[35,55,80],pr:30,er:40,as:.85,range:4,mana:[50,100]},
   枫原万叶:{hp:[1050,1735,2730],atk:[45,70,105],pr:45,er:40,as:.95,range:1,mana:[40,90]},
-  菲谢尔:{hp:[650,1170,3250],atk:[55,90,140],pr:30,er:30,as:1,range:5,mana:[20,70]},
+  菲谢尔:{hp:[650,1170,3250],atk:[55,90,140],pr:30,er:30,as:1,range:4,mana:[20,70]},
   琴:{hp:[1200,2160,6000],atk:[40,60,100],pr:50,er:45,as:.90,range:1,mana:[40,95]},
-  安柏:{hp:[600,1080,3000],atk:[30,50,90],pr:30,er:30,as:.90,range:5,mana:[40,120]},
+  安柏:{hp:[600,1080,3000],atk:[30,50,90],pr:30,er:30,as:.90,range:4,mana:[40,120]},
   诺艾尔:{hp:[800,1440,3600],atk:[15,25,40],pr:[80,85,90],er:[70,75,80],as:.70,range:1,mana:[30,100]},
   雷电将军:{hp:[1000,1800,5000],atk:[55,85,130],pr:45,er:40,as:1,range:1,mana:[40,80]},
   胡桃:{hp:[1100,1980,5500],atk:[55,85,140],pr:40,er:35,as:1.10,range:2,mana:[20,70]},
-  甘雨:{hp:[900,1620,4500],atk:[70,115,200],pr:30,er:30,as:.95,range:5,mana:[20,80]},
+  甘雨:{hp:[900,1620,4500],atk:[70,115,200],pr:30,er:30,as:.95,range:4,mana:[20,80]},
   八重神子:{hp:[900,1620,4500],atk:[55,95,170],pr:30,er:35,as:.80,range:5,mana:[10,60]}
 };
 for(const [name,b] of Object.entries(B)){
@@ -714,11 +714,7 @@ function keqingLandingCandidates(u,target){
 }
 function clearKeqingOrdinaryAggro(u){
   u.target=null;u.targetId=null;cancelCurrentPath(u);
-  for(const enemy of confirmedEnemies(u)){
-    if(enemy.target!==u&&enemy.targetId!==u.id)continue;
-    if(resolveForcedTarget(enemy)===u)continue;
-    enemy.target=null;enemy.targetId=null;cancelCurrentPath(enemy);requestDecisionImmediately(enemy);
-  }
+  if(typeof transferAggroAwayFrom==='function')transferAggroAwayFrom(u,1.5);
 }
 function resetKeqingTargetAfterLanding(u,activate=true){
   const forced=resolveForcedTarget(u),next=forced||acquireNearestTarget(u);
@@ -750,7 +746,7 @@ castKeqingSkill=function(u){
       const center=liveTarget?.alive?{row:liveTarget.row,col:liveTarget.col}:{row:action.meta.targetRow,col:action.meta.targetCol};
       const raw=confirmedValue(source,[55,110,220])+effectiveAtk(source)*confirmedValue(source,[.50,.65,.85]);
       for(const enemy of confirmedEnemies(source).filter(e=>dist(e,center)<=1.5))
-        confirmedElementHit(source,enemy,raw,true);
+        confirmedElementHit(source,enemy,raw,enemy.id===action.targetId);
       spawn(source,ELEMENTS.雷,20);
       addLog(`${source.name} 脱离普通仇恨并瞬移至 ${target.name} 附近，造成范围雷伤并重新索敌`,'reaction');
       resetKeqingTargetAfterLanding(source,false);
