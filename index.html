@@ -399,7 +399,7 @@ function cancelCurrentPath(u){u.moveFromHex=null;u.moveToHex=null;u.moveProgress
 function isAggroSuppressed(attacker,target){const until=attacker?.aggroSuppressedTargets?.[target?.id];return Number.isFinite(until)&&until>time}
 function isValidCombatTarget(attacker,target){return target&&target.alive&&target.team!==attacker.team&&!target.onBench&&!target.untargetable&&!target.removedFromCombat&&!isAggroSuppressed(attacker,target)}
 function isInAttackRange(attacker,target){return dist(attacker,target)<=attacker.range}
-function getUnitById(id){return id?units.find(u=>u.id===id)||ozSummons.find(o=>o.id===id)||null:null}
+function getUnitById(id){return id!==null&&id!==undefined?units.find(u=>u.id===id)||ozSummons.find(o=>o.id===id)||null:null}
 function resolveForcedTarget(u){const taunt=u.tauntTarget;if(taunt&&taunt.alive&&u.tauntDuration>0&&taunt.team!==u.team&&!taunt.onBench&&!taunt.untargetable&&!taunt.removedFromCombat)return taunt;return null}
 function transferAggroAwayFrom(target,duration=1.5,includeForced=false){
   if(!target)return;
@@ -473,6 +473,7 @@ function recordVaporDamage(target,amount){const mark=activeVaporMark(target);if(
 function applyVaporMark(source,target,element,triggerDamage=0){
   const current=activeVaporMark(target);
   if(current){
+    current.source=source;
     current.sourceId=source?.id;
     current.element=element;
     current.rate+=.15;
@@ -480,15 +481,15 @@ function applyVaporMark(source,target,element,triggerDamage=0){
     return
   }
   const initialRecorded=Math.max(0,Number(triggerDamage)||0);
-  vaporMarks.push({targetId:target.id,sourceId:source?.id,element,remaining:4,recorded:initialRecorded,rate:.30,hitCount:initialRecorded>0?1:0});
+  vaporMarks.push({target,targetId:target.id,source,sourceId:source?.id,element,remaining:4,recorded:initialRecorded,rate:.30,hitCount:initialRecorded>0?1:0});
   addLog(`${target.name} 获得【蒸汽标记】4 秒：触发伤害 ${Math.round(initialRecorded)} 已计入记录，基础结算系数 30%`,'reaction')
 }
 function settleVaporMark(mark){
-  const target=getUnitById(mark?.targetId);if(!target)return;
+  const target=mark?.target||getUnitById(mark?.targetId);if(!target)return;
   vaporMarks=vaporMarks.filter(entry=>entry!==mark);
   const raw=Math.max(0,mark.recorded*mark.rate);
   if(raw<=0){triggerVaporEffect(target,0,mark.element);healingAnimations.push({target,value:0,type:'vaporDamage',element:mark.element,time:0,duration:.9,seed:Math.random()*10});addLog(`${target.name} 的【蒸汽标记】结算：期间记录 0 点伤害，蒸发造成 0 点伤害`,'reaction');return}
-  const source=getUnitById(mark.sourceId)||target;
+  const source=mark.source||getUnitById(mark.sourceId)||target;
   const before=target.damageTaken||0;
   damage(source,target,raw,{skill:true,elemental:true,damageElement:mark.element,vaporSettlement:true});
   const settled=Math.max(0,(target.damageTaken||0)-before);
@@ -498,7 +499,7 @@ function settleVaporMark(mark){
 }
 function tickVaporMarks(dt){
   for(const mark of [...vaporMarks]){
-    const target=getUnitById(mark.targetId);
+    const target=mark.target||getUnitById(mark.targetId);
     if(!target){vaporMarks=vaporMarks.filter(entry=>entry!==mark);continue}
     if(!target.alive){settleVaporMark(mark);continue}
     mark.remaining-=dt;
