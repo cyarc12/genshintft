@@ -499,13 +499,12 @@ function settleVaporMark(mark){
 function tickVaporMarks(dt){
   for(const mark of [...vaporMarks]){
     const target=getUnitById(mark.targetId);
-    if(!target?.alive){vaporMarks=vaporMarks.filter(entry=>entry!==mark);continue}
+    if(!target){vaporMarks=vaporMarks.filter(entry=>entry!==mark);continue}
+    if(!target.alive){settleVaporMark(mark);continue}
     mark.remaining-=dt;
     if(mark.remaining<=0)settleVaporMark(mark)
   }
 }
-const tickExplosionsWithoutVapor=tickExplosions;
-tickExplosions=function(dt){tickVaporMarks(dt);tickExplosionsWithoutVapor(dt)};
 function triggerFreeze(target){freezeAnimations.push({target,time:0,duration:.85})}
 function triggerSwirl(source,target,element,targets){const p=unitVisualPos(target);swirlAnimations.push({x:p.x,y:p.y,source,target,element,targets,time:0,duration:.65,impactAt:.45,resolved:false})}
 function triggerSuperconduct(source,target){const center={row:target.row,col:target.col},cells=[center,...neighbors(center)];superconductZones.push({cells,sourceTeam:source.team,time:0,duration:15,triggered:new Set()})}
@@ -568,7 +567,7 @@ function unitInJeanZone(u,z){return z.cells.some(c=>c.row===u.row&&c.col===u.col
 function tickJeanZones(dt){for(const z of jeanZones){z.time+=dt;z.healCd-=dt;for(const enemy of units.filter(u=>u.alive&&!u.onBench&&u.team!==z.team&&!z.triggered.has(u.id)&&unitInJeanZone(u,z))){z.triggered.add(enemy.id);const dealt=damage(z.source,enemy,1,{skill:true,elemental:true,direct:true});if(enemy.alive)attachAndReact(z.source,enemy,dealt);addLog(`${enemy.name} 首次接触【蒲公英领域】，受到 ${Math.round(dealt)} 点可触发反应的风元素伤害`,'reaction')}while(z.healCd<=0){z.healCd+=2;const healAmt=valueForStar(z.source,[50,80,200]);for(const ally of units.filter(u=>u.alive&&!u.onBench&&u.team===z.team&&unitInJeanZone(u,z))){const healed=healUnit(ally,healAmt,z.source);if(healed>0)addLog(`${ally.name} 被【蒲公英领域】治疗 ${Math.round(healed)} 点生命`,'reaction')}}}jeanZones=jeanZones.filter(z=>z.time<z.duration)}
 function unitInGanyuZone(u,z){return z.cells.some(c=>c.row===u.row&&c.col===u.col)}
 function tickGanyuZones(dt){for(const z of ganyuZones){z.time+=dt;z.tickCd-=dt;const dmgPct=valueForStar(z.source,[.8,.9,2.25]);while(z.tickCd<=0){z.tickCd+=2;for(const enemy of units.filter(u=>u.alive&&!u.onBench&&u.team!==z.team&&unitInGanyuZone(u,z))){const dealt=damage(z.source,enemy,effectiveAtk(z.source)*dmgPct,{skill:true,elemental:true});addLog(`${enemy.name} 受到甘雨的【神冰领域】攻击，造成 ${Math.round(dealt)} 点冰伤`,'reaction')}}const freezeDur=z.source.star>=3?10:1;for(const enemy of units.filter(u=>u.alive&&!u.onBench&&u.team!==z.team&&unitInGanyuZone(u,z))){const key=enemy.id,acc=(z.frozenAccum[key]||0)+dt;z.frozenAccum[key]=acc;if(!z.frozenTriggered.has(key)&&acc>=5){z.frozenTriggered.add(key);effect(enemy,'slow',freezeDur,.2);enemy.freezeStack+=3;triggerFreeze(enemy);addLog(`${enemy.name} 在甘雨的领域内超 5 秒，被冻结 ${freezeDur} 秒`,'reaction')}}}}
-function tickHealingAnimations(dt){for(const h of healingAnimations)h.time+=dt;healingAnimations=healingAnimations.filter(h=>h.time<h.duration&&h.target.alive)}
+function tickHealingAnimations(dt){tickVaporMarks(dt);for(const h of healingAnimations)h.time+=dt;healingAnimations=healingAnimations.filter(h=>h.time<h.duration&&(h.type==='vaporDamage'||h.target.alive))}
 function tickSplashImpacts(dt){for(const s of splashImpacts){s.time+=dt;s.radius=s.maxRadius*Math.min(1,s.time/s.duration)}splashImpacts=splashImpacts.filter(s=>s.time<s.duration);ganyuFrostShards=ganyuFrostShards.filter(s=>time-s.createdAt<s.duration)}
 function castGanyuSkill(u){const target=u.target?.alive?u.target:findTarget(u);if(!target)return false;const dur=u.star>=3?30:6;const tpl=SKILL_TEMPLATES.PROJECTILE,travelDist=dist(u,target)*tpl.travel;u.mp=0;u.aiState='CASTING';const actionId='skill-'+u.id+'-'+Date.now();const isThreeStar=u.star>=3;skillActions.push({id:actionId,sourceId:u.id,targetId:target.id,template:'PROJECTILE',phase:'WINDUP',elapsed:0,windupDuration:tpl.windup,travelDuration:travelDist,impactDuration:0,recoveryDuration:tpl.recovery,meta:{skillName:'降众天华',isGanyuOrb:true,targetRow:target.row,targetCol:target.col,dur,isThreeStar},onImpact:(source,action)=>{const mg=action.meta;let cells;if(mg.isThreeStar){cells=[];for(let row=0;row<ROWS;row++)for(let col=0;col<COLS;col++)cells.push({row,col})}else{const center=hexPos(mg.targetRow,mg.targetCol);cells=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const p=hexPos(r,c);if(Math.hypot(p.x-center.x,p.y-center.y)<=2.5*HW)cells.push({row:r,col:c})}}ganyuZones.push({source,team:source.team,cells,time:0,duration:mg.dur,tickCd:0,frozenAccum:{},frozenTriggered:new Set()});spawn(source,ELEMENTS.冰,22);addLog(source.name+(mg.isThreeStar?' 三星全屏【神冰领域】30秒：覆盖56格，每2秒造成 '+Math.round(valueForStar(source,[0,0,2.25])*100)+'% 冰伤并冻结10秒':' 在区域创建【神冰领域】6秒：半径2.5格，每2秒造成 '+Math.round(valueForStar(source,[.8,.9,2.25])*100)+'% 冰伤并冻结1秒'),'reaction')}});return true}
 function castNoelleSkill(u){const tauntTargets=units.filter(e=>e.alive&&!e.onBench&&e.team!==u.team).filter(e=>{const q=unitVisualPos(e);return Math.hypot(q.x-unitVisualPos(u).x,q.y-unitVisualPos(u).y)<=1.5*HW});tauntTargets.forEach(e=>applyTaunt(u,e,5));const cnt=tauntTargets.length;u.noelleExtraRes=cnt*valueForStar(u,[10,12,15]);const pct=valueForStar(u,[15,20,40]),extraRes=u.noelleExtraRes||0,baseShieldAmt=u.maxHp*(pct+extraRes)/100,shieldAmt=typeof applyEquipmentShieldAmount==='function'?applyEquipmentShieldAmount(u,baseShieldAmt):baseShieldAmt;u.noelleShield={value:shieldAmt,max:shieldAmt,time:10};u.shieldingDone=(u.shieldingDone||0)+shieldAmt;u.noellePassivePaused=true;u.mp=0;spawn(u,ELEMENTS.岩,20);showReaction(u,'skill','护心岩铠');addLog(`${u.name} 释放护心岩铠，先嘲讽${tauntTargets.length}名敌人5秒，刷新额外抗性+${extraRes}，获得 ${Math.round(shieldAmt)} 护盾（${pct}%+${extraRes}%额外抗性）10秒`,'reaction');return true}
@@ -645,23 +644,22 @@ function drawAttackAnimationsSafe(){
         ctx.strokeStyle=dark;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-66,34);ctx.lineTo(-35,22);ctx.lineTo(-5,12);ctx.lineTo(38,0);ctx.stroke();
         ctx.strokeStyle=mid;ctx.lineWidth=3.5;ctx.stroke();ctx.strokeStyle=edge;ctx.lineWidth=.75;ctx.beginPath();ctx.moveTo(-63,32);ctx.lineTo(-34,20);ctx.lineTo(-4,10);ctx.lineTo(36,-1);ctx.stroke();
         ctx.fillStyle=mid;ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-76,39);ctx.lineTo(-62,29);ctx.lineTo(-65,35);ctx.lineTo(-61,42);ctx.closePath();ctx.fill();ctx.stroke();
-        ctx.fillStyle='#4b0915';ctx.strokeStyle='#e42c47';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(28,-7);ctx.lineTo(39,-14);ctx.lineTo(46,-6);ctx.lineTo(42,1);ctx.lineTo(47,8);ctx.lineTo(36,13);ctx.lineTo(28,6);ctx.lineTo(20,2);ctx.closePath();ctx.fill();ctx.stroke();
-        ctx.fillStyle=red;ctx.beginPath();ctx.moveTo(34,-5);ctx.lineTo(40,-9);ctx.lineTo(44,-4);ctx.lineTo(40,1);ctx.lineTo(44,5);ctx.lineTo(36,9);ctx.lineTo(31,3);ctx.lineTo(25,1);ctx.closePath();ctx.fill();
+        ctx.strokeStyle=edge;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(31,4);ctx.lineTo(42,-2);ctx.stroke();
         ctx.fillStyle='#8f1027';ctx.strokeStyle=edge;ctx.lineWidth=1.25;ctx.beginPath();
-        ctx.moveTo(34,2);
-        ctx.quadraticCurveTo(42,-30,72,-63);
-        ctx.quadraticCurveTo(77,-68,82,-70);
-        ctx.quadraticCurveTo(68,-47,57,-23);
-        ctx.quadraticCurveTo(49,-5,39,8);
-        ctx.quadraticCurveTo(45,-13,48,-31);
-        ctx.quadraticCurveTo(40,-20,34,-10);
+        ctx.moveTo(36,5);
+        ctx.quadraticCurveTo(40,-31,66,-66);
+        ctx.quadraticCurveTo(70,-71,75,-73);
+        ctx.quadraticCurveTo(63,-49,54,-25);
+        ctx.quadraticCurveTo(47,-6,39,9);
+        ctx.quadraticCurveTo(43,-14,45,-32);
+        ctx.quadraticCurveTo(39,-20,35,-9);
         ctx.closePath();ctx.fill();ctx.stroke();
         ctx.globalAlpha=.62;ctx.fillStyle='#ff5269';ctx.beginPath();
-        ctx.moveTo(39,0);
-        ctx.quadraticCurveTo(48,-31,75,-64);
-        ctx.quadraticCurveTo(61,-39,52,-18);
-        ctx.quadraticCurveTo(46,-4,40,5);
-        ctx.quadraticCurveTo(44,-12,45,-24);
+        ctx.moveTo(40,1);
+        ctx.quadraticCurveTo(46,-31,69,-66);
+        ctx.quadraticCurveTo(58,-40,51,-19);
+        ctx.quadraticCurveTo(45,-4,40,6);
+        ctx.quadraticCurveTo(43,-13,43,-25);
         ctx.closePath();ctx.fill();ctx.globalAlpha=1;
       }else if(a.type==='thrust'){
         const distance=Math.hypot(to.x-from.x,to.y-from.y),blade=a.infused?(ELEMENTS[a.attackElement]||ELEMENTS[a.source.element]):'#e6eef8',easeOut=t=>1-Math.pow(1-t,3),targetTip=Math.max(50,distance-20),restTip=targetTip-27,tip=p<=.5?restTip+(targetTip-restTip)*easeOut(p/.5):targetTip-(targetTip-restTip)*easeOut((p-.5)/.5),bladeLength=25,bladeBase=tip-bladeLength,shaftRear=tip-76;
