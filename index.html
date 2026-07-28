@@ -482,12 +482,14 @@ function recordVaporDamage(target,amount){
 function applyVaporMark(source,target,element,triggerDamage=0){
   const current=activeVaporMark(target);
   if(current){
+    if((Number(current.triggerCount)||1)>=2)return;
+    current.triggerCount=2;
     current.rate+=1.20;
     addLog(`${target.name} 的【蒸汽标记】重复触发：剩余时间与结算归属不变，本次结算系数提高至 ${Math.round(current.rate*100)}%，已记录 ${Math.round(current.recordedDamage)} 点实际伤害；最终伤害计入 ${current.source?.name||'首次触发者'}`,'reaction');
     return
   }
   const initialRecorded=Math.max(0,Number(triggerDamage)||0);
-  const state={source,element,remaining:4,recordedDamage:initialRecorded,rate:.80,hitCount:initialRecorded>0?1:0,timer:null};
+  const state={source,element,remaining:4,recordedDamage:initialRecorded,rate:.80,triggerCount:1,hitCount:initialRecorded>0?1:0,timer:null};
   target.vaporState=state;
   state.timer=window.setTimeout(()=>{
     if(target.vaporState===state)settleVaporMark(target)

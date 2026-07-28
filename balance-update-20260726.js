@@ -162,7 +162,9 @@ function reactionName(old,now){return REACTIONS[old+now]||null}
 function createVaporMark(source,target,element,triggerDamage=0){
   let mark=vaporMarks.find(m=>m.targetId===target.id&&!m.settling);
   if(mark){
+    if((Number(mark.triggerCount)||1)>=2)return mark;
     // 重复触发只提高本次标记的结算系数，不续时、不更换伤害归属。
+    mark.triggerCount=2;
     mark.rate=(Number(mark.rate)||.80)+1.20;
     return mark;
   }
@@ -179,6 +181,7 @@ function createVaporMark(source,target,element,triggerDamage=0){
     maxTime:4,
     recorded:confirmedTriggerDamage,
     rate:.80,
+    triggerCount:1,
     settling:false
   };
   vaporMarks.push(mark);
@@ -193,8 +196,7 @@ function settleConfirmedVaporMark(mark){
   const raw=recorded*rate;
   let settled=0;
   if(target.alive&&raw>0){
-    const beforeHp=Number(target.hp)||0;
-    const beforeShield=shieldAmount(target);
+    const beforeTaken=Math.max(0,Number(target.damageTaken)||0);
     damage(mark.source||target,target,raw,{
       skill:true,
       elemental:true,
@@ -206,7 +208,7 @@ function settleConfirmedVaporMark(mark){
     });
     settled=Math.max(
       0,
-      beforeHp-(Number(target.hp)||0)+beforeShield-shieldAmount(target)
+      (Math.max(0,Number(target.damageTaken)||0)-beforeTaken)
     );
   }
   // 结算显示与是否实际造成伤害分离；0 伤害也必须明确反馈。
@@ -1279,7 +1281,7 @@ const confirmedEffectGroupData=[['持续状态',[
 const effectHost=document.querySelector('#effectGroups');
 if(effectHost)effectHost.innerHTML=`<div class="effect-items">${confirmedEffectGroupData[0][1].map(([src,name,desc])=>`<div class="effect-item"><img src="${src}" alt=""><span>${name}<small>${desc}</small></span></div>`).join('')}</div>`;
 const confirmedReactionGuide=[
-  ['蒸发','火 + 水','生成4秒蒸发标记并记录目标实际承受伤害；首次触发的结算系数为80%。重复触发不延长时间，每次使本次结算系数额外提高120个百分点；触发两次时结算系数为200%。'],
+  ['蒸发','火 + 水','生成4秒蒸发标记，记录目标实际损失的护盾与生命；首次触发结算系数为80%，第二次触发提高至200%且不延长时间。标记结算前第三次及后续触发无效。'],
   ['感电链','水 + 雷','连接同阵营2～3名敌人8秒；任一成员承受伤害时，其余成员各受到原始实际伤害15%的真实传导伤害。传导伤害不递归。'],
   ['冻结','水 + 冰','立即完全冻结2秒；期间无法移动、普攻或施放技能。韧性正常影响持续时间，不叠层、不减速。'],
   ['融化','火 + 冰','本次总伤害×2.0；不再附加易伤状态。'],
