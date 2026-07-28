@@ -385,8 +385,15 @@
     lastRenderKey = renderKey;
     slot.innerHTML = renderTeam('red') + renderTeam('blue');
     document.body.classList.toggle('pve-resonance-layout', !!window.PVE_FIRST_ACTIVE);
-    if (!started && selectedUnit && inspect?.classList.contains('show')) {
-      requestAnimationFrame(() => renderUnitInspect(selectedUnit));
+    if (!started && inspect?.classList.contains('show')) {
+      const inspectedUnit = units.find(unit => unit.id === hoverInspectUnitId)
+        || (selectedUnit && units.includes(selectedUnit) ? selectedUnit : null);
+      if (inspectedUnit) {
+        requestAnimationFrame(() => {
+          renderUnitInspect(inspectedUnit);
+          renderDamageStats();
+        });
+      }
     }
   }
 
