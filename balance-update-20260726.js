@@ -653,7 +653,6 @@ castFurinaSkill=function(u){
     else ally.mp=Math.min(ally.maxMp,ally.mp+mana);
     const t=ally.target?.alive?ally.target:confirmedNearest(ally,confirmedEnemies(u),1)[0];
     if(t)confirmedElementHit(source,t,confirmedValue(source,[10,20,50])+effectiveAtk(source)*confirmedValue(source,[.30,.40,.50]),true);
-    showReaction(ally,'skill',`法力 +${mana}`);
   },'mana');
   spawn(u,ELEMENTS[u.element]||'#fff',14);return true;
 };

@@ -504,9 +504,10 @@
         geo: resonanceTier(unit, '岩')
       };
       const hpBonus = waterTier >= 4 ? .30 : waterTier >= 3 ? .20 : waterTier >= 2 ? .15 : 0;
-      if (hpBonus > 0 && !unit._resonanceHpApplied) {
-        unit._resonanceHpApplied = hpBonus;
-        unit.maxHp = Math.round(unit.maxHp * (1 + hpBonus));
+      unit._resonanceHpApplied = hpBonus;
+      unit._resonanceBaseMaxHp = unit.maxHp;
+      if (hpBonus > 0) {
+        unit.maxHp = Math.round(unit._resonanceBaseMaxHp * (1 + hpBonus));
         unit.hp = unit.maxHp;
       }
       const critBonus = iceTier >= 5 ? .30 : iceTier >= 4 ? .25 : iceTier >= 3 ? .20 : iceTier >= 2 ? .15 : 0;
