@@ -611,8 +611,6 @@ function drawAttackAnimationsSafe(){
         ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.shadowColor=blade;ctx.shadowBlur=a.infused?9:4;
         ctx.globalAlpha=.34*trailFade;ctx.strokeStyle=blade;ctx.lineWidth=4;ctx.beginPath();ctx.arc(from.x,from.y,radius+31,start,swing);ctx.stroke();
         ctx.globalAlpha=.76*trailFade;ctx.strokeStyle=a.infused?blade:'#f4f7fb';ctx.lineWidth=1.35;ctx.beginPath();ctx.arc(from.x,from.y,radius+34,start,swing);ctx.stroke();
-        const hitProgress=Math.max(0,(p-.35)/.65),hitFade=Math.max(0,1-hitProgress);
-        ctx.save();ctx.translate(to.x,to.y);ctx.rotate(variant===0?angle+Math.PI/2:angle+Math.PI/4);ctx.globalAlpha=.46*hitFade;ctx.strokeStyle=blade;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(-24,0);ctx.lineTo(24,0);ctx.stroke();ctx.restore();
         ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;ctx.translate(from.x,from.y);ctx.rotate(swing);ctx.translate(radius,0);ctx.shadowBlur=a.infused?8:3;ctx.shadowColor=blade;
         ctx.fillStyle='#3d3028';ctx.beginPath();ctx.roundRect?.(-7,-1.7,9,3.4,1.4);ctx.fill();ctx.fillStyle='#c8a35a';ctx.fillRect(1,-4.5,2.5,9);
         ctx.fillStyle=blade;ctx.strokeStyle='#718198';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(4,-2.2);ctx.lineTo(29,-1.1);ctx.lineTo(34,0);ctx.lineTo(29,1.1);ctx.lineTo(4,2.2);ctx.closePath();ctx.fill();ctx.stroke();ctx.globalAlpha=.62;ctx.strokeStyle='#fff';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(8,-.6);ctx.lineTo(28,-.35);ctx.stroke();
