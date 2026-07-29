@@ -87,12 +87,14 @@ function initializeConfirmedUnit(u,resetRatio=false){
   u.basePhysicalResist=s.physicalResist;u.baseElementResist=s.elementResist;
   const scopeBase=typeof equipmentCount==='function'?equipmentCount(u,'eagle_scope'):0;
   const scopeGrowth=typeof equipmentStackTotal==='function'?equipmentStackTotal(u,'eagle_scope'):0;
-  u.as=Math.min(5,s.as+(eq.attackSpeed||0));u.baseAsForGrowth=s.as;u.range=s.range+scopeBase+scopeGrowth;u.maxMp=s.maxMana;
-  u.baseStartMana=s.initialMana;u.normalBaseDamage=s.normalBaseDamage;u.normalAtkRatio=s.normalAtkRatio;
+  u.as=Math.min(5,s.as+(eq.attackSpeed||0));u.baseAsForGrowth=s.as;u.range=s.range+scopeBase+scopeGrowth;
+  u.resourceType=cfg.resourceType||(cfg.conditionSkillGauge?'condition':'mana');
+  u.maxMp=u.resourceType==='mana'?s.maxMana:0;if(u.resourceType!=='mana')u.mp=0;
+  u.baseStartMana=u.resourceType==='mana'?s.initialMana:0;u.normalBaseDamage=s.normalBaseDamage;u.normalAtkRatio=s.normalAtkRatio;
 }
 for(const u of units)initializeConfirmedUnit(u);
 const priorRecalc=typeof recalculateUnitEquipmentStats==='function'?recalculateUnitEquipmentStats:null;
-if(priorRecalc)recalculateUnitEquipmentStats=function(unit,resetMana=false){priorRecalc(unit,resetMana);initializeConfirmedUnit(unit);if(resetMana){const eq=typeof collectEquipmentStats==='function'?collectEquipmentStats(unit):{startMana:0};unit.mp=Math.min(unit.maxMp,unit.baseStartMana+(eq.startMana||0))}};
+if(priorRecalc)recalculateUnitEquipmentStats=function(unit,resetMana=false){priorRecalc(unit,resetMana);initializeConfirmedUnit(unit);if(resetMana&&usesManaResource(unit)){const eq=typeof collectEquipmentStats==='function'?collectEquipmentStats(unit):{startMana:0};unit.mp=Math.min(unit.maxMp,unit.baseStartMana+(eq.startMana||0))}};
 
 // New reaction runtime.
 let vaporMarks=[],electroLinks=[],confirmedSuperconductZones=[],confirmedOverloadEffects=[],confirmedMeltEffects=[],yelanBindings=[],confirmedNeuvilletteFloorWaves=[];
