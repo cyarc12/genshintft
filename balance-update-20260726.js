@@ -1099,6 +1099,7 @@ getFinalStat=function(u,statType){
   if(statType==='as'){
     const duel=has(u,'clorindeAttackSpeed');if(duel)v+=Number(duel.value)||0;
     const arle=has(u,'arlecchinoEmpower');if(arle)v+=Number(arle.value)||0;
+    v=Math.min(5,v);
   }
   if(statType==='atk'&&u.name==='胡桃'&&has(u,'hutaoEmpower')){
     v+=confirmedValue(u,[90,170,450]);
