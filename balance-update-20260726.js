@@ -41,6 +41,7 @@ const B={
   诺艾尔:{hp:[800,1440,3600],atk:[15,25,40],pr:[80,85,90],er:[70,75,80],as:.70,range:1,mana:[30,100]},
   雷电将军:{hp:[1000,1800,5000],atk:[55,85,130],pr:45,er:40,as:1,range:1,mana:[40,80]},
   玛薇卡:{hp:[1250,2250,4050],atk:[52,78,117],pr:50,er:50,as:.60,range:1,mana:[0,0]},
+  钟离:{hp:[1100,1980,3564],atk:[55,83,124],pr:40,er:50,as:.65,range:2,mana:[35,100]},
   胡桃:{hp:[1100,1980,5500],atk:[55,85,140],pr:40,er:35,as:1.10,range:2,mana:[20,70]},
   甘雨:{hp:[900,1620,4500],atk:[70,115,200],pr:30,er:30,as:.95,range:4,mana:[20,80]},
   八重神子:{hp:[900,1620,4500],atk:[55,95,170],pr:30,er:35,as:.80,range:5,mana:[10,60]}
@@ -609,6 +610,11 @@ tick=function(dt){
     if(!unit.mavuikaShield)continue;
     unit.mavuikaShield.time-=dt;
     if(unit.mavuikaShield.time<=0)unit.mavuikaShield=null;
+  }
+  for(const unit of units){
+    if(!unit.zhongliShield)continue;
+    unit.zhongliShield.time-=dt;
+    if(unit.zhongliShield.time<=0)clearZhongliShield(unit,'自然到期');
   }
   for(const wave of confirmedNeuvilletteFloorWaves){
     wave.time+=dt;
@@ -1261,14 +1267,14 @@ const CONFIRMED_SKILL_NAMES={
   夜兰:'萦络纵命索',神里绫华:'神里流·霜灭',克洛琳德:'逐影之誓',珊瑚宫心海:'海人化羽',
   刻晴:'星斗归位',阿蕾奇诺:'厄月将升',达达利亚:'尽灭水光',那维莱特:'衡平推裁',
   枫原万叶:'万叶之一刀',菲谢尔:'至夜幻现',琴:'蒲公英之风',安柏:'爆弹玩偶',
-  诺艾尔:'护心岩铠',雷电将军:'奥义·梦想真说',玛薇卡:'烈阳挥斩',胡桃:'彼岸蝶舞',甘雨:'降众天华'
+  诺艾尔:'护心岩铠',雷电将军:'奥义·梦想真说',玛薇卡:'烈阳挥斩',钟离:'玉璋护世',胡桃:'彼岸蝶舞',甘雨:'降众天华'
 };
 const castSkillBeforeMavuika=castSkill;
 castSkill=function(u){
-  if(u?.name!=='玛薇卡')return castSkillBeforeMavuika(u);
+  if(u?.name!=='玛薇卡'&&u?.name!=='钟离')return castSkillBeforeMavuika(u);
   u.skillReady=false;u.attackCd=Math.max(u.attackCd,.5);
   if(typeof onEquipmentSkillCast==='function')onEquipmentSkillCast(u);
-  return castMavuikaSkill(u);
+  return u.name==='玛薇卡'?castMavuikaSkill(u):castZhongliSkill(u);
 };
 const castSkillBeforeNamePopup=castSkill;
 castSkill=function(u){
@@ -1386,6 +1392,7 @@ resolveHit=function(a){
 // values; placed units continue to be filtered to their current star.
 Object.assign(SKILL_INFO,{
   '玛薇卡':'无普通法力。\\n【战意】上限12层，开战获得5层；其他存活友军每完成一次技能施放获得1层，同一技能只计算一次。普通攻击、装备、反应、被动与召唤物攻击均不提供战意。\\n【烈阳挥斩】战意满层时立即朝当前目标方向挥出120°、1格半径的重斩，造成攻击力200%/300%/700%火伤并附着；随后获得最大生命值25%/35%/65%的护盾，持续6/6/8秒。护盾不叠加，新护盾覆盖旧护盾。',
+  '钟离':'初始法力35/100。\\n【玉璋护世】为施法瞬间所有存活友方棋子分别施加220/340/5000点固定玉璋护盾，持续5/5/99秒。施法时位于己方前两排的单位在护盾存在期间获得6%/9%/20%伤害减免；后两排单位获得10%/15%/35%伤害提升。排数只在施法瞬间判定，之后移动不会改变本次效果。玉璋护盾不能叠加，再次释放会覆盖旧盾并刷新时间；护盾被击破或到期时对应增益立即移除，其他来源护盾不能维持该增益。',
   '优菈':'初始法力40/80。\\n【R·冰潮的涡旋】对前方扇形造成10/20/40 + 攻击力10%/10%/15%冰伤并附着；获得300/500/900护盾5秒。护盾自然结束时，对周围1格造成剩余护盾80%/100%/120%冰伤并附着。',
   '迪卢克':'初始法力30/70。\\n【R·逆焰之刃】对当前目标造成30/45/90 + 攻击力75%/95%/120%火伤并附着；本次伤害拥有180%/220%/400%技能吸血。',
   '妮露':'初始法力10/55。\\n【R·七域舞步】每次施放先播放水元素挥砍，命中时才结算。前两次对当前目标造成30/55/110 + 攻击力70%/80%/100%水伤并附着；第三次改为更强的单体终结挥砍，造成80/150/350 + 攻击力150%/175%/220%水伤并附着。',
@@ -1467,7 +1474,7 @@ if(reactionHost)reactionHost.innerHTML=`<h3>元素反应效果表</h3><p style="
 function resetConfirmedRuntime(){
   vaporMarks=[];electroLinks=[];confirmedSuperconductZones=[];confirmedOverloadEffects=[];confirmedMeltEffects=[];yelanBindings=[];confirmedNeuvilletteFloorWaves=[];delayedRaidenBursts=[];mavuikaSlashes=[];
   crystallizedByTeam.blue?.clear();crystallizedByTeam.red?.clear();
-  for(const u of units){initializeConfirmedUnit(u,true);u.lifesteal=0;u.normalLifesteal=0;u.skillLifesteal=0;u.hutaoLastStandLifestealGranted=false;u.crystalAtkFlat=0;u.crystalPhysicalFlat=0;u.crystalElementFlat=0;delete u.crystalAtkPercent;delete u.crystalPhysicalPercent;delete u.crystalElementPercent;u.fischlConfirmedStacks=0;u.fischlNormalCount=0;u.ozConfirmedHits=0;u.noellePassiveSources={};u.noelleExtraRes=0;u.noellePassivePaused=false}
+  for(const u of units){initializeConfirmedUnit(u,true);u.lifesteal=0;u.normalLifesteal=0;u.skillLifesteal=0;u.hutaoLastStandLifestealGranted=false;u.crystalAtkFlat=0;u.crystalPhysicalFlat=0;u.crystalElementFlat=0;delete u.crystalAtkPercent;delete u.crystalPhysicalPercent;delete u.crystalElementPercent;u.fischlConfirmedStacks=0;u.fischlNormalCount=0;u.ozConfirmedHits=0;u.noellePassiveSources={};u.noelleExtraRes=0;u.noellePassivePaused=false;u.zhongliShield=null}
   for(const u of units.filter(x=>x.alive&&!x.onBench&&x.name==='菲谢尔')){
     const cell=neighbors(u).find(c=>!occupied(c,u));
     if(cell)ozSummons.push({owner:u,team:u.team,row:cell.row,col:cell.col,hitCount:0});
