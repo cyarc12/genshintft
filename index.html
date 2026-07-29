@@ -486,9 +486,9 @@ function castZhongliSkill(u){
   for(const ally of allies){
     const front=isZhongliFrontRow(ally);
     ally.zhongliShield={value:shieldValue,max:shieldValue,time:duration,source:u,buffType:front?'front':'back',buffValue:front?reduction:boost};
-    ally.shieldingDone=(ally.shieldingDone||0)+shieldValue;
     spawn(ally,ELEMENTS.岩,8);
   }
+  u.shieldingDone=(u.shieldingDone||0)+shieldValue*allies.length;
   spawn(u,ELEMENTS.岩,20);
   showReaction(u,'skill','玉璋护世');
   addLog(`${u.name} 的【玉璋护世】为 ${allies.length} 名友军施加 ${shieldValue} 点玉璋护盾`,'reaction');
