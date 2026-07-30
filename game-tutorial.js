@@ -50,6 +50,8 @@
   let current=0;
   const style=document.createElement('style');
   style.textContent=`
+    .tutorial-entry-btn{border-color:#8bc9ef!important;background:linear-gradient(180deg,#d9f3ff,#91caec)!important;color:#12304a!important;font-weight:800;box-shadow:0 0 0 1px #dff7ff55 inset,0 3px 12px #55b9ee28}
+    .tutorial-entry-btn:hover{border-color:#c9efff!important;background:linear-gradient(180deg,#effaff,#a9daf3)!important;box-shadow:0 0 0 1px #fff8 inset,0 4px 16px #62c8ff45}
     .tutorial-modal{position:fixed;inset:0;z-index:3600;display:grid;place-items:center;padding:20px;background:rgba(2,6,12,.82);backdrop-filter:blur(7px)}
     .tutorial-modal[hidden]{display:none}
     .tutorial-card{position:relative;width:min(680px,100%);overflow:hidden;border:1px solid #4d6688;border-radius:16px;background:linear-gradient(145deg,#142239,#09111e 68%);box-shadow:0 28px 80px #000b,0 0 38px #3b79bf22;color:#edf4ff}
@@ -140,7 +142,7 @@
   if(actions){
     const button=document.createElement('button');
     button.id='openTutorialBtn';
-    button.className='btn';
+    button.className='btn tutorial-entry-btn';
     button.type='button';
     button.textContent='玩法教程';
     button.addEventListener('click',openTutorial);
