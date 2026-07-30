@@ -91,7 +91,7 @@
     {
       eyebrow:'第 4 步 · 角色面板',
       title:'查看角色信息',
-      image:'assets/avatars/keqing.png',
+      image:'assets/tutorial/keqing-cutout.png',
       imageAlt:'角色头像',
       body:'<span class="tutorial-keyword">点击棋盘或备战席上的棋子</span>即可打开详细面板。面板会显示生命、法力、武器、攻击力、攻击速度、暴击、双抗、攻击距离、增伤、减伤、武器特性和技能说明。',
       tips:[
