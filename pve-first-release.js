@@ -34,7 +34,7 @@ for(const [level,odds] of Object.entries(SHOP_ODDS)){
 }
 const POOL_COPIES={1:21,2:18,3:15,4:12,5:9};
 const SELL_PRICE={1:[0,1,3,9],2:[0,2,5,17],3:[0,3,8,26],4:[0,4,11,35],5:[0,5,14,44]};
-let mode='test',run=null,mainSnapshot=null,slotAction='save',selectedSlot=null,battlePlayerSnapshot=null,activeBattleRecord=null,exBattleSnapshot=null,roundResultNext=null,pendingRewardNext=null,previousRoundStatUnits=null,phaseThreeContinue=null,reviewArchive=null,reviewDetailContext=null,selectedArchiveSlot=0,pendingCompletedArchive=null;
+let mode='test',run=null,mainSnapshot=null,slotAction='save',selectedSlot=null,battlePlayerSnapshot=null,activeBattleRecord=null,exBattleSnapshot=null,roundResultNext=null,roundResultRewardFx=null,pendingRewardNext=null,previousRoundStatUnits=null,phaseThreeContinue=null,reviewArchive=null,reviewDetailContext=null,selectedArchiveSlot=0,pendingCompletedArchive=null;
 const PVE_SLOT_LAYOUT_LOCK=Object.freeze({avatarSize:32,avatarColumns:5,avatarGap:2,titleWidth:78});
 let lockedSlotTitleWidth=null,lockedSlotTitleStart=null;
 const $=s=>document.querySelector(s),clone=v=>JSON.parse(JSON.stringify(v));
@@ -246,11 +246,21 @@ function claimPendingLossReward(){
     const available=PIECE_ORDER.filter(name=>PIECE_CONFIG[name].cost===Number(cost)).reduce((sum,name)=>sum+(run.cardPool[PIECE_CONFIG[name].templateId]||0),0);
     if(available<count){toast(`${cost}费共享卡池库存不足，暂时无法领取`);return}
   }
-  const reward=applyLossCompensation(plan);run.pendingRewardPlan=null;$('#pveLossRewardDialog').classList.add('hidden');$('#pvePendingRewardDock').classList.add('hidden');saveRun(false);toast(`奖励已领取：${reward.cards.join('、')}`);
-  const next=pendingRewardNext;pendingRewardNext=null;(next||(()=>{if(!run.shopLocked)refreshShop(true);saveRun();renderPveHud()}))();
+  const dialog=$('#pveLossRewardDialog'),claimButton=$('#continueLossRewardBtn');
+  claimButton.disabled=true;
+  animateRewardCollection({gold:plan.gold,equipment:plan.equipmentCount,cards:plan.cards.length},dialog,()=>{
+    const reward=applyLossCompensation(plan);run.pendingRewardPlan=null;dialog.classList.add('hidden');$('#pvePendingRewardDock').classList.add('hidden');saveRun(false);toast(`奖励已领取：${reward.cards.join('、')}`);
+    claimButton.disabled=false;
+    const next=pendingRewardNext;pendingRewardNext=null;(next||(()=>{if(!run.shopLocked)refreshShop(true);saveRun();renderPveHud()}))();
+  });
 }
 function showRoundResult(win,reward,next){
   const dialog=$('#pveRoundResultDialog'),title=$('#pveRoundResultTitle'),body=$('#pveRoundResultBody');
+  roundResultRewardFx={
+    gold:Math.max(0,(Number(reward.baseGold)||0)+(Number(reward.interestGold)||0)+(Number(reward.streakGold)||0)+(Number(reward.stageGold)||0)),
+    equipment:Math.max(0,(Number(reward.equipmentCount)||0)+(reward.phaseSupply?3:0)),
+    cards:0
+  };
   title.textContent=win?'关卡胜利':'挑战失败';
   dialog.classList.toggle('victory',win);dialog.classList.toggle('defeat',!win);
   if(win){
@@ -556,6 +566,8 @@ function installShopLayoutStyle(){
     .pve-gold-gain img{width:31px;height:31px;filter:drop-shadow(0 0 8px rgba(255,205,57,.7))}
     .pve-gold-gain.play{animation:pveGoldCollect .72s cubic-bezier(.2,.7,.25,1) both}
     @keyframes pveGoldCollect{0%{transform:translate(-50%,-8px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.12);opacity:1}58%{transform:translate(-50%,19px) scale(1);opacity:1}100%{transform:translate(-50%,38px) scale(.62);opacity:0}}
+    .pve-reward-particle{position:fixed;z-index:2700;width:8px;height:8px;border-radius:50%;pointer-events:none;background:#ffd765;box-shadow:0 0 6px #ffc84b,0 0 13px rgba(255,194,51,.8);animation:pveRewardFly .82s var(--reward-delay,0s) cubic-bezier(.32,.05,.3,1) both}.pve-reward-particle.equipment{width:9px;height:9px;border-radius:2px;transform:rotate(45deg);background:#ffedaa;box-shadow:0 0 7px #ffd560,0 0 16px rgba(255,202,74,.9)}.pve-reward-particle.card{width:7px;height:11px;border-radius:2px;background:#ffe7a0;box-shadow:0 0 7px #ffca4f,0 0 14px rgba(255,190,48,.85)}
+    @keyframes pveRewardFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.35) rotate(0)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(70deg)}75%{opacity:1}100%{opacity:0;transform:translate(calc(var(--reward-x) - 50%),calc(var(--reward-y) - 50%)) scale(.25) rotate(260deg)}}
     .pve-shop-slot-empty{min-width:0;visibility:hidden}
     #pveSlotDialog>div{width:min(1180px,calc(100% - 34px));max-height:92vh;padding:24px}
     #pveSlotDialog .pve-slot-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -627,7 +639,11 @@ function installEvents(){
   $('#newPveBtn').onclick=()=>$('#newChallengeConfirmDialog').classList.remove('hidden');$('#confirmNewChallengeBtn').onclick=()=>{$('#newChallengeConfirmDialog').classList.add('hidden');localStorage.removeItem(RUN_KEY);activateChallenge(createRun())};$('#continuePveBtn').onclick=()=>{const saved=loadRun();if(saved)activateChallenge(saved);else toast('没有挑战存档')};
   $('#buyXpBtn').onclick=buyXp;$('#refreshShopBtn').onclick=()=>refreshShop(false);$('#lockShopBtn').onclick=()=>{run.shopLocked=!run.shopLocked;saveRun();renderPveHud()};$('#pveShopCards').onclick=e=>{const b=e.target.closest('[data-buy-offer]');if(b)buyOffer(Number(b.dataset.buyOffer))};
   $('#pveShopCards').addEventListener('contextmenu',event=>event.preventDefault());$('#pveShopCards').addEventListener('dragstart',event=>event.preventDefault());
-  $('#continueRoundResultBtn').onclick=()=>{const next=roundResultNext;roundResultNext=null;$('#pveRoundResultDialog').classList.add('hidden');if(next)next()};
+  $('#continueRoundResultBtn').onclick=()=>{
+    const next=roundResultNext,fx=roundResultRewardFx,dialog=$('#pveRoundResultDialog'),button=$('#continueRoundResultBtn');
+    roundResultNext=null;roundResultRewardFx=null;button.disabled=true;
+    animateRewardCollection(fx,dialog,()=>{dialog.classList.add('hidden');button.disabled=false;if(next)next()});
+  };
   $('#continueLossRewardBtn').onclick=claimPendingLossReward;
   $('#hideLossRewardBtn').onclick=hidePendingLossReward;
   $('#pendingRewardBtn').onclick=showPendingLossReward;
@@ -659,6 +675,50 @@ function installEvents(){
   $('#confirmArchiveSaveBtn').onclick=confirmArchiveSave;
   $('#skipArchiveSaveBtn').onclick=()=>{pendingCompletedArchive=null;$('#pveArchiveSaveDialog').classList.add('hidden');leaveChallenge(false)};
   $('#pveStageTransition').onclick=hideStageTransition;
+}
+function rewardDestination(kind){
+  if(kind==='gold')return $('#pveGold');
+  if(kind==='equipment')return $('#whEquipCards')||$('#whPanel');
+  if(kind==='card'){
+    const game=$('#game'),rect=game?.getBoundingClientRect();
+    if(rect)return{x:rect.left+rect.width*.5,y:rect.top+rect.height*.91};
+  }
+  return null;
+}
+function rewardDestinationPoint(kind){
+  const destination=rewardDestination(kind);
+  if(destination?.x!==undefined)return destination;
+  const rect=destination?.getBoundingClientRect();
+  return rect?{x:rect.left+rect.width/2,y:rect.top+rect.height/2}:null;
+}
+function launchRewardParticles(kind,amount,sourcePoint,delay=0){
+  const target=rewardDestinationPoint(kind);if(!target)return;
+  const count=Math.max(7,Math.min(16,7+(Number(amount)||0)));
+  for(let index=0;index<count;index++){
+    const particle=document.createElement('i');
+    particle.className=`pve-reward-particle ${kind}`;
+    const angle=(index/count)*Math.PI*2,spread=18+(index%4)*7;
+    const startX=sourcePoint.x+Math.cos(angle)*spread,startY=sourcePoint.y+Math.sin(angle)*spread*.55;
+    particle.style.left=`${startX}px`;particle.style.top=`${startY}px`;
+    particle.style.setProperty('--reward-x',`${target.x-startX}px`);
+    particle.style.setProperty('--reward-y',`${target.y-startY}px`);
+    particle.style.setProperty('--reward-delay',`${delay+index*.025}s`);
+    document.body.appendChild(particle);
+    setTimeout(()=>particle.remove(),1300+(delay*1000));
+  }
+}
+function animateRewardCollection(reward,sourceElement,onComplete){
+  const rect=sourceElement?.getBoundingClientRect(),sourcePoint=rect
+    ?{x:rect.left+rect.width/2,y:rect.top+rect.height/2}
+    :{x:innerWidth/2,y:innerHeight/2};
+  const groups=[];
+  if((reward?.gold||0)>0)groups.push({kind:'gold',amount:reward.gold});
+  if((reward?.equipment||0)>0)groups.push({kind:'equipment',amount:reward.equipment});
+  if((reward?.cards||0)>0)groups.push({kind:'card',amount:reward.cards});
+  if(!groups.length){onComplete?.();return}
+  groups.forEach((group,index)=>launchRewardParticles(group.kind,group.amount,sourcePoint,index*.12));
+  if((reward?.gold||0)>0)setTimeout(()=>animateGoldGain(reward.gold),520);
+  setTimeout(()=>onComplete?.(),900+Math.max(0,groups.length-1)*120);
 }
 installStyle();installShopLayoutStyle();installUi();installEvents();
 const originalContextMenu=canvas.oncontextmenu;canvas.oncontextmenu=function(event){if(mode!=='challenge')return originalContextMenu?.call(canvas,event);event.preventDefault();if(started)return;const point=canvasPoint(event),unit=unitAt(point.x,point.y);if(unit?.team==='blue')returnChallengeUnitToBench(unit)};
