@@ -55,7 +55,7 @@
       effects: [
         '2风：全队攻击速度提高15%。',
         '3风：全队攻击速度提高30%。',
-        '4风：全队攻击速度提高45%；战斗开始8秒后对所有敌人造成一次可触发扩散的风元素伤害。'
+        '4风：全队攻击速度提高45%；战斗开始10秒后对所有敌人造成一次可触发扩散的风元素伤害。'
       ]
     },
     {
@@ -722,7 +722,7 @@
         runtime.iceTriggered[team] = true;
         freezeEnemyTeam(team);
       }
-      if (!runtime.windTriggered[team] && time >= 8 && (counts.风 || 0) >= 4) {
+      if (!runtime.windTriggered[team] && time >= 10 && (counts.风 || 0) >= 4) {
         runtime.windTriggered[team] = true;
         triggerWindStrike(team);
       }

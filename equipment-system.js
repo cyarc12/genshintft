@@ -52,6 +52,25 @@ const _formationSnapshotBeforeEquipment=formationSnapshot;
 formationSnapshot=function(){const list=_formationSnapshotBeforeEquipment();for(const saved of list){const unit=units.find(x=>x.id===saved.id);ensureUnitEquipment(unit);saved.equipment=unit?.equipment?.map(x=>x?{instanceId:x.instanceId,equipmentId:x.equipmentId}:null)||[null,null,null]}return list};
 const _applyFormationStateBeforeEquipment=applyFormationState;
 applyFormationState=function(unit,saved){_applyFormationStateBeforeEquipment(unit,saved);unit.equipment=Array.isArray(saved.equipment)?saved.equipment:[null,null,null];ensureUnitEquipment(unit);if(!unit.isDummy)recalculateUnitEquipmentStats(unit,false);return unit};
+// The initial formation is restored before this equipment module loads.
+// Re-apply the saved equipment once the equipment hooks are available.
+function restoreEquipmentFromSavedFormation(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(FORMATION_STORAGE_KEY)||'[]');
+    if(!Array.isArray(saved))return;
+    for(const state of saved){
+      if(!Array.isArray(state.equipment))continue;
+      const unit=units.find(candidate=>candidate.id===state.id&&candidate.name===state.name);
+      if(!unit)continue;
+      unit.equipment=state.equipment.map(item=>item?{instanceId:item.instanceId,equipmentId:item.equipmentId}:null);
+      ensureUnitEquipment(unit);
+      if(!unit.isDummy)recalculateUnitEquipmentStats(unit,false);
+    }
+  }catch(error){
+    console.warn('恢复棋子装备失败',error);
+  }
+}
+restoreEquipmentFromSavedFormation();
 const _prepareUnitsBeforeEquipment=prepareUnits;
 prepareUnits=function(...args){_prepareUnitsBeforeEquipment(...args);for(const unit of units){unit.aggroSuppressedTargets={};ensureUnitEquipment(unit);if(!unit.isDummy)recalculateUnitEquipmentStats(unit,false)}};
 const _processUpgradeQueueBeforeEquipment=processUpgradeQueue;

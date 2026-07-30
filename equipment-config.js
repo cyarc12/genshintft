@@ -51,11 +51,11 @@ const EQUIPMENT_WAREHOUSE_META={
   pansheng_armor:{category:'defense',cardStatText:'生命＋600 · 生命＋10%',cardEffectText:'纯生命坦克装备'},
   element_scroll:{category:'tempo',cardStatText:'初始法力＋20',cardEffectText:'每秒自动回复3点法力'},
   berserker_rune:{category:'damage',cardStatText:'攻击＋80',cardEffectText:'纯攻击力装备'},
-  unyielding_armor:{category:'defense',cardStatText:'攻击＋50 · 生命＋400',cardEffectText:'半血触发护盾'},
+  unyielding_armor:{category:'damage',cardStatText:'攻击＋50 · 生命＋400',cardEffectText:'半血触发护盾'},
   domain_core_swift:{category:'support',cardStatText:'生命＋150 · 初始法力＋10',cardEffectText:'横排友军攻速＋20%'},
   domain_core_battle:{category:'support',cardStatText:'生命＋150 · 初始法力＋10',cardEffectText:'横排友军攻击＋15%'},
   domain_core_guard:{category:'support',cardStatText:'生命＋150 · 初始法力＋10',cardEffectText:'开局为横排友军提供护盾'},
-  frozen_core:{category:'tempo',cardStatText:'生命＋300 · 初始法力＋30',cardEffectText:'半血回蓝并获得护盾'}
+  frozen_core:{category:'defense',cardStatText:'生命＋300 · 初始法力＋30',cardEffectText:'半血回蓝并获得护盾'}
 };
 for(const [id,meta] of Object.entries(EQUIPMENT_WAREHOUSE_META)){
   Object.assign(EQUIPMENT_CONFIG[id],meta,{detailText:EQUIPMENT_CONFIG[id].effectText,itemClass:'standard_completed'});

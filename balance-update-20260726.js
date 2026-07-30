@@ -1273,13 +1273,15 @@ const CONFIRMED_SKILL_NAMES={
 function castSucroseSkill(u){
   const target=confirmedTarget(u);if(!target)return false;
   const raw=confirmedValue(u,[100,160,320])+effectiveAtk(u)*confirmedValue(u,[1,1.5,3]);
-  u.skillReady=false;u.attackCd=Math.max(u.attackCd,.5);u.aiState='CASTING';
+  // Casting is committed when the orb leaves Sucrose. Damage and Swirl still
+  // wait for impact, but mana must be consumed now to prevent repeat casts
+  // while the first projectile is travelling.
+  u.mp=0;u.skillReady=false;u.attackCd=Math.max(u.attackCd,.5);u.aiState='CASTING';
   skillActions.push({
     id:`sucrose-orb-${u.id}-${Date.now()}`,sourceId:u.id,targetId:target.id,template:'PROJECTILE',
     phase:'WINDUP',elapsed:0,windupDuration:.16,travelDuration:.42,impactDuration:0,recoveryDuration:.22,
     meta:{skillName:'风灵作成',isSucroseOrb:true,element:'风',raw},
     onImpact:(source,action)=>{
-      source.mp=0;
       const main=getUnitById(action.targetId);if(!main?.alive)return;
       const dealt=damage(source,main,action.meta.raw,{skill:true,elemental:true,damageElement:'风'});
       if(main.alive)attachAndReact(source,main,dealt);
