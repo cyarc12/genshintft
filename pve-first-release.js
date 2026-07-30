@@ -483,7 +483,7 @@ function settle(win){
   showRoundResult(win,reward,()=>{
     if(terminal){showEnd(terminal);return}
     renderChallengeInventory();renderPveHud();
-    const continueRound=()=>{if(!run.shopLocked)refreshShop(true);saveRun();renderPveHud();setTimeout(()=>showStageTransition(stageId()),180)};
+    const continueRound=()=>{if(!run.shopLocked)refreshShop(true);saveRun();renderPveHud();if(win)setTimeout(()=>showStageTransition(stageId()),180)};
     if(phaseThreeCleared){showPhaseThreeChoice(continueRound);return}
     if(exRetry){showExFailureChoice();return}
     if(!win&&lossCompensation)queueLossCompensation(lossCompensation,continueRound);else continueRound();
