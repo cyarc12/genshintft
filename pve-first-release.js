@@ -37,6 +37,49 @@ const SELL_PRICE={1:[0,1,3,9],2:[0,2,5,17],3:[0,3,8,26],4:[0,4,11,35],5:[0,5,14,
 let mode='test',run=null,mainSnapshot=null,slotAction='save',selectedSlot=null,battlePlayerSnapshot=null,activeBattleRecord=null,exBattleSnapshot=null,roundResultNext=null,roundResultRewardFx=null,pendingRewardNext=null,previousRoundStatUnits=null,phaseThreeContinue=null,reviewArchive=null,reviewDetailContext=null,selectedArchiveSlot=0,pendingCompletedArchive=null;
 const PVE_SLOT_LAYOUT_LOCK=Object.freeze({avatarSize:32,avatarColumns:5,avatarGap:2,titleWidth:78});
 let lockedSlotTitleWidth=null,lockedSlotTitleStart=null;
+const PVE_TUTORIAL_STEPS=[
+  {icon:'◆',title:'欢迎来到挑战模式',eyebrow:'01 · 模式介绍',body:`<p>挑战模式是这款元素自走棋的完整实战流程。你会从固定初始资源出发，经历连续关卡，通过<mark>购买棋子</mark>、<mark>调整站位</mark>、<mark>升级人口</mark>和<mark>搭配装备</mark>逐步强化阵容。</p><div class="pve-tutorial-callout">目标：通过第三阶段 Boss；之后还可以带着阵容继续挑战 EX 关卡。</div>`},
+  {icon:'⬢',title:'关卡、阶段与 Boss',eyebrow:'02 · 挑战路线',body:`<p>挑战由三个常规阶段和两场 EX 关组成。每阶段包含<mark>普通关</mark>、<mark>奖励关</mark>和<mark>Boss 关</mark>。</p><ul><li>普通关用于检验阵容强度。</li><li>奖励关会提供额外金币或装备。</li><li>Boss 关难度更高，但会掉落更多<mark>金币、装备和免费刷新</mark>。</li></ul><div class="pve-tutorial-callout">通过 3-6 Boss 后即可保存挑战回顾；EX 失败也不会失去保存资格。</div>`},
+  {icon:'🔥',title:'连胜、失败与战斗节奏',eyebrow:'03 · 胜负状态',body:`<p>连续获胜会累积<mark>连胜数</mark>并提供额外金币；战斗失败会把连胜归零，同时停留在当前关卡重新挑战。</p><p>战斗开始后棋子会自动移动、索敌、普攻与释放技能，但你仍可在战斗期间<mark>购买或出售棋子</mark>。</p><div class="pve-tutorial-callout">每场战斗开始时会记录你的站位，结算后棋子会恢复到开战位置。</div>`},
+  {icon:'▦',title:'商店与费用概率',eyebrow:'04 · 获取棋子',body:`<p>商店每次展示五张牌。上方的<mark>1费 / 2费 / 3费 / 4费 / 5费概率</mark>会随玩家等级变化，高等级更容易找到高费棋子。</p><ul><li>点击刷新可更换商店。</li><li>锁定商店后，下一回合不会自动刷新。</li><li>已经拥有同名棋子时，对应商店牌顶部会显示金线。</li></ul>`},
+  {icon:'↔',title:'买牌、卖牌与合成',eyebrow:'05 · 阵容操作',body:`<p><mark>点击商店卡牌</mark>购买棋子，棋子会进入备战席；金币不足或备战席已满时无法购买。</p><p>长按抓起棋子并拖回商店区域即可<mark>出售</mark>。三个同名同星棋子会自动合成更高星级；达到三星后该牌暂时不会再刷出，出售三星后重新开放。</p><div class="pve-tutorial-callout">右键棋子只会让它返回备战席，不会出售。</div>`},
+  {icon:'Lv',title:'等级、经验与人口',eyebrow:'06 · 成长上限',body:`<p>玩家等级决定<mark>人口上限</mark>和商店概率。胜利获得经验，也可以花费<mark>4金币购买4经验</mark>。</p><ul><li>等级提升后人口上限同步提高。</li><li>超过人口上限时不能继续往棋盘放置棋子。</li><li>最高等级为 <mark>Lv10</mark>，满级后无法继续购买经验。</li></ul>`},
+  {icon:'●',title:'金币、基础收入与利息',eyebrow:'07 · 经济运营',body:`<p>每场战斗结束后获得<mark>3金币基础收入</mark>。结算时每持有10金币，再获得1金币利息，利息最多10金币。</p><p>连胜、奖励关、Boss 奖励和出售棋子都会带来额外金币。商店消费发生在利息结算前还是结算后，会直接影响下一回合收入。</p><div class="pve-tutorial-callout">回合资源框会分别显示基础收入、利息和其他奖励。</div>`},
+  {icon:'◇',title:'装备栏与装备操作',eyebrow:'08 · 强化棋子',body:`<p>挑战装备存放在右侧<mark>挑战装备栏</mark>。将装备拖到棋子身上即可穿戴，每名棋子最多携带三件装备。</p><ul><li>装备提供攻击、防御、回蓝或特殊触发效果。</li><li>拆卸器用于取下装备。</li><li>重铸器用于把装备转换为其他装备。</li></ul><div class="pve-tutorial-callout">装备效果彼此独立；相同装备也可以重复佩戴并分别触发。</div>`},
+  {icon:'♥',title:'血量、失败机会与补偿',eyebrow:'09 · 生存规则',body:`<p>挑战开始时拥有三颗<mark>红心</mark>。常规关卡失败会失去一颗心，红心耗尽则本次挑战结束。</p><p>第一次和第二次掉血后会出现<mark>逆风补偿</mark>。确认领取后，金币、装备和棋子才会正式进入库存；备战席满时可以先隐藏奖励页，整理后再领取。</p>`},
+  {icon:'⚔',title:'角色定位与站位',eyebrow:'10 · 实战布阵',body:`<p>角色的<mark>武器、攻击距离、技能和元素</mark>决定其定位。坦克与近战通常放在前排承伤，弓与法器角色适合后排输出或支援。</p><p>同元素不同角色可以激活<mark>元素共鸣</mark>；技能施加元素后还能触发元素反应。点击角色可查看血量、法力、双抗、攻击、攻速、距离、技能与装备。</p><div class="pve-tutorial-callout">相同角色不会重复计算共鸣人数，阵容多样性同样重要。</div>`},
+  {icon:'▶',title:'准备好开始挑战',eyebrow:'11 · 开始实战',body:`<p>备战阶段先观察敌方阵容，再决定购买、装备和站位。点击<mark>开始战斗</mark>后关注技能释放、元素反应和右侧战斗统计。</p><p>回合结束后领取奖励、调整阵容，再进入下一关。现在可以开始你的第一场挑战了。</p>`}
+];
+let pveTutorialIndex=0;
+function beginNewChallengeAfterTutorial(){
+  $('#pveTutorialPromptDialog')?.classList.add('hidden');
+  $('#pveTutorialDialog')?.classList.add('hidden');
+  localStorage.removeItem(RUN_KEY);
+  activateChallenge(createRun());
+}
+function renderPveTutorial(){
+  const step=PVE_TUTORIAL_STEPS[pveTutorialIndex];
+  if(!step)return;
+  $('#pveTutorialIcon').textContent=step.icon;
+  $('#pveTutorialEyebrow').textContent=step.eyebrow;
+  $('#pveTutorialTitle').textContent=step.title;
+  $('#pveTutorialBody').innerHTML=step.body;
+  $('#pveTutorialProgress').textContent=`${pveTutorialIndex+1} / ${PVE_TUTORIAL_STEPS.length}`;
+  $('#prevPveTutorialBtn').disabled=pveTutorialIndex===0;
+  $('#nextPveTutorialBtn').textContent=pveTutorialIndex===PVE_TUTORIAL_STEPS.length-1?'进入挑战':'下一步';
+  $('#pveTutorialDots').innerHTML=PVE_TUTORIAL_STEPS.map((_,index)=>`<button class="${index===pveTutorialIndex?'active':''}" data-pve-tutorial-step="${index}" aria-label="第${index+1}步"></button>`).join('');
+}
+function openPveTutorial(){
+  $('#pveTutorialPromptDialog')?.classList.add('hidden');
+  pveTutorialIndex=0;
+  renderPveTutorial();
+  $('#pveTutorialDialog')?.classList.remove('hidden');
+}
+function movePveTutorial(delta){
+  if(delta>0&&pveTutorialIndex===PVE_TUTORIAL_STEPS.length-1){beginNewChallengeAfterTutorial();return}
+  pveTutorialIndex=Math.max(0,Math.min(PVE_TUTORIAL_STEPS.length-1,pveTutorialIndex+delta));
+  renderPveTutorial();
+}
 const $=s=>document.querySelector(s),clone=v=>JSON.parse(JSON.stringify(v));
 const standardEquipmentIds=()=>Object.values(EQUIPMENT_CONFIG).filter(c=>c.itemClass==='standard_completed').map(c=>c.id);
 function toast(text){if(typeof showEquipmentToast==='function')showEquipmentToast(text);else addLog(text,'reaction')}
@@ -514,6 +557,8 @@ function installUi(){
   document.body.insertAdjacentHTML('beforeend',`<div id="challengeSettlementDialog" class="pve-modal hidden"><div class="pve-challenge-settlement"><h2>本次挑战结算</h2><div class="pve-settlement-progress"><b id="challengeSettlementStage">当前关卡：1-1</b><span id="challengeSettlementRound">已完成回合：0</span></div><p>要查看挑战回顾、重新开始挑战，还是结束本次挑战并返回测试场？</p><footer><button id="openChallengeReviewBtn">挑战回顾</button><button id="restartChallengeBtn">重新挑战</button><button id="finishChallengeToTestBtn">回到测试场</button><button data-close-pve-modal>取消</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="challengeSettlementConfirmDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>确认结算对局？</h2><p>结算后可以选择重新挑战，或结束挑战并回到测试场。</p><footer><button id="confirmChallengeSettlementBtn">确认结算</button><button data-close-pve-modal>继续挑战</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="newChallengeConfirmDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>开始新的挑战？</h2><p>当前挑战进度将被覆盖，金币、阵容和关卡进度都会重新开始。</p><footer><button id="confirmNewChallengeBtn">开始新挑战</button><button data-close-pve-modal>取消</button></footer></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div id="pveTutorialPromptDialog" class="pve-modal hidden"><div class="pve-tutorial-prompt"><span>挑战开始前</span><h2>需要查看挑战教程吗？</h2><p>教程会介绍关卡、Boss、经济、商店、装备和实战布阵。第一次体验挑战模式时建议先看一遍。</p><footer><button id="openPveTutorialBtn" class="pve-tutorial-primary">查看挑战教程</button><button id="skipPveTutorialPromptBtn">直接开始</button></footer></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div id="pveTutorialDialog" class="pve-modal hidden"><div class="pve-tutorial-panel"><header><span id="pveTutorialProgress">1 / 11</span><b>挑战模式教程</b></header><main><div id="pveTutorialIcon" class="pve-tutorial-icon"></div><section><small id="pveTutorialEyebrow"></small><h2 id="pveTutorialTitle"></h2><div id="pveTutorialBody" class="pve-tutorial-body"></div></section></main><div id="pveTutorialDots" class="pve-tutorial-dots"></div><footer><button id="skipPveTutorialBtn">跳过教程</button><i></i><button id="prevPveTutorialBtn">上一步</button><button id="nextPveTutorialBtn" class="pve-tutorial-primary">下一步</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="exitChallengeConfirmDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>返回测试模式？</h2><p>当前挑战进度将自动保存，之后可以继续挑战。</p><footer><button id="confirmExitChallengeBtn">保存并返回</button><button data-close-pve-modal>取消</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pvePhaseThreeDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>三阶段挑战完成</h2><p>你可以获得50金币并进入EX-1与EX-2，也可以结束本次挑战，或重新开始一把。EX失败可以原状态重试，EX-2胜利后挑战完成。</p><footer><button id="enterExStagesBtn">领取50金币并进入EX</button><button id="reviewPhaseThreeBtn">挑战回顾</button><button id="replayPhaseThreeBtn">再来一把</button><button id="finishPhaseThreeBtn">回到测试场</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveExFailureDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>EX挑战失败</h2><p>EX关卡可以无限挑战。要重新挑战本关，还是结束本次挑战？</p><footer><button id="retryExStageBtn">重新挑战本关</button><button id="reviewExBtn">挑战回顾</button><button id="endExChallengeBtn">结束挑战</button></footer></div></div>`);
@@ -598,6 +643,9 @@ function installShopLayoutStyle(){
     #pveEndDialog footer{justify-content:center}
     .pve-modal footer button{min-width:104px;padding:9px 15px;font-size:14px;font-weight:700}
     .pve-challenge-settlement,.pve-settlement-confirm{width:min(480px,calc(100% - 30px));text-align:center}
+    .pve-tutorial-prompt{width:min(500px,calc(100% - 30px))!important;text-align:center}.pve-tutorial-prompt>span{display:inline-block;padding:4px 10px;border:1px solid #6597c6;border-radius:999px;color:#9dcbf2;font-size:11px;font-weight:800;letter-spacing:2px}.pve-tutorial-prompt h2{margin:16px 0 8px;font-size:26px}.pve-tutorial-prompt p{color:#aebfd3;line-height:1.75}.pve-tutorial-prompt footer{justify-content:center}
+    .pve-tutorial-primary{border-color:#78bdf2!important;background:linear-gradient(135deg,#275e8c,#173958)!important;color:#eaf7ff!important;box-shadow:0 0 15px rgba(77,165,232,.2)}
+    .pve-tutorial-panel{width:min(820px,calc(100% - 30px))!important;max-height:88vh!important;padding:0!important;overflow:hidden!important}.pve-tutorial-panel>header{display:flex;align-items:center;justify-content:space-between;padding:13px 19px;border-bottom:1px solid #344d6b;background:#0b1523;color:#8eb6dc}.pve-tutorial-panel>header b{color:#dbe9f8;font-size:13px;letter-spacing:3px}.pve-tutorial-panel>main{display:grid;grid-template-columns:150px minmax(0,1fr);gap:24px;align-items:center;min-height:330px;padding:25px 30px}.pve-tutorial-icon{display:grid;place-items:center;width:126px;height:126px;border:1px solid #50769e;border-radius:50%;background:radial-gradient(circle,#193a5c 0,#10243a 58%,#091523 70%);box-shadow:0 0 28px rgba(66,145,211,.18),inset 0 0 18px rgba(100,177,235,.12);color:#f1d179;font-size:42px;font-weight:900}.pve-tutorial-panel section>small{color:#79b5e5;font-weight:800;letter-spacing:2px}.pve-tutorial-panel section h2{margin:7px 0 13px;font-size:27px}.pve-tutorial-body{color:#b9c9db;font-size:14px;line-height:1.75}.pve-tutorial-body p{margin:7px 0}.pve-tutorial-body ul{margin:8px 0;padding-left:20px}.pve-tutorial-body mark{padding:0 2px;background:none;color:#f2cd6f;font-weight:900}.pve-tutorial-callout{margin-top:13px;padding:10px 12px;border-left:3px solid #d7ac4e;border-radius:0 6px 6px 0;background:rgba(176,126,35,.1);color:#e7d7ab}.pve-tutorial-dots{display:flex;justify-content:center;gap:7px;padding:0 20px 12px}.pve-tutorial-dots button{width:7px;min-width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#40536c}.pve-tutorial-dots button.active{width:22px;background:#79bceb}.pve-tutorial-panel>footer{align-items:center;margin:0!important;padding:13px 18px;border-top:1px solid #344d6b;background:#0b1523}.pve-tutorial-panel>footer i{flex:1}.pve-tutorial-panel button:disabled{opacity:.35;cursor:not-allowed}
     .pve-settlement-progress{display:grid;gap:8px;margin:14px 0;padding:15px;border:1px solid #405672;border-radius:9px;background:#0b1421}
     .pve-settlement-progress b{color:#f1cf73;font-size:22px}.pve-settlement-progress span{color:#b8c8dc;font-size:14px}
     .pve-round-result h2{margin:0 0 14px;font-size:25px;letter-spacing:2px}
@@ -629,14 +677,20 @@ function installShopLayoutStyle(){
       @keyframes pveStageFlare{0%{opacity:0;transform:scaleX(0)}18%{opacity:1;transform:scaleX(1)}75%{opacity:.75;transform:scaleX(.72)}100%{opacity:0;transform:scaleX(.4)}}@keyframes pveStageCard{0%{opacity:0;transform:scale(.9) translateY(12px)}18%{opacity:1;transform:scale(1) translateY(0)}78%{opacity:1;transform:scale(1) translateY(0)}100%{opacity:0;transform:scale(1.035) translateY(-5px)}}
 	    @keyframes pveHeartBreak{0%{transform:scale(.65);opacity:0}25%{transform:scale(1.18);opacity:1}45%{transform:scale(1) rotate(-4deg)}60%{transform:translateX(-5px) rotate(4deg)}72%{transform:translateX(5px) rotate(-3deg)}100%{transform:scale(.82);opacity:.5}}
     @keyframes pveHeartCrack{0%{opacity:0;transform:scaleY(0) rotate(17deg)}100%{opacity:1;transform:scaleY(1) rotate(17deg)}}
-	    @media(max-width:900px){.pve-shop-meta,.pve-shop-main{grid-template-columns:1fr}.pve-shop-meta>span:last-child{display:none}.pve-shop-odds{grid-row:2}.pve-shop-action-buttons{grid-template-columns:1fr 1fr;grid-template-rows:1fr}.pve-review-body section{grid-template-columns:1fr}.pve-review-stats{grid-template-columns:repeat(3,1fr)}}
+	    @media(max-width:900px){.pve-shop-meta,.pve-shop-main{grid-template-columns:1fr}.pve-shop-meta>span:last-child{display:none}.pve-shop-odds{grid-row:2}.pve-shop-action-buttons{grid-template-columns:1fr 1fr;grid-template-rows:1fr}.pve-review-body section{grid-template-columns:1fr}.pve-review-stats{grid-template-columns:repeat(3,1fr)}.pve-tutorial-panel>main{grid-template-columns:1fr;justify-items:center;padding:20px}.pve-tutorial-panel section{width:100%}.pve-tutorial-icon{width:82px;height:82px;font-size:30px}.pve-tutorial-panel section h2{text-align:center}}
   `;
   document.head.appendChild(style);
 }
 function installEvents(){
   $('#savePveSlotBtn').onclick=()=>openSlotDialog('save');$('#loadPveSlotBtn').onclick=()=>openSlotDialog('load');$('#openChallengeBtn').onclick=()=>{const hasSave=!!loadRun();$('#continuePveBtn').classList.toggle('hidden',!hasSave);$('#challengeDialog').classList.remove('hidden')};$('#openChallengeArchiveBtn').onclick=()=>{renderArchiveSlots();$('#pveArchiveDialog').classList.remove('hidden')};$('#settleChallengeBtn').onclick=openChallengeSettlement;$('#confirmChallengeSettlementBtn').onclick=confirmChallengeSettlement;$('#exitChallengeBtn').onclick=exitChallenge;$('#confirmExitChallengeBtn').onclick=confirmExitChallenge;$('#restartChallengeBtn').onclick=restartChallengeFromSettlement;$('#finishChallengeToTestBtn').onclick=finishChallengeToTest;$('#confirmPveSlotBtn').onclick=confirmSlotAction;
   $('#pveSlotList').onclick=e=>{const b=e.target.closest('[data-slot-key]');if(b){selectedSlot=b.dataset.slotKey;renderSlotList()}};document.addEventListener('click',e=>{if(e.target.matches('[data-close-pve-modal]'))e.target.closest('.pve-modal').classList.add('hidden')});
-  $('#newPveBtn').onclick=()=>$('#newChallengeConfirmDialog').classList.remove('hidden');$('#confirmNewChallengeBtn').onclick=()=>{$('#newChallengeConfirmDialog').classList.add('hidden');localStorage.removeItem(RUN_KEY);activateChallenge(createRun())};$('#continuePveBtn').onclick=()=>{const saved=loadRun();if(saved)activateChallenge(saved);else toast('没有挑战存档')};
+  $('#newPveBtn').onclick=()=>$('#newChallengeConfirmDialog').classList.remove('hidden');$('#confirmNewChallengeBtn').onclick=()=>{$('#newChallengeConfirmDialog').classList.add('hidden');$('#pveTutorialPromptDialog').classList.remove('hidden')};$('#continuePveBtn').onclick=()=>{const saved=loadRun();if(saved)activateChallenge(saved);else toast('没有挑战存档')};
+  $('#openPveTutorialBtn').onclick=openPveTutorial;
+  $('#skipPveTutorialPromptBtn').onclick=beginNewChallengeAfterTutorial;
+  $('#skipPveTutorialBtn').onclick=beginNewChallengeAfterTutorial;
+  $('#prevPveTutorialBtn').onclick=()=>movePveTutorial(-1);
+  $('#nextPveTutorialBtn').onclick=()=>movePveTutorial(1);
+  $('#pveTutorialDots').onclick=event=>{const button=event.target.closest('[data-pve-tutorial-step]');if(button){pveTutorialIndex=Number(button.dataset.pveTutorialStep)||0;renderPveTutorial()}};
   $('#buyXpBtn').onclick=buyXp;$('#refreshShopBtn').onclick=()=>refreshShop(false);$('#lockShopBtn').onclick=()=>{run.shopLocked=!run.shopLocked;saveRun();renderPveHud()};$('#pveShopCards').onclick=e=>{const b=e.target.closest('[data-buy-offer]');if(b)buyOffer(Number(b.dataset.buyOffer))};
   $('#pveShopCards').addEventListener('contextmenu',event=>event.preventDefault());$('#pveShopCards').addEventListener('dragstart',event=>event.preventDefault());
   $('#continueRoundResultBtn').onclick=()=>{
