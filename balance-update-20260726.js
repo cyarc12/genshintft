@@ -1488,7 +1488,6 @@ SKILL_BRIEF['诺艾尔']='被动：每名正在攻击诺艾尔的敌人使双抗
 // Keep only effects that can still be produced by confirmed characters,
 // equipment, or the new reaction system.
 const confirmedEffectGroupData=[['持续状态',[
-  [STATUS_ICON_PATH.weaken,'增伤降低','造成的伤害降低；当前由克洛琳德决斗等效果触发'],
   [STATUS_ICON_PATH.grievous,'重伤','受到的治疗降低30%'],
   [STATUS_ICON_PATH.invulnerable,'无敌','持续期间受到的所有伤害变为0'],
   ['assets/broken-shield.svg','元素减抗','对应元素抗性降低30%，持续5秒'],
