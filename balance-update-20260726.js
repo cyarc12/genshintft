@@ -164,13 +164,23 @@ damage=function(source,target,raw,options={}){
 
 function consumeAttachment(target){const old=target.attach?.element||null;target.attach=null;return old}
 function reactionName(old,now){return REACTIONS[old+now]||null}
-function createVaporMark(source,target,element,triggerDamage=0){
+function createVaporMark(source,target,element,triggerDamage=0,reactionContext=null){
+  // 只有“目标已有相反元素附着，并由本次命中实际组成蒸发”才算一次触发。
+  // 普通火/水伤害仍可被现有标记记录为承伤，但绝不能提高触发次数与结算系数。
+  const confirmedReaction=
+    reactionContext?.name==='蒸发'&&
+    reactionName(reactionContext.oldElement,reactionContext.newElement)==='蒸发';
+  if(!confirmedReaction)return null;
   let mark=vaporMarks.find(m=>m.targetId===target.id&&!m.settling);
   if(mark){
     if((Number(mark.triggerCount)||1)>=2)return mark;
-    // 重复触发只提高本次标记的结算系数，不续时、不更换伤害归属。
+    // 第二次真实蒸发反应只提高本次标记的结算系数，不续时、不更换伤害归属。
     mark.triggerCount=2;
     mark.rate=(Number(mark.rate)||.80)+1.20;
+    if(typeof addLog==='function')addLog(
+      `${target.name} 的【蒸汽标记】发生第二次蒸发反应：结算系数提高至 ${Math.round(mark.rate*100)}%，持续时间不刷新`,
+      'reaction'
+    );
     return mark;
   }
   const lastEvent=target.lastTakenEvent;
@@ -287,7 +297,7 @@ attachAndReact=function(source,target,baseDamage=0){
     {const p=unitVisualPos(target);confirmedMeltEffects.push({x:p.x,y:p.y,time:0,duration:.72,seed:Math.random()*Math.PI*2});}
     showReaction(target,'融化','融化 ×2');
   }else if(name==='蒸发'){
-    createVaporMark(source,target,el,baseDamage);showReaction(target,'蒸发');
+    createVaporMark(source,target,el,baseDamage,{name,oldElement:old,newElement:el});showReaction(target,'蒸发');
   }else if(name==='超载'){
     const victims=units.filter(u=>u.alive&&!u.onBench&&u.team===target.team&&dist(u,target)<=1.5);
     for(const v of victims)damage(source,v,250+effectiveAtk(source)*1.5,{skill:true,elemental:true,damageElement:el,reaction:true,allowReaction:false});
