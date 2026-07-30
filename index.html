@@ -650,17 +650,17 @@ function applyVaporMark(source,target,element,triggerDamage=0){
   if(current){
     if((Number(current.triggerCount)||1)>=2)return;
     current.triggerCount=2;
-    current.rate+=1.20;
+    current.rate+=.90;
     addLog(`${target.name} 的【蒸汽标记】重复触发：剩余时间与结算归属不变，本次结算系数提高至 ${Math.round(current.rate*100)}%，已记录 ${Math.round(current.recordedDamage)} 点实际伤害；最终伤害计入 ${current.source?.name||'首次触发者'}`,'reaction');
     return
   }
   const initialRecorded=Math.max(0,Number(triggerDamage)||0);
-  const state={source,element,remaining:4,recordedDamage:initialRecorded,rate:.80,triggerCount:1,hitCount:initialRecorded>0?1:0,timer:null};
+  const state={source,element,remaining:4,recordedDamage:initialRecorded,rate:.60,triggerCount:1,hitCount:initialRecorded>0?1:0,timer:null};
   target.vaporState=state;
   state.timer=window.setTimeout(()=>{
     if(target.vaporState===state)settleVaporMark(target)
   },4000/Math.max(.1,Number(speed)||1));
-  addLog(`${target.name} 获得【蒸汽标记】4 秒：触发伤害 ${Math.round(initialRecorded)} 已计入记录，基础结算系数 30%`,'reaction')
+  addLog(`${target.name} 获得【蒸汽标记】4 秒：触发伤害 ${Math.round(initialRecorded)} 已计入记录，基础结算系数 60%`,'reaction')
 }
 function settleVaporMark(target){
   const state=target?.vaporState;if(!state)return;
@@ -1243,7 +1243,7 @@ function loop(now){const dt=Math.min(.05,(now-last)/1000)*speed;last=now;acc+=dt
 resetBtn.onclick=resetBattle;startBtn.onclick=startBattle;clearBlueBtn.onclick=()=>clearTeamBoard('blue');clearRedBtn.onclick=()=>clearTeamBoard('red');pauseBtn.onclick=()=>{if(!started)return;paused=!paused;pauseBtn.textContent=paused?'继续':'暂停';battleState.textContent=paused?'战斗暂停':'自动战斗中'};speedBtn.onclick=()=>{speed=speed===1?2:speed===2?.5:1;speedBtn.textContent=`速度 ×${speed}`};document.querySelectorAll('[data-star]').forEach(btn=>btn.onclick=()=>{selectedSpawnStar=parseInt(btn.dataset.star);whState.star=selectedSpawnStar;document.querySelectorAll('[data-star]').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('[data-wh-star]').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.whStar)===selectedSpawnStar));renderWhCards();});
 document.querySelectorAll('[data-damage-mode]').forEach(btn=>btn.onclick=()=>{damageMode=btn.dataset.damageMode;document.querySelectorAll('[data-damage-mode]').forEach(b=>b.classList.toggle('active',b===btn));renderDamageStats()});
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));logPane.hidden=t.dataset.pane!=='log';rulesPane.hidden=t.dataset.pane!=='rules'});
-const REACTION_GUIDE=[['蒸发','火 + 水','获得4秒蒸汽标记并记录实际护盾与生命损失；结束时按记录值30%生成对应元素伤害并正常经过抗性。标记期间重复触发不延长时间，每次使本次结算系数额外+15%'],['感电链','水 + 雷','与附近水/雷附着目标连线 8 秒，并传递 10% 承受伤害'],['冻结','水 + 冰','每次使攻速降低 20% 持续 5 秒；第二次冻结追加完全控制 3 秒，然后重新累计'],['融化','火打冰 / 冰打火','本次总伤害 ×2.0 / ×1.5，目标减伤 -10% 持续 3 秒'],['超载','火 + 雷','半径 1.5 格固定 200 点范围伤害；伤害元素取后手触发者，不附着且不能再次触发反应'],['超导','冰 + 雷','生成中心及周围六格领域 15 秒；敌方单位首次进入失去 10 点法力，每个领域对每个单位只触发一次'],['扩散','风 + 已附着元素','原目标与附近敌人的对应元素抗性降低 30%，持续 5 秒；减抗作用于当前总抗性。同时受到触发者 100% 攻击力的对应元素伤害，该伤害不附着元素（岩元素不可扩散）'],['结晶','岩 + 火/水/冰/雷','每种元素每队首次触发：对应元素角色中，法器、弓、长柄攻击力+15；单手剑、双手剑物理抗性与元素抗性各+15。岩元素角色同时获得攻击力和双抗。后续重复触发同种结晶时，各项仅+5；3岩共鸣使每次结晶收益变为1.5倍。']];
+const REACTION_GUIDE=[['蒸发','火 + 水','获得4秒蒸汽标记并记录实际护盾与生命损失；首次按记录值60%结算，第二次实际触发蒸发后提高至150%，不延长时间，第三次及以后无效'],['感电链','水 + 雷','与附近水/雷附着目标连线 8 秒，并传递 10% 承受伤害'],['冻结','水 + 冰','每次使攻速降低 20% 持续 5 秒；第二次冻结追加完全控制 3 秒，然后重新累计'],['融化','火打冰 / 冰打火','本次总伤害 ×2.0 / ×1.5，目标减伤 -10% 持续 3 秒'],['超载','火 + 雷','半径 1.5 格固定 200 点范围伤害；伤害元素取后手触发者，不附着且不能再次触发反应'],['超导','冰 + 雷','生成中心及周围六格领域 15 秒；敌方单位首次进入失去 10 点法力，每个领域对每个单位只触发一次'],['扩散','风 + 已附着元素','原目标与附近敌人的对应元素抗性降低 30%，持续 5 秒；减抗作用于当前总抗性。同时受到触发者 100% 攻击力的对应元素伤害，该伤害不附着元素（岩元素不可扩散）'],['结晶','岩 + 火/水/冰/雷','每种元素每队首次触发：对应元素角色中，法器、弓、长柄攻击力+15；单手剑、双手剑物理抗性与元素抗性各+15。岩元素角色同时获得攻击力和双抗。后续重复触发同种结晶时，各项仅+5；3岩共鸣使每次结晶收益变为1.5倍。']];
 const REACTION_EFFECT_ICONS={蒸发:[REACTION_ICON_PATH['蒸发']],感电链:[REACTION_ICON_PATH['感电链']],冻结:[STATUS_ICON_PATH.slow,STATUS_ICON_PATH.frozenControl],融化:[STATUS_ICON_PATH.vulnerable],超载:[REACTION_ICON_PATH['超载']],超导:[REACTION_ICON_PATH['超导']],扩散:['assets/broken-shield.svg'],结晶:['assets/reactions/crystallize.png']};
 function inlineIcons(paths){return `<span class="effect-icons-inline">${paths.map(src=>`<img src="${src}" alt="">`).join('')}</span>`}
 rulesPane.innerHTML='';document.querySelector('#bottomReaction').innerHTML=`<h3>元素反应效果表</h3><p style="font-size:12px;color:#aab7c9;margin:5px 0 8px;line-height:1.55">元素附着不会随时间消失，被反应消耗前一直存在。反应组合、倍率与持续效果统一按下表结算。</p><table class="reaction-table"><thead><tr><th>反应</th><th>组合</th><th>效果与公式</th></tr></thead><tbody>${REACTION_GUIDE.map(r=>`<tr><td><img class="table-icon" src="${REACTION_ICON_PATH[r[0]]}" alt="">${r[0]}</td><td>${r[1]}</td><td>${inlineIcons(REACTION_EFFECT_ICONS[r[0]])}${r[2]}</td></tr>`).join('')}</tbody></table>`;

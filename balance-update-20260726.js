@@ -176,7 +176,7 @@ function createVaporMark(source,target,element,triggerDamage=0,reactionContext=n
     if((Number(mark.triggerCount)||1)>=2)return mark;
     // 第二次真实蒸发反应只提高本次标记的结算系数，不续时、不更换伤害归属。
     mark.triggerCount=2;
-    mark.rate=(Number(mark.rate)||.80)+1.20;
+    mark.rate=(Number(mark.rate)||.60)+.90;
     if(typeof addLog==='function')addLog(
       `${target.name} 的【蒸汽标记】发生第二次蒸发反应：结算系数提高至 ${Math.round(mark.rate*100)}%，持续时间不刷新`,
       'reaction'
@@ -195,7 +195,7 @@ function createVaporMark(source,target,element,triggerDamage=0,reactionContext=n
     time:4,
     maxTime:4,
     recorded:confirmedTriggerDamage,
-    rate:.80,
+    rate:.60,
     triggerCount:1,
     settling:false
   };
@@ -207,7 +207,7 @@ function settleConfirmedVaporMark(mark){
   if(!target?.alive)return;
   const element=mark.element||mark.source?.element||'水';
   const recorded=Math.max(0,Number(mark.recorded)||0);
-  const rate=Math.max(0,Number(mark.rate)||.80);
+  const rate=Math.max(0,Number(mark.rate)||.60);
   const raw=recorded*rate;
   let settled=0;
   if(target.alive&&raw>0){
@@ -1499,7 +1499,7 @@ const confirmedEffectGroupData=[['持续状态',[
 const effectHost=document.querySelector('#effectGroups');
 if(effectHost)effectHost.innerHTML=`<div class="effect-items">${confirmedEffectGroupData[0][1].map(([src,name,desc])=>`<div class="effect-item"><img src="${src}" alt=""><span>${name}<small>${desc}</small></span></div>`).join('')}</div>`;
 const confirmedReactionGuide=[
-  ['蒸发','火 + 水','生成4秒蒸发标记，记录目标实际损失的护盾与生命；首次触发结算系数为80%，第二次触发提高至200%且不延长时间。标记结算前第三次及后续触发无效。'],
+  ['蒸发','火 + 水','生成4秒蒸发标记，记录目标实际损失的护盾与生命；首次触发结算系数为60%，第二次实际触发蒸发后提高至150%且不延长时间。标记结算前第三次及后续触发无效。'],
   ['感电链','水 + 雷','连接同阵营2～3名敌人8秒；任一成员承受伤害时，其余成员各受到原始实际伤害15%的真实传导伤害。传导伤害不递归。'],
   ['冻结','水 + 冰','立即完全冻结2秒；期间无法移动、普攻或施放技能。韧性正常影响持续时间，不叠层、不减速。'],
   ['融化','火 + 冰','本次总伤害×2.0；不再附加易伤状态。'],
