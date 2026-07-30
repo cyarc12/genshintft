@@ -175,14 +175,14 @@ const MOVEMENT_CONFIG={meleeStartDelay:0.00,rangedStartDelay:0.08,oneHexDuration
 const AVATAR_RENDER={安柏:{width:52,height:61,x:0,y:-2},胡桃:{size:46,x:4,y:1},八重神子:{size:46,x:-4,y:3},夏洛蒂:{size:52,x:0,y:0},凝光:{size:46,x:0,y:0},纳维亚:{size:46,x:0,y:0}};
 const WEAPON_INFO={双手剑:'重装坦克：自带嘲讽效果；存在多个同距离目标时，敌人优先选择双手剑角色。',单手剑:'灵活战士：受到当前攻击目标以外的敌人造成的伤害时，伤害降低 15%。',长柄:'近战输出：生命高于 50% 时攻击力增加 20；生命处于 50% 及以下时获得 15% 吸血。',弓:'远程输出：与目标每相距 1 格，造成的伤害提高 2%。',法器:'法术输出：每秒自动恢复 5 点法力；普通攻击造成角色自身元素的伤害，但不施加元素附着。'};
 const SKILL_INFO={
-  '玛薇卡':'不使用法力，拥有12层【战意】。开战获得5层；其他存活友军每完成一次技能施放，玛薇卡获得1层战意。满12层时立即释放【烈阳挥斩】，释放后战意清零。\\n【烈阳挥斩】朝当前目标方向挥出120°、1格半径的烈焰重斩，对范围内所有敌人造成攻击力200% / 300% / 700%的火元素伤害并施加火元素附着；随后获得自身最大生命值25% / 35% / 65%的护盾，持续6 / 6 / 8秒。新护盾覆盖旧护盾。',
+  '玛薇卡':'不使用法力，拥有12层【战意】。开战获得7层；其他存活友军每完成一次技能施放，玛薇卡获得1层战意。满12层时立即释放【烈阳挥斩】，释放后战意清零。\\n【烈阳挥斩】朝当前目标方向挥出120°、1格半径的烈焰重斩，对范围内所有敌人造成攻击力200% / 300% / 700%的火元素伤害并施加火元素附着；随后获得自身最大生命值25% / 35% / 65%的护盾，持续6 / 6 / 8秒。新护盾覆盖旧护盾。',
   '钟离':'初始法力35/100。\\n【玉璋护世】为施法瞬间所有存活友方棋子分别生成220 / 340 / 5000点独立玉璋护盾，持续5 / 5 / 99秒。位于己方前两排的单位在玉璋护盾存在期间获得6% / 9% / 20%伤害减免；位于己方后两排的单位获得10% / 15% / 35%伤害提升。排数只在施法瞬间判定，之后移动不会改变效果。玉璋护盾不叠加，再次施法会覆盖剩余护盾并刷新持续时间；护盾破裂或到期时对应增益立即移除。',
   '八重神子':'召唤阶段10/60；大招阶段一、二星0/120，三星0/50。普通攻击固定10点雷伤，不附着。同阵营共享最多3株杀生樱，每株每2.5秒攻击一次并每第二次附着；三星第一次释放直接召唤3株。第3株出现时全队升阶并切换大招。\n天狐显真：一星全屏200%攻击雷伤，二星350%；三星连续10次全屏天雷，每段500%，总计5000%。首击永久施加30%重伤。',
   '胡桃':'初始法力20/60。消耗当前生命30%进入【彼岸蝶舞】8秒。攻击提高100% / 120% / 250%，减伤20% / 20% / 30%，普攻转火伤。首击追加200% / 220% / 560%火伤+附着，之后每3击再次触发。本场首次致死保留1生命，自动进入8秒强化。无敌：1/2星2秒，3星10秒。',
 '甘雨':'被动·霜华矢：一、二星每3次普攻替换为强化冰箭；三星每次普攻都是强化冰箭。主目标150% / 165% / 3000%冰伤+附着，周围1.5格溅射70% / 75% / 200%（不附着）。\nR·降众天华：目标2.5格冰域，1/2星6秒，3星30秒。每2秒冰伤80% / 90% / 225%。敌人在同一领域累计超5秒触发冻结1秒 / 1秒 / 10秒。每敌人每领域一次。',
   '菲谢尔':'初始法力20/60。首次满蓝召唤不可选中奥兹（随死亡消失）。每次释放普攻转雷伤3秒（可回蓝），永久获得12% / 18% / 30%基础攻速，不设叠层上限（最终攻速仍受全局5.0上限限制）。菲谢尔每4次普攻，奥兹协同120% / 130% / 240%攻击力雷伤+附着。',
   '琴':'初始法力40/90。自身+周围六格创建8秒蒲公英领域。每2秒治疗领域内友军50 / 80 / 200，共4次。每名敌人首次进入时受到1点可触发扩散的风伤。',
-  '安柏':'初始法力40/80。全棋盘选覆盖敌人最多空格投掷兔兔伯爵。1秒后半径1.5格爆炸，400% / 440% / 800%攻击火伤，全部附着。同分优先距目标最近格。',
+  '安柏':'初始法力40/80。全棋盘选覆盖敌人最多空格投掷兔兔伯爵。1秒后半径1.5格爆炸，造成300 / 400 / 2000 + 攻击力200% / 300% / 100%的火元素伤害，全部附着。同分优先距目标最近格。',
   '诺艾尔':'初始法力0/100。被动·守护之心：被锁定越多抗性越高（每名+10 / +12 / +15），无上限，护盾期间暂停。\nR·护心岩铠：目标周围七格全体5秒嘲讽→刷新抗性计数→护盾=最大生命×(15%+额外抗性%) / (20%+额外抗性%) / (40%+额外抗性%)，持续10秒。',
   '雷电将军':'初始法力30/70。对目标方向直线3格250% / 275% / 500%攻击雷伤+附着。进入梦想一心5秒：攻速×2、攻击+10 / +15 / +40、普攻转雷伤、锁蓝、每4次普攻附着一次。',
   '珊瑚宫心海':'初始法力40/80。进入【海人化羽】8秒。普攻追加最大生命6%水伤，每第三击附着。每次普攻为生命比例最低友军治疗最大生命8%。',
@@ -208,14 +208,14 @@ const SKILL_INFO={
   '夏洛蒂':'初始法力0/80。最近2名敌人受到20/40/100 + 攻击力×35%/45%/65%的冰元素伤害并附着，获得30%重伤5/6/8秒。',
   };
 const SKILL_BRIEF={
-  '玛薇卡':'12层战意，开战5层；其他友军每次施法+1。满层释放120°近身火焰重斩：200%/300%/700%攻击力火伤并附着，随后获得25%/35%/65%最大生命护盾6/6/8秒。',
+  '玛薇卡':'12层战意，开战7层；其他友军每次施法+1。满层释放120°近身火焰重斩：200%/300%/700%攻击力火伤并附着，随后获得25%/35%/65%最大生命护盾6/6/8秒。',
   '钟离':'为当前所有存活友军施加220/340/5000点玉璋护盾5/5/99秒；施法时位于前两排者减伤6%/9%/20%，后两排者增伤10%/15%/35%，护盾消失时增益同步移除。',
   '八重神子':'同队共享最多3株杀生樱；三星第一次释放直接召满3株。三株后切换大招：一、二星120蓝，三星50蓝。天狐显真一/二星200%/350%；三星10段500%，总计5000%。',
   '胡桃':'耗血30%进入8秒强化：攻击+100%/120%/250%、减伤20%/30%、普攻转火。首击+每3击追加200%/220%/560%火伤+附着。致死被动无敌2秒/10秒。',
 '甘雨':'被动：一、二星每3击强化；三星每击强化。主目标150%/165%/3000%冰伤并溅射。\nR：2.5格冰域6秒/6秒/30秒，每2秒冰伤80%/90%/225%。敌人累计超5秒冻结1秒/10秒。',
   '菲谢尔':'首次召唤奥兹。每次释放获得3秒雷附魔，并永久获得12%/18%/30%基础攻速（无叠层上限）。每4次普攻奥兹协同120%/130%/240%雷伤+附着。',
   '琴':'七格领域8秒，每2秒治疗50/80/200共4次。敌人首次进入1点可扩散风伤。',
-  '安柏':'全棋盘最密集落点兔兔伯爵，1秒后1.5格400%/440%/800%火伤+附着。',
+  '安柏':'全棋盘最密集落点兔兔伯爵，1秒后1.5格造成300/400/2000 + 攻击力200%/300%/100%火伤并附着。',
   '诺艾尔':'被动：被锁定抗性+10/12/15无上限。R：周围七格5秒嘲讽→护盾=最大生命×(15%/20%/40%+额外抗性%)。',
   '雷电将军':'目标直线3格250%/275%/500%雷伤+附着。梦想一心5秒：攻速×2、攻击+10/15/40、普攻转雷、每4击附着。',
   '珊瑚宫心海':'8秒强化：普攻追加最大生命6%水伤，每第三击附着。每次普攻治疗最低血友军8%最大生命。',
@@ -291,7 +291,7 @@ const PIECE_CONFIG={
   夏洛蒂:{templateId:'charlotte',name:'夏洛蒂',cost:1,element:'冰',weapon:'法器',avatar:'assets/avatars/charlotte.png',mana:{initial:[0,0,0],max:80},hp:[780,1524,2203],atk:[40,60,90],resist:20,physicalResist:20,elementResist:25,as:0.9,range:4,normalBaseDamage:20,normalAtkRatio:0.20},
   凝光:{templateId:'ningguang',name:'凝光',cost:2,element:'岩',weapon:'法器',avatar:'assets/avatars/ningguang.png',mana:{initial:[10,10,10],max:80},hp:[750,1340,1528],atk:[60,90,135],resist:30,physicalResist:30,elementResist:35,as:0.95,range:5},
   纳维亚:{templateId:'navia',name:'纳维亚',cost:3,element:'岩',weapon:'双手剑',avatar:'assets/avatars/navia.png',mana:{initial:[50,50,50],max:80},hp:[1000,1785,2520],atk:[50,75,110],resist:50,physicalResist:50,elementResist:40,as:0.75,range:1},
-  玛薇卡:{templateId:'mavuika',name:'玛薇卡',cost:4,element:'火',weapon:'双手剑',avatar:'assets/avatars/mavuika.png',resourceType:'condition',mana:{initial:[0,0,0],max:0},hp:[1350,2550,4050],atk:[52,78,117],resist:50,physicalResist:50,elementResist:50,as:0.60,range:1,conditionSkillGauge:{type:'allySkillCast',label:'战意',required:[12,12,12],initial:5,consumeOn:'impact'}},
+  玛薇卡:{templateId:'mavuika',name:'玛薇卡',cost:4,element:'火',weapon:'双手剑',avatar:'assets/avatars/mavuika.png',resourceType:'condition',mana:{initial:[0,0,0],max:0},hp:[1350,2550,4050],atk:[52,78,117],resist:50,physicalResist:50,elementResist:50,as:0.60,range:1,conditionSkillGauge:{type:'allySkillCast',label:'战意',required:[12,12,12],initial:7,consumeOn:'impact'}},
   钟离:{templateId:'zhongli',name:'钟离',cost:5,element:'岩',weapon:'长柄',avatar:'assets/avatars/zhongli.png',mana:{initial:[35,35,35],max:100},hp:[1100,1980,3564],atk:[55,83,124],resist:40,physicalResist:40,elementResist:50,as:0.65,range:2},
   砂糖:{templateId:'sucrose',name:'砂糖',cost:1,element:'风',weapon:'法器',avatar:'assets/avatars/sucrose.png',mana:{initial:[20,20,20],max:70},hp:[500,900,1620],atk:[42,63,95],resist:20,physicalResist:20,elementResist:25,as:0.70,range:5}};
 function statsForStar(cfg,star){const i=star-1;const initialMana=Array.isArray(cfg.mana.initial)?(cfg.mana.initial[i]??cfg.mana.initial[0]):cfg.mana.initial;let hp=cfg.hp[i]||cfg.hp[0];if(star===1)hp=Math.max(1,hp-100);else if(star===2)hp=Math.max(1,hp-300);if(star===3){if(cfg.cost===4)hp+=1500;else if(cfg.cost===5)hp+=2500}return{hp,atk:cfg.atk[i]||cfg.atk[0],resist:cfg.physicalResist??cfg.resist,physicalResist:cfg.physicalResist??cfg.resist,elementResist:cfg.elementResist??null,as:cfg.as,range:cfg.range,initialMana,maxMana:cfg.mana.max,cost:cfg.cost,normalBaseDamage:cfg.normalBaseDamage,normalAtkRatio:cfg.normalAtkRatio}}
@@ -414,6 +414,7 @@ function resetConditionSkillGauge(u){
   const raw=u?.conditionSkillGauge||PIECE_CONFIG[u?.name]?.conditionSkillGauge;
   if(!raw){if(u)delete u.conditionSkillGaugeRuntime;return}
   u.conditionSkillGaugeRuntime={value:Math.max(0,Number(raw.initial||0))};
+  u.conditionSkillCastPending=false;
 }
 function addConditionSkillGauge(u,amount=1){
   const gauge=getConditionSkillGauge(u);
@@ -438,14 +439,16 @@ function notifyAlliesOfSkillCast(caster){
   }
 }
 function castMavuikaSkill(u){
+  if(u.conditionSkillCastPending)return false;
   const target=u.target?.alive?u.target:findTarget(u);
   if(!target)return false;
-  const tpl=SKILL_TEMPLATES.HEAVY_SLASH,from=unitVisualPos(u),to=unitVisualPos(target);
+  const from=unitVisualPos(u),to=unitVisualPos(target),windupDuration=.24,recoveryDuration=.14,visualDuration=.46;
+  u.conditionSkillCastPending=true;
   u.aiState='CASTING';
-  mavuikaSlashes.push({source:u,target,from,to,time:0,duration:tpl.windup+tpl.recovery+.15});
+  mavuikaSlashes.push({source:u,target,from,to,time:0,duration:visualDuration,impactAt:windupDuration});
   skillActions.push({
     id:'skill-'+u.id+'-mavuika-'+Date.now(),sourceId:u.id,targetId:target.id,template:'HEAVY_SLASH',
-    phase:'WINDUP',elapsed:0,windupDuration:tpl.windup,travelDuration:0,impactDuration:0,recoveryDuration:tpl.recovery,
+    phase:'WINDUP',elapsed:0,windupDuration,travelDuration:0,impactDuration:0,recoveryDuration,
     meta:{skillName:'烈阳挥斩'},
     onImpact:(source,action)=>{
       let aimed=getUnitById(action.targetId);
@@ -466,6 +469,7 @@ function castMavuikaSkill(u){
       source.mavuikaShield={value:shieldValue,max:shieldValue,time:duration,source};
       source.shieldingDone=(source.shieldingDone||0)+shieldValue;
       consumeConditionSkillGauge(source,'impact');
+      source.conditionSkillCastPending=false;
       spawn(source,ELEMENTS.火,22);
       addLog(`${source.name} 的【烈阳挥斩】命中 ${victims.length} 名敌人，获得 ${Math.round(shieldValue)} 点护盾`,'reaction');
     }
@@ -518,13 +522,13 @@ function drawMavuikaSlashes(){
   for(const slash of mavuikaSlashes){
     const from=slash.source?.alive?unitVisualPos(slash.source):slash.from,to=slash.target?.alive?unitVisualPos(slash.target):slash.to;
     if(!from||!to)continue;
-    const progress=Math.min(1,slash.time/slash.duration),impact=.46,local=Math.max(0,Math.min(1,progress/impact)),fade=progress<impact?1:Math.max(0,1-(progress-impact)/(1-impact));
+    const progress=Math.min(1,slash.time/slash.duration),impact=Math.max(.01,Math.min(.95,(slash.impactAt||slash.duration*.46)/slash.duration)),local=Math.max(0,Math.min(1,progress/impact)),swing=local<.55?.28*Math.pow(local/.55,2):.28+.72*(1-Math.pow(1-(local-.55)/.45,3)),fade=progress<impact?1:Math.max(0,1-(progress-impact)/(1-impact));
     const angle=Math.atan2(to.y-from.y,to.x-from.x);
     ctx.save();ctx.translate(from.x,from.y);ctx.rotate(angle);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.82*fade;
     ctx.strokeStyle='#ff4a25';ctx.shadowColor='#ff3719';ctx.shadowBlur=16;ctx.lineWidth=7;
-    ctx.beginPath();ctx.arc(0,0,54,-Math.PI/3,-Math.PI/3+Math.PI*2/3*local);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0,54,-Math.PI/3,-Math.PI/3+Math.PI*2/3*swing);ctx.stroke();
     ctx.strokeStyle='#ffd08a';ctx.shadowBlur=7;ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(0,0,55,-Math.PI/3,-Math.PI/3+Math.PI*2/3*local);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0,55,-Math.PI/3,-Math.PI/3+Math.PI*2/3*swing);ctx.stroke();
     ctx.restore();
   }
 }
@@ -748,7 +752,7 @@ function castKokomiSkill(u){u.mp=0;u.kokomiAttackCount=0;effect(u,'kokomiCeremon
 function castShenheSkill(u){for(const ally of units.filter(x=>x.team===u.team))ally.effects=ally.effects.filter(e=>e.type!=='shenheBuff');const allies=units.filter(x=>x.alive&&!x.onBench&&x.team===u.team&&x!==u).sort((a,b)=>b.damageDealt-a.damageDealt).slice(0,2),buffPct=valueForStar(u,[.25,.30,.40]),buff=effectiveAtk(u)*buffPct;launchFriendlyOrbs(u,allies,'冰',(src,a)=>effect(a,'shenheBuff',8,buff));const enemies=units.filter(x=>x.alive&&!x.onBench&&x.team!==u.team).sort((a,b)=>dist(u,a)-dist(u,b)).slice(0,2),dmgPct=valueForStar(u,[.8,.9,1.1]);for(const enemy of enemies){const dealt=damage(u,enemy,effectiveAtk(u)*dmgPct,{skill:true,elemental:true});if(enemy.alive)attachAndReact(u,enemy,dealt);spawn(enemy,ELEMENTS.冰,12)}u.mp=0;spawn(u,ELEMENTS.冰,18);addLog(`${u.name} 为伤害最高的 ${allies.map(x=>x.name).join('、')||'无'} 发射冰翎，提高攻击力 ${Math.round(buffPct*100)}%（${Math.round(buff)} 点）8秒；并对最近 ${enemies.length} 个敌人造成 ${Math.round(dmgPct*100)}% 冰伤与附着`,'reaction')}
 function amberBombCell(u){const enemies=units.filter(x=>x.alive&&!x.onBench&&x.team!==u.team),cells=[];for(let row=0;row<ROWS;row++)for(let col=0;col<COLS;col++){const cell={row,col};if(occupied(cell))continue;const p=hexPos(row,col),hits=enemies.filter(e=>{const q=unitVisualPos(e);return Math.hypot(q.x-p.x,q.y-p.y)/HW<=1.5}).length,total=enemies.reduce((sum,e)=>sum+dist(cell,e),0);cells.push({cell,hits,total})}cells.sort((a,b)=>b.hits-a.hits||a.total-b.total);return cells[0]?.cell||(enemies[0]?{row:enemies[0].row,col:enemies[0].col}:null)}
 function castAmberSkill(u){const cell=amberBombCell(u);if(!cell)return false;amberBombs.push({source:u,team:u.team,from:unitVisualPos(u),cell,time:0,landingAt:.28,explodeAt:1,duration:1.55,resolved:false});u.mp=0;spawn(u,ELEMENTS.火,14);showReaction(u,'skill','爆弹玩偶');addLog(u.name+' 向敌方最密集区域投出兔兔伯爵，将在 1 秒后爆炸','reaction');return true}
-function tickAmberBombs(dt){for(const bomb of amberBombs){bomb.time+=dt;if(!bomb.resolved&&bomb.time>=bomb.explodeAt){bomb.resolved=true;const center=hexPos(bomb.cell.row,bomb.cell.col),targets=units.filter(e=>e.alive&&!e.onBench&&e.team!==bomb.source.team).filter(e=>{const p=unitVisualPos(e);return Math.hypot(p.x-center.x,p.y-center.y)/HW<=1.5}),dmgPct=valueForStar(bomb.source,[4.0,4.4,8.0]);for(const enemy of targets){const dealt=damage(bomb.source,enemy,effectiveAtk(bomb.source)*dmgPct,{skill:true,elemental:true});if(enemy.alive)attachAndReact(bomb.source,enemy,dealt)}addLog(bomb.source.name+'的兔兔伯爵爆炸，命中 '+targets.length+' 个敌人','reaction')}}amberBombs=amberBombs.filter(b=>b.time<b.duration+2)}
+function tickAmberBombs(dt){for(const bomb of amberBombs){bomb.time+=dt;if(!bomb.resolved&&bomb.time>=bomb.explodeAt){bomb.resolved=true;const center=hexPos(bomb.cell.row,bomb.cell.col),targets=units.filter(e=>e.alive&&!e.onBench&&e.team!==bomb.source.team).filter(e=>{const p=unitVisualPos(e);return Math.hypot(p.x-center.x,p.y-center.y)/HW<=1.5}),flat=valueForStar(bomb.source,[300,400,2000]),dmgPct=valueForStar(bomb.source,[2,3,1]);for(const enemy of targets){const dealt=damage(bomb.source,enemy,flat+effectiveAtk(bomb.source)*dmgPct,{skill:true,elemental:true});if(enemy.alive)attachAndReact(bomb.source,enemy,dealt)}addLog(bomb.source.name+'的兔兔伯爵爆炸，命中 '+targets.length+' 个敌人','reaction')}}amberBombs=amberBombs.filter(b=>b.time<b.duration+2)}
 function tickKleeBombs(dt){for(const bomb of kleeBombs){bomb.time+=dt;if(!bomb.resolved&&bomb.time>=bomb.explodeAt){bomb.resolved=true;const center=hexPos(bomb.cell.row,bomb.cell.col),targets=units.filter(e=>e.alive&&!e.onBench&&e.team!==bomb.source.team).filter(e=>{const p=unitVisualPos(e);return Math.hypot(p.x-center.x,p.y-center.y)/HW<=1.5}),dmgPct=valueForStar(bomb.source,[1.8,2.0,2.45]);for(const enemy of targets){const dealt=damage(bomb.source,enemy,effectiveAtk(bomb.source)*dmgPct,{skill:true,elemental:true});if(enemy.row===bomb.cell.row&&enemy.col===bomb.cell.col&&enemy.alive)attachAndReact(bomb.source,enemy,dealt)}addLog(bomb.source.name+'的蹦蹦炸弹爆炸，命中 '+targets.length+' 个敌人','reaction')}}kleeBombs=kleeBombs.filter(b=>b.time<b.duration+2)}
 function castFischlSkill(u){let oz=ozSummons.find(o=>o.owner===u);if(!oz){const cell=neighbors(u).find(c=>!occupied(c,u));if(!cell){if(!u.skillBlocked)addLog(`${u.name} 周围没有空格，无法召唤奥兹并保持满蓝`,'kill');u.skillBlocked=true;return false}oz={owner:u,team:u.team,row:cell.row,col:cell.col,hitCount:0};ozSummons.push(oz);u.skillBlocked=false}const growth=valueForStar(u,[.12,.18,.30]);u.as+=u.baseAsForGrowth*growth;effect(u,'fischlElectro',3,1);u.mp=0;spawn(u,ELEMENTS.雷,18);showReaction(u,'skill','夜巡影翼 · 奥兹');addLog(`${u.name} 唤醒【奥兹】，普攻转为雷伤 3 秒且仍可回蓝；本场永久获得 ${Math.round(growth*100)}% 基础攻速（无叠层上限，最终攻速上限 5.0）`,'reaction');return true}
 function castSayuSkill(u){u.mp=0;u.sayuCleanCd=2;effect(u,'sayuGuard',6,.2);const healAmt=valueForStar(u,[400,600,900]),healed=healUnit(u,healAmt,u);spawn(u,ELEMENTS.风,24);showReaction(u,'skill','呜呼流·影貉缭乱');addLog(`${u.name} 释放【呜呼流·影貉缭乱】，回复 ${Math.round(healed)} 点生命并获得【影貉守护】6 秒：减伤 20%，每 2 秒清除自身元素附着`,'reaction');return true}
