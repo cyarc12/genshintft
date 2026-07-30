@@ -68,7 +68,8 @@
     {
       eyebrow:'第 2 步 · 自由测试',
       title:'这里是自由测试模式',
-      icon:'⬡',
+      image:'assets/avatars/training-dummy.png',
+      imageAlt:'测试模式木桩',
       body:'你当前所在的是<span class="tutorial-keyword">自由测试模式</span>。在这里可以自由配置蓝方与红方阵容，调整角色星级、装备和站位，不受金币、等级、人口和商店限制。',
       tips:[
         '适合测试<span class="tutorial-keyword">角色技能、元素反应、元素共鸣</span>和装备效果',
@@ -90,7 +91,8 @@
     {
       eyebrow:'第 4 步 · 角色面板',
       title:'查看角色信息',
-      icon:'◆',
+      image:'assets/avatars/keqing.png',
+      imageAlt:'角色头像',
       body:'<span class="tutorial-keyword">点击棋盘或备战席上的棋子</span>即可打开详细面板。面板会显示生命、法力、武器、攻击力、攻击速度、暴击、双抗、攻击距离、增伤、减伤、武器特性和技能说明。',
       tips:[
         '角色升星后，面板会显示<span class="tutorial-keyword">当前星级</span>对应的属性与技能数值',
@@ -101,7 +103,8 @@
     {
       eyebrow:'第 5 步 · 元素玩法',
       title:'元素反应与元素共鸣',
-      icon:'◈',
+      image:'assets/elements/cryo.svg',
+      imageAlt:'冰元素图标',
       body:'火、水、雷、冰、风、岩等元素攻击可以与目标身上的元素附着产生<span class="tutorial-keyword">元素反应</span>。上阵多个不同的同元素角色，还可以激活<span class="tutorial-keyword">元素共鸣</span>。',
       tips:[
         '元素反应可能带来<span class="tutorial-keyword">额外伤害、控制、延迟结算</span>或范围效果',
@@ -112,7 +115,8 @@
     {
       eyebrow:'第 6 步 · 装备系统',
       title:'为棋子配置装备',
-      icon:'⬢',
+      image:'assets/equipment/battle_emblem.png',
+      imageAlt:'装备图标',
       body:'将装备<span class="tutorial-keyword">拖到棋子身上</span>，即可为角色提供属性或特殊效果。装备分为输出、防御和辅助等类型；同名装备可以同时佩戴，并且每件装备独立计算。',
       tips:[
         '部分装备会在<span class="tutorial-keyword">开战、低生命、击杀或施法</span>时触发',
@@ -159,6 +163,9 @@
     .tutorial-close:hover{color:#fff;border-color:#78a5db}
     .tutorial-content{display:grid;grid-template-columns:118px minmax(0,1fr);gap:22px;align-items:center;min-height:300px;padding:20px 34px 30px}
     .tutorial-icon{display:grid;width:108px;height:108px;place-items:center;border:1px solid #54749a;border-radius:50%;background:radial-gradient(circle,#284b72 0,#152941 48%,#0b1523 72%);box-shadow:0 0 0 8px #17294080,0 0 30px #59aaff3b;color:#f5d477;font-size:52px}
+    .tutorial-icon img{display:block;width:76px;height:76px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 4px 9px #0008)}
+    .tutorial-icon img.tutorial-element-image{width:68px;height:68px;border-radius:0;filter:drop-shadow(0 0 9px #a9e9ff88)}
+    .tutorial-icon img.tutorial-equipment-image{width:92px;height:92px;border-radius:22px}
     .tutorial-eyebrow{margin-bottom:8px;color:#69b9ff;font-size:12px;font-weight:800;letter-spacing:.08em}
     .tutorial-title{margin:0 0 12px;font-size:28px;line-height:1.25}
     .tutorial-body{margin:0;color:#b8c7da;font-size:15px;line-height:1.8}
@@ -211,7 +218,13 @@
   function closeTutorial(){markSeen();modal.hidden=true}
   function render(){
     const step=steps[current];
-    $('.tutorial-icon').textContent=step.icon;
+    const icon=$('.tutorial-icon');
+    if(step.image){
+      const imageClass=step.image.includes('/elements/')?'tutorial-element-image':step.image.includes('/equipment/')?'tutorial-equipment-image':'';
+      icon.innerHTML=`<img class="${imageClass}" src="${step.image}" alt="${step.imageAlt||''}">`;
+    }else{
+      icon.textContent=step.icon;
+    }
     $('.tutorial-eyebrow').textContent=step.eyebrow;
     $('.tutorial-title').textContent=step.title;
     $('.tutorial-body').innerHTML=step.body;
