@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY='element-auto-chess-tutorial-seen-v1';
-  const steps=[
+  const legacySteps=[
     {
       eyebrow:'第 1 步 · 测试模式',
       title:'这里是自由测试场',
@@ -54,6 +54,96 @@
     }
   ];
 
+  const steps=[
+    {
+      eyebrow:'第 1 步 · 游戏介绍',
+      title:'欢迎来到《元素自走棋》',
+      icon:'✦',
+      body:'这是一款以<span class="tutorial-keyword">角色布阵</span>、<span class="tutorial-keyword">自动战斗</span>、<span class="tutorial-keyword">元素反应</span>和<span class="tutorial-keyword">元素共鸣</span>为核心的策略游戏。选择不同角色，为他们配置装备并调整站位。战斗开始后，棋子会自动移动、攻击和释放技能。',
+      tips:[
+        '合理搭配<span class="tutorial-keyword">阵容、元素与装备</span>，保护核心角色并击败敌方队伍',
+        '不需要在战斗中手动操作角色，策略主要发生在<span class="tutorial-keyword">战斗开始前</span>'
+      ]
+    },
+    {
+      eyebrow:'第 2 步 · 自由测试',
+      title:'这里是自由测试模式',
+      icon:'⬡',
+      body:'你当前所在的是<span class="tutorial-keyword">自由测试模式</span>。在这里可以自由配置蓝方与红方阵容，调整角色星级、装备和站位，不受金币、等级、人口和商店限制。',
+      tips:[
+        '适合测试<span class="tutorial-keyword">角色技能、元素反应、元素共鸣</span>和装备效果',
+        '蓝方与红方阵容都由你配置，红方不是系统预设的关卡敌人',
+        '测试场的棋子和装备会保存在<span class="tutorial-keyword">当前浏览器</span>'
+      ]
+    },
+    {
+      eyebrow:'第 3 步 · 棋子操作',
+      title:'放置和调整棋子',
+      icon:'♟',
+      body:'从角色列表中选择棋子，将其放到对应阵营的棋盘或备战席。<span class="tutorial-keyword">点击棋子</span>可以查看详细信息；<span class="tutorial-keyword">按住棋子约100毫秒</span>即可抓起，再拖到目标位置。',
+      tips:[
+        '在备战阶段可以<span class="tutorial-keyword">拖动棋子</span>调整站位',
+        '也可以将棋子移回<span class="tutorial-keyword">备战席</span>',
+        '相同角色可以上场，但元素共鸣只按照<span class="tutorial-keyword">不同角色</span>计算'
+      ]
+    },
+    {
+      eyebrow:'第 4 步 · 角色面板',
+      title:'查看角色信息',
+      icon:'◆',
+      body:'<span class="tutorial-keyword">点击棋盘或备战席上的棋子</span>即可打开详细面板。面板会显示生命、法力、武器、攻击力、攻击速度、暴击、双抗、攻击距离、增伤、减伤、武器特性和技能说明。',
+      tips:[
+        '角色升星后，面板会显示<span class="tutorial-keyword">当前星级</span>对应的属性与技能数值',
+        '<span class="tutorial-keyword">法力条充满</span>后角色会自动释放技能',
+        '战意等特殊资源不受普通回蓝效果影响'
+      ]
+    },
+    {
+      eyebrow:'第 5 步 · 元素玩法',
+      title:'元素反应与元素共鸣',
+      icon:'◈',
+      body:'火、水、雷、冰、风、岩等元素攻击可以与目标身上的元素附着产生<span class="tutorial-keyword">元素反应</span>。上阵多个不同的同元素角色，还可以激活<span class="tutorial-keyword">元素共鸣</span>。',
+      tips:[
+        '元素反应可能带来<span class="tutorial-keyword">额外伤害、控制、延迟结算</span>或范围效果',
+        '棋盘上方会分别显示蓝方与红方的<span class="tutorial-keyword">共鸣层级</span>',
+        '<span class="tutorial-keyword">点击共鸣图标</span>可查看效果和参与激活的角色'
+      ]
+    },
+    {
+      eyebrow:'第 6 步 · 装备系统',
+      title:'为棋子配置装备',
+      icon:'⬢',
+      body:'将装备<span class="tutorial-keyword">拖到棋子身上</span>，即可为角色提供属性或特殊效果。装备分为输出、防御和辅助等类型；同名装备可以同时佩戴，并且每件装备独立计算。',
+      tips:[
+        '部分装备会在<span class="tutorial-keyword">开战、低生命、击杀或施法</span>时触发',
+        '<span class="tutorial-keyword">装备重铸器</span>可以更换装备',
+        '<span class="tutorial-keyword">装备拆卸器</span>可以取下已佩戴的装备'
+      ]
+    },
+    {
+      eyebrow:'第 7 步 · 自动战斗',
+      title:'开始一场战斗',
+      icon:'⚔',
+      body:'完成双方阵容配置后，点击<span class="tutorial-keyword">“开始战斗”</span>。棋子会自动选择目标、移动、普通攻击并释放技能，你不需要手动控制角色。',
+      tips:[
+        '战斗中可以观察<span class="tutorial-keyword">元素反应、护盾、治疗、控制</span>和技能联动',
+        '右侧<span class="tutorial-keyword">战斗统计</span>可以查看伤害、承伤、治疗与护盾',
+        '测试结束后可以<span class="tutorial-keyword">重新布阵</span>并继续调整阵容'
+      ]
+    },
+    {
+      eyebrow:'第 8 步 · 挑战模式',
+      title:'进入正式挑战',
+      icon:'🏆',
+      body:'熟悉测试模式后，可以从页面上方进入<span class="tutorial-keyword">挑战模式</span>。这里拥有独立的关卡流程，包括金币、商店、等级、经验、人口、备战席、装备奖励和失败机会。',
+      tips:[
+        '通过<span class="tutorial-keyword">购买与合成棋子</span>提升阵容质量',
+        '经营金币、升级人口并连续挑战<span class="tutorial-keyword">预设敌方阵容</span>',
+        '测试模式用于自由验证；挑战模式包含<span class="tutorial-keyword">成长、资源管理与通关目标</span>'
+      ]
+    }
+  ];
+
   let current=0;
   const style=document.createElement('style');
   style.textContent=`
@@ -72,6 +162,7 @@
     .tutorial-eyebrow{margin-bottom:8px;color:#69b9ff;font-size:12px;font-weight:800;letter-spacing:.08em}
     .tutorial-title{margin:0 0 12px;font-size:28px;line-height:1.25}
     .tutorial-body{margin:0;color:#b8c7da;font-size:15px;line-height:1.8}
+    .tutorial-keyword{color:#f4ca69;font-weight:800;text-shadow:0 0 10px #d79a2933}
     .tutorial-tips{display:grid;gap:7px;margin:17px 0 0;padding:0;list-style:none}
     .tutorial-tips li{position:relative;padding-left:17px;color:#dbe6f4;font-size:13px;line-height:1.55}
     .tutorial-tips li::before{content:"";position:absolute;left:1px;top:.62em;width:6px;height:6px;border-radius:50%;background:#f0c867;box-shadow:0 0 7px #f0c86788}
@@ -123,7 +214,7 @@
     $('.tutorial-icon').textContent=step.icon;
     $('.tutorial-eyebrow').textContent=step.eyebrow;
     $('.tutorial-title').textContent=step.title;
-    $('.tutorial-body').textContent=step.body;
+    $('.tutorial-body').innerHTML=step.body;
     $('.tutorial-tips').innerHTML=step.tips.map(text=>`<li>${text}</li>`).join('');
     $('.tutorial-count').textContent=`${current+1} / ${steps.length}`;
     $('.tutorial-prev').disabled=current===0;
