@@ -400,7 +400,7 @@ function settle(win){
     shieldingDone:Number(u.shieldingDone)||0
   })));
   const startStage=stageId(),isExStage=startStage?.startsWith('EX-'),phaseThreeCleared=win&&startStage==='3-6';let terminal='',lossCompensation=null,exRetry=false;
-  let baseGold=5,interestGold=0,streakGold=0,stageGold=0,equipmentCount=0,extraRefreshes=0,phaseSupply=false;
+  let baseGold=3,interestGold=0,streakGold=0,stageGold=0,equipmentCount=0,extraRefreshes=0,phaseSupply=false;
   const reviewEntry=recordBattleReview(startStage,win);
   if(isExStage&&!win&&exBattleSnapshot){
     const snapshot=clone(exBattleSnapshot);
@@ -423,7 +423,7 @@ function settle(win){
     run.winStreak++;streakGold=run.winStreak>=6?5:run.winStreak>=3?3:1;run.gold+=streakGold;
     const rule=RULES[startStage];
     if(rule.type==='fun'){stageGold=10;equipmentCount=1}
-    else if(rule.type==='boss'){stageGold=15;equipmentCount=2;extraRefreshes=3}
+    else if(rule.type==='boss'){stageGold=10;equipmentCount=2;extraRefreshes=3}
     run.gold+=stageGold;run.freeRefreshes+=extraRefreshes;
     const ids=standardEquipmentIds();for(let i=0;i<equipmentCount&&ids.length;i++)run.equipmentInventory.push(ids[Math.floor(Math.random()*ids.length)]);
     if(startStage==='EX-1')run.currentStageIndex=19;
