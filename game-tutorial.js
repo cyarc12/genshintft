@@ -115,7 +115,7 @@
     {
       eyebrow:'第 6 步 · 装备系统',
       title:'为棋子配置装备',
-      image:'assets/equipment/battle_emblem.png',
+      image:'assets/tutorial/equipment-cutout.png',
       imageAlt:'装备图标',
       body:'将装备<span class="tutorial-keyword">拖到棋子身上</span>，即可为角色提供属性或特殊效果。装备分为输出、防御和辅助等类型；同名装备可以同时佩戴，并且每件装备独立计算。',
       tips:[
