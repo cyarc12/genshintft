@@ -194,7 +194,7 @@ function createVaporMark(source,target,element,triggerDamage=0){
 }
 function settleConfirmedVaporMark(mark){
   const target=unitById(mark.targetId);
-  if(!target)return;
+  if(!target?.alive)return;
   const element=mark.element||mark.source?.element||'水';
   const recorded=Math.max(0,Number(mark.recorded)||0);
   const rate=Math.max(0,Number(mark.rate)||.80);
@@ -644,6 +644,11 @@ tick=function(dt){
   yelanBindings.forEach(binding=>binding.time+=dt);
   yelanBindings=yelanBindings.filter(binding=>{const target=unitById(binding.targetId);return binding.time<binding.duration&&target?.alive&&has(target,'silence')});
   for(const mark of vaporMarks){
+    const target=unitById(mark.targetId);
+    if(!target?.alive){
+      mark.settling=true;
+      continue;
+    }
     mark.time-=dt;
     mark.maxTime-=dt;
     if((mark.time<=0||mark.maxTime<=0)&&!mark.settling){
