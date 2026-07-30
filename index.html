@@ -175,7 +175,7 @@ const MOVEMENT_CONFIG={meleeStartDelay:0.00,rangedStartDelay:0.08,oneHexDuration
 const AVATAR_RENDER={安柏:{width:52,height:61,x:0,y:-2},胡桃:{size:46,x:4,y:1},八重神子:{size:46,x:-4,y:3},夏洛蒂:{size:52,x:0,y:0},凝光:{size:46,x:0,y:0},纳维亚:{size:46,x:0,y:0}};
 const WEAPON_INFO={双手剑:'重装坦克：自带嘲讽效果；存在多个同距离目标时，敌人优先选择双手剑角色。',单手剑:'灵活战士：受到当前攻击目标以外的敌人造成的伤害时，伤害降低 15%。',长柄:'近战输出：生命高于 50% 时攻击力增加 20；生命处于 50% 及以下时获得 15% 吸血。',弓:'远程输出：与目标每相距 1 格，造成的伤害提高 2%。',法器:'法术输出：每秒自动恢复 5 点法力；普通攻击造成角色自身元素的伤害，但不施加元素附着。'};
 const SKILL_INFO={
-  '玛薇卡':'不使用法力，拥有12层【战意】。开战获得7层；其他存活友军每完成一次技能施放，玛薇卡获得1层战意。满12层时立即释放【烈阳挥斩】，释放后战意清零。\\n【烈阳挥斩】朝当前目标方向挥出120°、1格半径的烈焰重斩，对范围内所有敌人造成攻击力200% / 300% / 700%的火元素伤害并施加火元素附着；随后获得自身最大生命值25% / 35% / 65%的护盾，持续6 / 6 / 8秒。新护盾覆盖旧护盾。',
+  '玛薇卡':'不使用法力，拥有10层【战意】。开战获得5层；其他存活友军每完成一次技能施放，玛薇卡获得1层战意。满10层时立即释放【烈阳挥斩】，释放后战意清零。\\n【烈阳挥斩】朝当前目标方向挥出120°、1格半径的烈焰重斩，对范围内所有敌人造成攻击力200% / 300% / 700%的火元素伤害并施加火元素附着；随后获得自身最大生命值25% / 35% / 65%的护盾，持续6 / 6 / 8秒。新护盾覆盖旧护盾。',
   '钟离':'初始法力35/100。\\n【玉璋护世】为施法瞬间所有存活友方棋子分别生成220 / 340 / 5000点独立玉璋护盾，持续5 / 5 / 99秒。位于己方前两排的单位在玉璋护盾存在期间获得6% / 9% / 20%伤害减免；位于己方后两排的单位获得10% / 15% / 35%伤害提升。排数只在施法瞬间判定，之后移动不会改变效果。玉璋护盾不叠加，再次施法会覆盖剩余护盾并刷新持续时间；护盾破裂或到期时对应增益立即移除。',
   '八重神子':'召唤阶段10/60；大招阶段一、二星0/120，三星0/50。普通攻击固定10点雷伤，不附着。同阵营共享最多3株杀生樱，每株每2.5秒攻击一次并每第二次附着；三星第一次释放直接召唤3株。第3株出现时全队升阶并切换大招。\n天狐显真：一星全屏200%攻击雷伤，二星350%；三星连续10次全屏天雷，每段500%，总计5000%。首击永久施加30%重伤。',
   '胡桃':'初始法力20/60。消耗当前生命30%进入【彼岸蝶舞】8秒。攻击提高100% / 120% / 250%，减伤20% / 20% / 30%，普攻转火伤。首击追加200% / 220% / 560%火伤+附着，之后每3击再次触发。本场首次致死保留1生命，自动进入8秒强化。无敌：1/2星2秒，3星10秒。',
@@ -208,7 +208,7 @@ const SKILL_INFO={
   '夏洛蒂':'初始法力0/80。最近2名敌人受到20/40/100 + 攻击力×35%/45%/65%的冰元素伤害并附着，获得30%重伤5/6/8秒。',
   };
 const SKILL_BRIEF={
-  '玛薇卡':'12层战意，开战7层；其他友军每次施法+1。满层释放120°近身火焰重斩：200%/300%/700%攻击力火伤并附着，随后获得25%/35%/65%最大生命护盾6/6/8秒。',
+  '玛薇卡':'10层战意，开战5层；其他友军每次施法+1。满层释放120°近身火焰重斩：200%/300%/700%攻击力火伤并附着，随后获得25%/35%/65%最大生命护盾6/6/8秒。',
   '钟离':'为当前所有存活友军施加220/340/5000点玉璋护盾5/5/99秒；施法时位于前两排者减伤6%/9%/20%，后两排者增伤10%/15%/35%，护盾消失时增益同步移除。',
   '八重神子':'同队共享最多3株杀生樱；三星第一次释放直接召满3株。三株后切换大招：一、二星120蓝，三星50蓝。天狐显真一/二星200%/350%；三星10段500%，总计5000%。',
   '胡桃':'耗血30%进入8秒强化：攻击+100%/120%/250%、减伤20%/30%、普攻转火。首击+每3击追加200%/220%/560%火伤+附着。致死被动无敌2秒/10秒。',
@@ -291,7 +291,7 @@ const PIECE_CONFIG={
   夏洛蒂:{templateId:'charlotte',name:'夏洛蒂',cost:1,element:'冰',weapon:'法器',avatar:'assets/avatars/charlotte.png',mana:{initial:[0,0,0],max:80},hp:[780,1524,2203],atk:[40,60,90],resist:20,physicalResist:20,elementResist:25,as:0.9,range:4,normalBaseDamage:20,normalAtkRatio:0.20},
   凝光:{templateId:'ningguang',name:'凝光',cost:2,element:'岩',weapon:'法器',avatar:'assets/avatars/ningguang.png',mana:{initial:[10,10,10],max:80},hp:[750,1340,1528],atk:[60,90,135],resist:30,physicalResist:30,elementResist:35,as:0.95,range:5},
   纳维亚:{templateId:'navia',name:'纳维亚',cost:3,element:'岩',weapon:'双手剑',avatar:'assets/avatars/navia.png',mana:{initial:[50,50,50],max:80},hp:[1000,1785,2520],atk:[50,75,110],resist:50,physicalResist:50,elementResist:40,as:0.75,range:1},
-  玛薇卡:{templateId:'mavuika',name:'玛薇卡',cost:4,element:'火',weapon:'双手剑',avatar:'assets/avatars/mavuika.png',resourceType:'condition',mana:{initial:[0,0,0],max:0},hp:[1350,2550,4050],atk:[52,78,117],resist:50,physicalResist:50,elementResist:50,as:0.60,range:1,conditionSkillGauge:{type:'allySkillCast',label:'战意',required:[12,12,12],initial:7,consumeOn:'impact'}},
+  玛薇卡:{templateId:'mavuika',name:'玛薇卡',cost:4,element:'火',weapon:'双手剑',avatar:'assets/avatars/mavuika.png',resourceType:'condition',mana:{initial:[0,0,0],max:0},hp:[1350,2550,4050],atk:[52,78,117],resist:50,physicalResist:50,elementResist:50,as:0.60,range:1,conditionSkillGauge:{type:'allySkillCast',label:'战意',required:[10,10,10],initial:5,consumeOn:'impact'}},
   钟离:{templateId:'zhongli',name:'钟离',cost:5,element:'岩',weapon:'长柄',avatar:'assets/avatars/zhongli.png',mana:{initial:[35,35,35],max:100},hp:[1100,1980,3564],atk:[55,83,124],resist:40,physicalResist:40,elementResist:50,as:0.65,range:2},
   砂糖:{templateId:'sucrose',name:'砂糖',cost:1,element:'风',weapon:'法器',avatar:'assets/avatars/sucrose.png',mana:{initial:[20,20,20],max:70},hp:[500,900,1620],atk:[42,63,95],resist:20,physicalResist:20,elementResist:25,as:0.70,range:5}};
 function statsForStar(cfg,star){const i=star-1;const initialMana=Array.isArray(cfg.mana.initial)?(cfg.mana.initial[i]??cfg.mana.initial[0]):cfg.mana.initial;let hp=cfg.hp[i]||cfg.hp[0];if(star===1)hp=Math.max(1,hp-100);else if(star===2)hp=Math.max(1,hp-300);if(star===3){if(cfg.cost===4)hp+=1500;else if(cfg.cost===5)hp+=2500}return{hp,atk:cfg.atk[i]||cfg.atk[0],resist:cfg.physicalResist??cfg.resist,physicalResist:cfg.physicalResist??cfg.resist,elementResist:cfg.elementResist??null,as:cfg.as,range:cfg.range,initialMana,maxMana:cfg.mana.max,cost:cfg.cost,normalBaseDamage:cfg.normalBaseDamage,normalAtkRatio:cfg.normalAtkRatio}}
