@@ -79,9 +79,9 @@ function enforceSlotLayoutLock(box){if(!box)return;const {avatarSize,avatarColum
 function renderSlotList(){const slots=loadSlots(),box=$('#pveSlotList');box.innerHTML=SLOT_DEFS.map(s=>{const enemies=slots[s.key]||[],preview=enemies.map(saved=>{const entry=Object.entries(PIECE_CONFIG).find(([,config])=>config.templateId===saved.templateId),name=entry?.[0]||'未知棋子',config=entry?.[1],color=ELEMENTS[config?.element]||'#70839d',star=Math.max(1,Math.min(3,normalizeStarValue(saved.star)));return`<span class="pve-slot-unit" style="--slot-element:${color}" title="${name} · ${star}星"><img src="${config?.avatar||''}" alt="${name}"><i class="pve-slot-stars">${'★'.repeat(star)}</i></span>`}).join('');return`<button data-slot-key="${s.key}" class="${selectedSlot===s.key?'active':''}"><span class="pve-slot-name">${s.label}</span>${preview?`<span class="pve-slot-units">${preview}</span>`:'<small class="pve-slot-empty">未保存</small>'}</button>`}).join('');requestAnimationFrame(()=>{const titles=[...box.querySelectorAll('.pve-slot-name')];if(lockedSlotTitleWidth===null)lockedSlotTitleWidth=Math.min(PVE_SLOT_LAYOUT_LOCK.titleWidth,Math.ceil(Math.max(0,...titles.map(title=>title.scrollWidth))));if(!lockedSlotTitleWidth)return;box.style.setProperty('--slot-title-width',`${lockedSlotTitleWidth}px`);requestAnimationFrame(()=>{if(lockedSlotTitleStart===null){const firstAvatar=box.querySelector('.pve-slot-unit'),button=firstAvatar?.closest('button');if(firstAvatar&&button){const available=firstAvatar.getBoundingClientRect().left-button.getBoundingClientRect().left;lockedSlotTitleStart=Math.max(2,Math.round((available-lockedSlotTitleWidth)/2))}}if(lockedSlotTitleStart!==null)box.style.setProperty('--slot-title-start',`${lockedSlotTitleStart}px`);enforceSlotLayoutLock(box)})})}
 function confirmSlotAction(){if(!selectedSlot){toast('请先选择关卡槽位');return}if(slotAction==='save'){const enemies=scanRed();if(!enemies.length){toast('红方棋盘没有可保存的正式棋子');return}const slots=loadSlots();if(slots[selectedSlot]?.length&&!confirm('该关卡已有阵容，是否覆盖？'))return;slots[selectedSlot]=enemies;saveSlots(slots);toast(`已保存 ${enemies.length} 名敌人到 ${selectedSlot}`)}else loadSlotIntoRed(selectedSlot);$('#pveSlotDialog').classList.add('hidden')}
 function createPool(){const pool={};for(const name of PIECE_ORDER){const c=PIECE_CONFIG[name];pool[c.templateId]=POOL_COPIES[c.cost]}return pool}
-function createRun(){return{version:3,state:'preparation',gold:30,level:3,xp:0,populationLimit:3,lives:3,maxLives:3,lossCount:0,round:0,winStreak:0,freeRefreshes:3,shopLocked:false,shopOffers:[],currentStageIndex:0,cardPool:createPool(),equipmentInventory:[],removers:0,reforgers:0,formation:[],rewardHistory:[],battleHistory:[],pendingRewardPlan:null}}
+function createRun(){return{version:3,state:'preparation',gold:30,level:3,xp:0,populationLimit:3,lives:3,maxLives:3,lossCount:0,round:0,winStreak:0,freeRefreshes:3,shopLocked:false,shopOffers:[],currentStageIndex:0,archiveEligible:false,cardPool:createPool(),equipmentInventory:[],removers:0,reforgers:0,formation:[],rewardHistory:[],battleHistory:[],pendingRewardPlan:null}}
 function saveRun(captureFormation=true){if(!run)return;if(captureFormation)run.formation=formationSnapshot().filter(x=>x.team==='blue');localStorage.setItem(RUN_KEY,JSON.stringify(run))}
-function loadRun(){try{const saved=JSON.parse(localStorage.getItem(RUN_KEY)||'null');if(!saved||saved.version!==3)return null;saved.level=Math.max(3,Math.min(MAX_LEVEL,Math.round(Number(saved.level)||3)));saved.xp=Math.max(LEVEL_TOTAL[saved.level]||0,Number(saved.xp)||0);if(saved.level>=MAX_LEVEL)saved.xp=LEVEL_TOTAL[MAX_LEVEL];saved.populationLimit=saved.level;if(Array.isArray(saved.shopOffers))saved.shopOffers.sort((a,b)=>(a?.cost??99)-(b?.cost??99));saved.pendingRewardPlan=saved.pendingRewardPlan||null;saved.battleHistory=Array.isArray(saved.battleHistory)?saved.battleHistory:[];delete saved.lockedInterest;return saved}catch{return null}}
+function loadRun(){try{const saved=JSON.parse(localStorage.getItem(RUN_KEY)||'null');if(!saved||saved.version!==3)return null;saved.level=Math.max(3,Math.min(MAX_LEVEL,Math.round(Number(saved.level)||3)));saved.xp=Math.max(LEVEL_TOTAL[saved.level]||0,Number(saved.xp)||0);if(saved.level>=MAX_LEVEL)saved.xp=LEVEL_TOTAL[MAX_LEVEL];saved.populationLimit=saved.level;if(Array.isArray(saved.shopOffers))saved.shopOffers.sort((a,b)=>(a?.cost??99)-(b?.cost??99));saved.pendingRewardPlan=saved.pendingRewardPlan||null;saved.battleHistory=Array.isArray(saved.battleHistory)?saved.battleHistory:[];saved.archiveEligible=!!saved.archiveEligible||saved.currentStageIndex>=18;delete saved.lockedInterest;return saved}catch{return null}}
 function grantOpening(){if(run.openingClaimed)return;const ids=standardEquipmentIds();for(let i=0;i<2&&ids.length;i++)run.equipmentInventory.push(ids[Math.floor(Math.random()*ids.length)]);run.removers=1;run.reforgers=2;run.openingClaimed=true}
 function stageId(){return ORDER[run.currentStageIndex]}
 function stageKey(){return stageId()}
@@ -131,7 +131,7 @@ function confirmExitChallenge(){$('#exitChallengeConfirmDialog').classList.add('
 function openChallengeSettlement(){if(mode!=='challenge'||!run)return;$('#challengeSettlementConfirmDialog').classList.remove('hidden')}
 function confirmChallengeSettlement(){$('#challengeSettlementConfirmDialog').classList.add('hidden');$('#challengeSettlementStage').textContent=`当前关卡：${stageId()||'已完成'}`;$('#challengeSettlementRound').textContent=`已完成回合：${run.round}`;$('#challengeSettlementDialog').classList.remove('hidden')}
 function restartChallengeFromSettlement(){localStorage.removeItem(RUN_KEY);$('#challengeSettlementDialog').classList.add('hidden');activateChallenge(createRun())}
-function finishChallengeToTest(){ $('#challengeSettlementDialog').classList.add('hidden');leaveChallenge(false,false) }
+function finishChallengeToTest(){$('#challengeSettlementDialog').classList.add('hidden');if(run?.archiveEligible)completeChallengeArchive();else leaveChallenge(false)}
 function rollCost(){const odds=SHOP_ODDS[run.level],x=Math.random()*100;let sum=0;for(let i=0;i<5;i++){sum+=odds[i];if(x<sum)return i+1}return 1}
 function returnOffers(){for(const offer of run.shopOffers||[])if(offer&&!offer.bought)run.cardPool[offer.templateId]=(run.cardPool[offer.templateId]||0)+1}
 function hasOwnedThreeStar(templateId){return units.some(unit=>!unit.inWarehouse&&!unit.isSummon&&unit.team==='blue'&&unit.templateId===templateId&&normalizeStarValue(unit.star)>=3)}
@@ -365,8 +365,8 @@ function retryExStage(){
 }
 function endExChallenge(){
   $('#pveExFailureDialog').classList.add('hidden');
-  openChallengeReview();
-  $('#pveReviewDialog').dataset.exitAfterReview='true';
+  if(run?.archiveEligible)completeChallengeArchive();
+  else{openChallengeReview();$('#pveReviewDialog').dataset.exitAfterReview='true'}
 }
 function showPhaseThreeChoice(continueRound){
   phaseThreeContinue=continueRound;
@@ -388,8 +388,7 @@ function replayAfterPhaseThree(){
 function finishAfterPhaseThree(){
   $('#pvePhaseThreeDialog').classList.add('hidden');
   phaseThreeContinue=null;
-  openChallengeReview();
-  $('#pveReviewDialog').dataset.exitAfterReview='true';
+  completeChallengeArchive();
 }
 function loadArchives(){try{const value=JSON.parse(localStorage.getItem(ARCHIVE_KEY)||'[]');return Array.from({length:5},(_,index)=>value[index]||null)}catch{return Array(5).fill(null)}}
 function saveArchives(value){localStorage.setItem(ARCHIVE_KEY,JSON.stringify(value))}
@@ -399,11 +398,11 @@ function archiveFinalAvatars(archive){
 }
 function renderArchiveSlots(){
   const archives=loadArchives(),box=$('#pveArchiveSlots');if(!box)return;
-  box.innerHTML=archives.map((archive,index)=>`<button class="pve-archive-slot ${archive?'filled':'empty'}" data-archive-slot="${index}"><b>${archive?.name||`成功档案 ${index+1}`}</b><span>${archive?archiveFinalAvatars(archive):'空槽位'}</span><small>${archive?`${archive.completedAt||''} · ${archive.battleHistory?.length||0}场战斗`:'点击查看或保存'}</small></button>`).join('');
+  box.innerHTML=archives.map((archive,index)=>`<button class="pve-archive-slot ${archive?'filled':'empty'}" data-archive-slot="${index}"><b>${archive?.name||`挑战档案 ${index+1}`}</b><span>${archive?archiveFinalAvatars(archive):'空槽位'}</span><small>${archive?`${archive.completedAt||''} · ${archive.battleHistory?.length||0}场战斗`:'点击查看或保存'}</small></button>`).join('');
 }
 function openArchiveSave(){
   selectedArchiveSlot=loadArchives().findIndex(value=>!value);if(selectedArchiveSlot<0)selectedArchiveSlot=0;
-  $('#pveArchiveName').value=`挑战成功 ${new Date().toLocaleDateString()}`;
+  $('#pveArchiveName').value=`挑战回顾 ${new Date().toLocaleDateString()}`;
   renderArchiveSaveSlots();$('#pveArchiveSaveDialog').classList.remove('hidden');
 }
 function renderArchiveSaveSlots(){
@@ -412,9 +411,9 @@ function renderArchiveSaveSlots(){
 }
 function confirmArchiveSave(){
   if(!pendingCompletedArchive)return;
-  const name=$('#pveArchiveName').value.trim()||`挑战成功档案 ${selectedArchiveSlot+1}`,archives=loadArchives();
+  const name=$('#pveArchiveName').value.trim()||`挑战回顾档案 ${selectedArchiveSlot+1}`,archives=loadArchives();
   archives[selectedArchiveSlot]={...clone(pendingCompletedArchive),name,completedAt:new Date().toLocaleString()};
-  saveArchives(archives);pendingCompletedArchive=null;$('#pveArchiveSaveDialog').classList.add('hidden');renderArchiveSlots();toast('挑战成功档案已保存');leaveChallenge(false);
+  saveArchives(archives);pendingCompletedArchive=null;$('#pveArchiveSaveDialog').classList.add('hidden');renderArchiveSlots();toast('挑战回顾档案已保存');leaveChallenge(false);
 }
 function openArchiveSlot(index){
   const archive=loadArchives()[index];if(!archive){toast('该成功档案槽为空');return}
@@ -470,6 +469,7 @@ function settle(win){
     if(startStage==='EX-1')run.currentStageIndex=19;
     else if(startStage==='EX-2'){run.state='complete';terminal='挑战完成'}
     else run.currentStageIndex++;
+    if(phaseThreeCleared)run.archiveEligible=true;
     if(run.currentStageIndex===6||run.currentStageIndex===12){
       run.removers+=2;
       run.reforgers+=1;
@@ -507,7 +507,7 @@ function installUi(){
   const actions=$('.actions');actions.insertAdjacentHTML('beforeend','<span class="pve-divider"></span><button class="btn" id="loadPveSlotBtn">载入挑战关卡阵容</button><button class="btn" id="savePveSlotBtn">保存当前红方阵容</button><button class="btn" id="openChallengeBtn">挑战模式</button><button class="btn" id="openChallengeArchiveBtn">挑战档案</button><button class="btn hidden" id="settleChallengeBtn">结算对局</button><button class="btn hidden" id="exitChallengeBtn">返回测试模式</button>');
   $('#whEquipCards')?.insertAdjacentHTML('afterend','<div id="pvePendingRewardDock" class="pve-pending-reward-dock hidden"><button id="pendingRewardBtn"><strong>领取待处理奖励</strong><span>奖励已保留，点击重新打开领取页面</span></button></div>');
   $('.arena').insertAdjacentHTML('beforeend',`<div id="pveShopBar" class="pve-shop-bar hidden"><div class="pve-shop-meta"><div class="pve-pop-streak"><span id="pvePopulation">人口 0/3</span><span class="pve-streak" title="当前连胜"><i>🔥</i><b id="pveStreakValue">0</b></span></div><div id="pveShopOdds" class="pve-shop-odds"></div><span></span></div><div class="pve-shop-main"><div class="pve-shop-actions"><div class="pve-level-line"><b id="pveLevel">Lv3</b><span id="pveXp">经验 0/6</span></div><div id="pveXpBar" class="pve-xp-bar" aria-hidden="true"><i id="pveXpBarFill"></i></div><div class="pve-shop-action-buttons"><button id="buyXpBtn" title="花费4金币获得4经验"></button><button id="refreshShopBtn"></button></div></div><div id="pveShopCards" class="pve-shop-cards"></div><div class="pve-shop-state right"><div class="pve-shop-right-row"><button id="lockShopBtn">锁定</button><b id="pveGold" class="pve-gold" title="金币"><img src="assets/two-coins.svg" alt="金币"><span id="pveGoldValue">30</span></b></div><div class="pve-shop-right-row"><span id="pveStage">回合 1-1</span><span id="pveLives" class="pve-lives" title="剩余失败机会：3/3">♥♥♥</span></div></div></div></div>`);
-  document.body.insertAdjacentHTML('beforeend',`<div id="pveSlotDialog" class="pve-modal hidden"><div><h2 id="pveSlotTitle"></h2><div id="pveSlotList" class="pve-slot-list"></div><footer><button id="confirmPveSlotBtn">确认</button><button data-close-pve-modal>取消</button></footer></div></div><div id="challengeDialog" class="pve-modal hidden"><div><h2>挑战模式</h2><p>固定20关挑战，拥有独立金币、商店、装备库存与三次失败机会。</p><footer><button id="newPveBtn">开始新挑战</button><button id="continuePveBtn">继续挑战</button><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveArchiveDialog" class="pve-modal hidden"><div class="pve-challenge-home"><h2>成功挑战回顾</h2><p>这里只保存已经通过EX-2并完成整轮挑战的结果。档案仅供回顾，不能载入或继续挑战。</p><div id="pveArchiveSlots" class="pve-archive-slots"></div><footer><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveEndDialog" class="pve-modal hidden"><div><h2 id="pveEndText"></h2><footer><button id="retryFinishedPveBtn">再来一次</button><button id="exitFinishedPveBtn">返回测试场</button></footer></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div id="pveSlotDialog" class="pve-modal hidden"><div><h2 id="pveSlotTitle"></h2><div id="pveSlotList" class="pve-slot-list"></div><footer><button id="confirmPveSlotBtn">确认</button><button data-close-pve-modal>取消</button></footer></div></div><div id="challengeDialog" class="pve-modal hidden"><div><h2>挑战模式</h2><p>固定20关挑战，拥有独立金币、商店、装备库存与三次失败机会。</p><footer><button id="newPveBtn">开始新挑战</button><button id="continuePveBtn">继续挑战</button><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveArchiveDialog" class="pve-modal hidden"><div class="pve-challenge-home"><h2>成功挑战回顾</h2><p>通过三阶段 Boss 后即可保存挑战结果；进入 EX 后即使后续失败，也能保存包含这些战斗在内的完整回顾。档案仅供回顾，不能载入或继续挑战。</p><div id="pveArchiveSlots" class="pve-archive-slots"></div><footer><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveEndDialog" class="pve-modal hidden"><div><h2 id="pveEndText"></h2><footer><button id="retryFinishedPveBtn">再来一次</button><button id="exitFinishedPveBtn">返回测试场</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveRoundResultDialog" class="pve-modal pve-round-result hidden"><div><h2 id="pveRoundResultTitle"></h2><div id="pveRoundResultBody"></div><footer><button id="continueRoundResultBtn">继续</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveLossRewardDialog" class="pve-modal pve-round-result victory hidden"><div><h2>扣血补偿</h2><div class="pve-victory-mark">补偿</div><div class="pve-loot-title">确认后发放以下逆风奖励</div><div id="pveLossRewardBody"></div><footer><button id="hideLossRewardBtn">暂时隐藏</button><button id="continueLossRewardBtn">确认领取</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveBenchFullRewardDialog" class="pve-modal hidden"><div><h2>备战席已满</h2><p>当前没有足够空位领取棋子奖励。奖励已经保留，你可以先隐藏窗口、整理或出售备战席棋子，再点击“待领取奖励”重新打开。</p><footer><button id="hideBenchFullRewardBtn">整理备战席</button><button id="reopenPendingRewardBtn">返回奖励</button></footer></div></div>`);
@@ -519,7 +519,7 @@ function installUi(){
   document.body.insertAdjacentHTML('beforeend',`<div id="pveExFailureDialog" class="pve-modal hidden"><div class="pve-settlement-confirm"><h2>EX挑战失败</h2><p>EX关卡可以无限挑战。要重新挑战本关，还是结束本次挑战？</p><footer><button id="retryExStageBtn">重新挑战本关</button><button id="reviewExBtn">挑战回顾</button><button id="endExChallengeBtn">结束挑战</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveReviewDialog" class="pve-modal hidden"><div class="pve-review-panel"><button id="closeChallengeReviewTopBtn" class="pve-review-close" title="返回挑战档案" aria-label="关闭回顾">×</button><h2>挑战回顾</h2><div id="pveReviewBody" class="pve-review-body"></div><footer><button id="closeChallengeReviewBtn">关闭回顾</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveReviewDetailDialog" class="pve-modal hidden"><div class="pve-review-detail-panel"><div class="pve-review-detail-title"><h2 id="pveReviewDetailTitle">逐角色统计</h2><span id="pveReviewDetailTotal"></span></div><div id="pveReviewDetailModes" class="damage-switch"><button class="active" data-review-stat-mode="dealt">造成伤害</button><button data-review-stat-mode="taken">承受伤害</button><button data-review-stat-mode="support">治疗/护盾</button></div><div id="pveReviewDetailBody" class="pve-review-detail-body damage-list"></div><footer><button data-close-pve-modal>关闭</button></footer></div></div>`);
-  document.body.insertAdjacentHTML('beforeend',`<div id="pveArchiveSaveDialog" class="pve-modal hidden"><div class="pve-archive-save-panel"><h2>保存挑战成功档案</h2><label>档案名称<input id="pveArchiveName" maxlength="30" placeholder="输入档案名字"></label><div id="pveArchiveSaveSlots" class="pve-archive-save-slots"></div><footer><button id="confirmArchiveSaveBtn">保存档案</button><button id="skipArchiveSaveBtn">不保存并返回测试场</button></footer></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div id="pveArchiveSaveDialog" class="pve-modal hidden"><div class="pve-archive-save-panel"><h2>保存挑战回顾档案</h2><label>档案名称<input id="pveArchiveName" maxlength="30" placeholder="输入档案名字"></label><div id="pveArchiveSaveSlots" class="pve-archive-save-slots"></div><footer><button id="confirmArchiveSaveBtn">保存档案</button><button id="skipArchiveSaveBtn">不保存并返回测试场</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveStageTransition" class="pve-stage-transition hidden" role="status" aria-live="polite"><div class="pve-stage-transition-flare"></div><div class="pve-stage-transition-card"><span id="pveStageTransitionEyebrow"></span><h2 id="pveStageTransitionTitle"></h2><i></i><p id="pveStageTransitionSubtitle"></p><b id="pveStageTransitionProgress"></b><small>点击任意位置跳过</small></div></div>`);
   renderArchiveSlots();
 }
