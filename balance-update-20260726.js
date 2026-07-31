@@ -286,6 +286,7 @@ attachAndReact=function(source,target,baseDamage=0){
   const el=source.element;triggerElementalHit(target,el);
   if(el==='风'){
     const spread=target.attach?.element;if(!spread||spread==='岩')return;
+    consumeAttachment(target);
     const victims=[target,...units.filter(u=>u.alive&&!u.onBench&&u.team===target.team&&u!==target&&dist(u,target)<=2)];
     for(const v of victims){applyElementResistanceReduction(v,spread,.30,5,'swirl');damage(source,v,50+effectiveAtk(source),{skill:true,elemental:true,damageElement:spread,reaction:true,allowReaction:false})}
     showReaction(target,'扩散');return;
