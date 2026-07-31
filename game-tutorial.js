@@ -256,7 +256,10 @@
     button.className='btn tutorial-entry-btn';
     button.type='button';
     button.textContent='玩法教程';
-    button.addEventListener('click',openTutorial);
+    button.addEventListener('click',()=>{
+      if(window.PVE_FIRST_ACTIVE&&typeof window.openPveChallengeTutorial==='function')window.openPveChallengeTutorial();
+      else openTutorial();
+    });
     actions.appendChild(button);
   }
 
