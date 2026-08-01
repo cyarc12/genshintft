@@ -44,7 +44,7 @@ const PVE_TUTORIAL_STEPS=[
   {icon:'▦',title:'商店与费用概率',eyebrow:'04 · 获取棋子',body:`<p>商店每次展示五张牌。上方的<mark>1费 / 2费 / 3费 / 4费 / 5费概率</mark>会随玩家等级变化，高等级更容易找到高费棋子。</p><ul><li>点击刷新可更换商店。</li><li>锁定商店后，下一回合不会自动刷新。</li><li>已经拥有同名棋子时，对应商店牌顶部会显示金线。</li></ul>`},
   {icon:'↔',title:'买牌、卖牌与合成',eyebrow:'05 · 阵容操作',body:`<p><mark>点击商店卡牌</mark>购买棋子，棋子会进入备战席；金币不足或备战席已满时无法购买。</p><p>长按抓起棋子并拖回商店区域即可<mark>出售</mark>。三个同名同星棋子会自动合成更高星级；达到三星后该牌暂时不会再刷出，出售三星后重新开放。</p><div class="pve-tutorial-callout">右键棋子只会让它返回备战席，不会出售。</div>`},
   {icon:'Lv',title:'等级、经验与人口',eyebrow:'06 · 成长上限',body:`<p>玩家等级决定<mark>人口上限</mark>和商店概率。胜利获得经验，也可以花费<mark>4金币购买4经验</mark>。</p><ul><li>等级提升后人口上限同步提高。</li><li>超过人口上限时不能继续往棋盘放置棋子。</li><li>最高等级为 <mark>Lv10</mark>，满级后无法继续购买经验。</li></ul>`},
-  {icon:'●',title:'金币、基础收入与利息',eyebrow:'07 · 经济运营',body:`<p>每场战斗结束后获得<mark>3金币基础收入</mark>。结算时每持有10金币，再获得1金币利息，利息最多10金币。</p><p>连胜、奖励关、Boss 奖励和出售棋子都会带来额外金币。商店消费发生在利息结算前还是结算后，会直接影响下一回合收入。</p><div class="pve-tutorial-callout">回合资源框会分别显示基础收入、利息和其他奖励。</div>`},
+  {icon:'●',title:'金币、基础收入与利息',eyebrow:'07 · 经济运营',body:`<p>每场普通战斗结束后获得<mark>3金币基础收入</mark>。仅在胜利结算时，每持有10金币再获得1金币利息，利息最多10金币；普通关失败不发利息。</p><p>连胜、奖励关、Boss 奖励和出售棋子都会带来额外金币。战斗期间的商店消费会改变胜利结算时可获得的利息。</p><div class="pve-tutorial-callout">回合资源框会分别显示基础收入、利息和其他奖励；EX失败会回滚战前状态，不结算经济。</div>`},
   {icon:'◇',title:'装备栏与装备操作',eyebrow:'08 · 强化棋子',body:`<p>挑战装备存放在右侧<mark>挑战装备栏</mark>。将装备拖到棋子身上即可穿戴，每名棋子最多携带三件装备。</p><ul><li>装备提供攻击、防御、回蓝或特殊触发效果。</li><li>拆卸器用于取下装备。</li><li>重铸器用于把装备转换为其他装备。</li></ul><div class="pve-tutorial-callout">装备效果彼此独立；相同装备也可以重复佩戴并分别触发。</div>`},
   {icon:'♥',title:'血量、失败机会与补偿',eyebrow:'09 · 生存规则',body:`<p>挑战开始时拥有三颗<mark>红心</mark>。常规关卡失败会失去一颗心，红心耗尽则本次挑战结束。</p><p>第一次和第二次掉血后会出现<mark>逆风补偿</mark>。确认领取后，金币、装备和棋子才会正式进入库存；备战席满时可以先隐藏奖励页，整理后再领取。</p>`},
   {icon:'⚔',title:'角色定位与站位',eyebrow:'10 · 实战布阵',body:`<p>角色的<mark>武器、攻击距离、技能和元素</mark>决定其定位。坦克与近战通常放在前排承伤，弓与法器角色适合后排输出或支援。</p><p>同元素不同角色可以激活<mark>元素共鸣</mark>；技能施加元素后还能触发元素反应。点击角色可查看血量、法力、双抗、攻击、攻速、距离、技能与装备。</p><div class="pve-tutorial-callout">相同角色不会重复计算共鸣人数，阵容多样性同样重要。</div>`},
@@ -105,27 +105,26 @@ const standardEquipmentIds=()=>Object.values(EQUIPMENT_CONFIG).filter(c=>c.itemC
 function toast(text){if(typeof showEquipmentToast==='function')showEquipmentToast(text);else addLog(text,'reaction')}
 function loadSlots(){
   try{
-    // 1. Always start from built-in defaults (source file is authoritative)
     const builtIn=window.PVE_DEFAULT_STAGES&&clone(window.PVE_DEFAULT_STAGES);
     if(!builtIn||!ORDER.every(id=>Array.isArray(builtIn[id]))){
-      // No built-in data: try old migration as last resort
       const old=JSON.parse(localStorage.getItem(OLD_SLOT_KEY)||'{}'),migrated={};
       OLD_SLOT_ORDER.forEach((oldKey,index)=>{if(old[oldKey]?.length)migrated[ORDER[index]]=old[oldKey]});
       localStorage.setItem(SLOT_KEY,JSON.stringify(migrated));
       return migrated;
     }
-    // 2. Apply user overrides from localStorage (only stages the user has customized)
     const userSlots=JSON.parse(localStorage.getItem(SLOT_KEY)||'null');
-    if(userSlots){
+    const previousDefaults=JSON.parse(localStorage.getItem(DEFAULT_SLOT_KEY)||'null');
+    const merged=clone(builtIn);
+    if(userSlots&&previousDefaults){
       for(const id of ORDER){
-        if(Array.isArray(userSlots[id])&&userSlots[id].length>0){
-          builtIn[id]=userSlots[id];
-        }
+        const saved=userSlots[id],oldDefault=previousDefaults[id];
+        const wasManuallyEdited=Array.isArray(saved)&&JSON.stringify(saved)!==JSON.stringify(oldDefault);
+        if(wasManuallyEdited)merged[id]=saved;
       }
     }
-    // 3. Write merged result to SLOT_KEY for runtime compatibility
-    localStorage.setItem(SLOT_KEY,JSON.stringify(builtIn));
-    return builtIn;
+    localStorage.setItem(DEFAULT_SLOT_KEY,JSON.stringify(builtIn));
+    localStorage.setItem(SLOT_KEY,JSON.stringify(merged));
+    return merged;
   }catch{return{}}
 }
 function saveSlots(v){localStorage.setItem(SLOT_KEY,JSON.stringify(v))}
@@ -519,9 +518,10 @@ function settle(win){
     return;
   }
   run.round++;
-  interestGold=Math.min(10,Math.floor(Math.max(0,run.gold)/10));
-  run.gold+=baseGold+interestGold;
+  run.gold+=baseGold;
   if(win){
+    interestGold=Math.min(10,Math.floor(Math.max(0,run.gold-baseGold)/10));
+    run.gold+=interestGold;
     gainXp(6);
     run.winStreak++;streakGold=run.winStreak>=6?5:run.winStreak>=3?3:1;run.gold+=streakGold;
     const rule=RULES[startStage];
@@ -570,7 +570,7 @@ function installUi(){
   const actions=$('.actions');actions.insertAdjacentHTML('beforeend','<span class="pve-divider"></span><button class="btn" id="loadPveSlotBtn">载入挑战关卡阵容</button><button class="btn" id="savePveSlotBtn">保存当前红方阵容</button><button class="btn" id="openChallengeBtn">挑战模式</button><button class="btn" id="openChallengeArchiveBtn">挑战档案</button><button class="btn hidden" id="settleChallengeBtn">结算对局</button><button class="btn hidden" id="exitChallengeBtn">返回测试模式</button>');
   $('#whEquipCards')?.insertAdjacentHTML('afterend','<div id="pvePendingRewardDock" class="pve-pending-reward-dock hidden"><button id="pendingRewardBtn"><strong>领取待处理奖励</strong><span>奖励已保留，点击重新打开领取页面</span></button></div>');
   $('.arena').insertAdjacentHTML('beforeend',`<div id="pveShopBar" class="pve-shop-bar hidden"><div class="pve-shop-meta"><div class="pve-pop-streak"><span id="pvePopulation">人口 0/3</span><span class="pve-streak" title="当前连胜"><i>🔥</i><b id="pveStreakValue">0</b></span></div><div id="pveShopOdds" class="pve-shop-odds"></div><span></span></div><div class="pve-shop-main"><div class="pve-shop-actions"><div class="pve-level-line"><b id="pveLevel">Lv3</b><span id="pveXp">经验 0/6</span></div><div id="pveXpBar" class="pve-xp-bar" aria-hidden="true"><i id="pveXpBarFill"></i></div><div class="pve-shop-action-buttons"><button id="buyXpBtn" title="花费4金币获得4经验"></button><button id="refreshShopBtn"></button></div></div><div id="pveShopCards" class="pve-shop-cards"></div><div class="pve-shop-state right"><div class="pve-shop-right-row"><button id="lockShopBtn">锁定</button><b id="pveGold" class="pve-gold" title="金币"><img src="assets/two-coins.svg" alt="金币"><span id="pveGoldValue">30</span></b></div><div class="pve-shop-right-row"><span id="pveStage">回合 1-1</span><span id="pveLives" class="pve-lives" title="剩余失败机会：3/3">♥♥♥</span></div></div></div></div>`);
-  document.body.insertAdjacentHTML('beforeend',`<div id="pveSlotDialog" class="pve-modal hidden"><div><h2 id="pveSlotTitle"></h2><div id="pveSlotList" class="pve-slot-list"></div><footer><button id="confirmPveSlotBtn">确认</button><button data-close-pve-modal>取消</button></footer></div></div><div id="challengeDialog" class="pve-modal hidden"><div><h2>挑战模式</h2><p>固定20关挑战，拥有独立金币、商店、装备库存与三次失败机会。</p><footer><button id="newPveBtn">开始新挑战</button><button id="continuePveBtn">继续挑战</button><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveArchiveDialog" class="pve-modal hidden"><div class="pve-challenge-home"><h2>成功挑战回顾</h2><p>通过三阶段 Boss 后即可保存挑战结果；进入 EX 后即使后续失败，也能保存包含这些战斗在内的完整回顾。档案仅供回顾，不能载入或继续挑战。</p><div id="pveArchiveSlots" class="pve-archive-slots"></div><footer><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveEndDialog" class="pve-modal hidden"><div><h2 id="pveEndText"></h2><footer><button id="retryFinishedPveBtn">再来一次</button><button id="exitFinishedPveBtn">返回测试场</button></footer></div></div>`);
+document.body.insertAdjacentHTML('beforeend',`<div id="pveSlotDialog" class="pve-modal hidden"><div><h2 id="pveSlotTitle"></h2><div id="pveSlotList" class="pve-slot-list"></div><footer><button id="confirmPveSlotBtn">确认</button><button data-close-pve-modal>取消</button></footer></div></div><div id="challengeDialog" class="pve-modal hidden"><div><h2>挑战模式</h2><p>固定20关挑战，拥有独立金币、商店、装备库存与三次失败机会。</p><footer><button id="newPveBtn">开始新挑战</button><button id="continuePveBtn">继续挑战</button><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveArchiveDialog" class="pve-modal hidden"><div class="pve-challenge-home"><h2>成功挑战回顾</h2><p>通过三阶段 Boss 后即可保存挑战结果；进入 EX 后即使后续失败，也能保存包含这些战斗在内的完整回顾。档案仅供回顾，不能载入或继续挑战。</p><div id="pveArchiveSlots" class="pve-archive-slots"></div><footer><button data-close-pve-modal>关闭</button></footer></div></div><div id="pveEndDialog" class="pve-modal hidden"><div><h2 id="pveEndText"></h2><footer><button id="retryFinishedPveBtn">再来一次</button><button id="exitFinishedPveBtn">返回测试场</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveRoundResultDialog" class="pve-modal pve-round-result hidden"><div><h2 id="pveRoundResultTitle"></h2><div id="pveRoundResultBody"></div><footer><button id="continueRoundResultBtn">继续</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveLossRewardDialog" class="pve-modal pve-round-result victory hidden"><div><h2>扣血补偿</h2><div class="pve-victory-mark">补偿</div><div class="pve-loot-title">确认后发放以下逆风奖励</div><div id="pveLossRewardBody"></div><footer><button id="hideLossRewardBtn">暂时隐藏</button><button id="continueLossRewardBtn">确认领取</button></footer></div></div>`);
   document.body.insertAdjacentHTML('beforeend',`<div id="pveBenchFullRewardDialog" class="pve-modal hidden"><div><h2>备战席已满</h2><p>当前没有足够空位领取棋子奖励。奖励已经保留，你可以先隐藏窗口、整理或出售备战席棋子，再点击“待领取奖励”重新打开。</p><footer><button id="hideBenchFullRewardBtn">整理备战席</button><button id="reopenPendingRewardBtn">返回奖励</button></footer></div></div>`);
@@ -634,7 +634,7 @@ function installShopLayoutStyle(){
     .pve-reward-particle{position:fixed;z-index:2700;width:8px;height:8px;border-radius:50%;pointer-events:none;background:#ffd765;box-shadow:0 0 6px #ffc84b,0 0 13px rgba(255,194,51,.8);animation:pveRewardFly .82s var(--reward-delay,0s) cubic-bezier(.32,.05,.3,1) both}.pve-reward-particle.equipment{width:9px;height:9px;border-radius:2px;transform:rotate(45deg);background:#ffedaa;box-shadow:0 0 7px #ffd560,0 0 16px rgba(255,202,74,.9)}.pve-reward-particle.card{width:7px;height:11px;border-radius:2px;background:#ffe7a0;box-shadow:0 0 7px #ffca4f,0 0 14px rgba(255,190,48,.85)}
     @keyframes pveRewardFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.35) rotate(0)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(70deg)}75%{opacity:1}100%{opacity:0;transform:translate(calc(var(--reward-x) - 50%),calc(var(--reward-y) - 50%)) scale(.25) rotate(260deg)}}
     .pve-shop-slot-empty{min-width:0;visibility:hidden}
-    #pveSlotDialog>div{width:min(1180px,calc(100% - 34px));max-height:92vh;padding:24px}
+#pveSlotDialog>div{width:min(1180px,calc(100% - 34px));max-height:92vh;padding:24px}
     #pveSlotDialog .pve-slot-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     #pveSlotDialog .pve-slot-list button{grid-template-columns:var(--slot-title-width,112px) minmax(0,1fr);grid-template-rows:74px;min-height:98px;padding:10px 2px;font-size:14px;column-gap:0}
     #pveSlotDialog .pve-slot-name{align-self:start;justify-self:start;width:var(--slot-title-width,112px);font-size:14px;line-height:28px;white-space:nowrap;text-align:left;transform:translateX(var(--slot-title-start,5px))}
@@ -707,7 +707,7 @@ function installShopLayoutStyle(){
   document.head.appendChild(style);
 }
 function installEvents(){
-  $('#savePveSlotBtn').onclick=()=>openSlotDialog('save');$('#loadPveSlotBtn').onclick=()=>openSlotDialog('load');$('#openChallengeBtn').onclick=()=>{const hasSave=!!loadRun();$('#continuePveBtn').classList.toggle('hidden',!hasSave);$('#challengeDialog').classList.remove('hidden')};$('#openChallengeArchiveBtn').onclick=()=>{renderArchiveSlots();$('#pveArchiveDialog').classList.remove('hidden')};$('#settleChallengeBtn').onclick=openChallengeSettlement;$('#confirmChallengeSettlementBtn').onclick=confirmChallengeSettlement;$('#exitChallengeBtn').onclick=exitChallenge;$('#confirmExitChallengeBtn').onclick=confirmExitChallenge;$('#restartChallengeBtn').onclick=restartChallengeFromSettlement;$('#finishChallengeToTestBtn').onclick=finishChallengeToTest;$('#confirmPveSlotBtn').onclick=confirmSlotAction;
+$('#savePveSlotBtn').onclick=()=>openSlotDialog('save');$('#loadPveSlotBtn').onclick=()=>openSlotDialog('load');$('#openChallengeBtn').onclick=()=>{const hasSave=!!loadRun();$('#continuePveBtn').classList.toggle('hidden',!hasSave);$('#challengeDialog').classList.remove('hidden')};$('#openChallengeArchiveBtn').onclick=()=>{renderArchiveSlots();$('#pveArchiveDialog').classList.remove('hidden')};$('#settleChallengeBtn').onclick=openChallengeSettlement;$('#confirmChallengeSettlementBtn').onclick=confirmChallengeSettlement;$('#exitChallengeBtn').onclick=exitChallenge;$('#confirmExitChallengeBtn').onclick=confirmExitChallenge;$('#restartChallengeBtn').onclick=restartChallengeFromSettlement;$('#finishChallengeToTestBtn').onclick=finishChallengeToTest;$('#confirmPveSlotBtn').onclick=confirmSlotAction;
   $('#pveSlotList').onclick=e=>{const b=e.target.closest('[data-slot-key]');if(b){selectedSlot=b.dataset.slotKey;renderSlotList()}};document.addEventListener('click',e=>{if(e.target.matches('[data-close-pve-modal]'))e.target.closest('.pve-modal').classList.add('hidden')});
   $('#newPveBtn').onclick=()=>$('#newChallengeConfirmDialog').classList.remove('hidden');$('#confirmNewChallengeBtn').onclick=()=>{$('#newChallengeConfirmDialog').classList.add('hidden');$('#pveTutorialPromptDialog').classList.remove('hidden')};$('#continuePveBtn').onclick=()=>{const saved=loadRun();if(saved)activateChallenge(saved);else toast('没有挑战存档')};
   $('#openPveTutorialBtn').onclick=openPveTutorial;

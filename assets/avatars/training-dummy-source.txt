@@ -1,3 +1,0 @@
-木桩头像：原神任务物品“完整的木桩”图标。
-资料页：https://genshin-impact.fandom.com/wiki/Intact_Training_Dummy
-游戏内文件：training-dummy.png（96×96 PNG）
